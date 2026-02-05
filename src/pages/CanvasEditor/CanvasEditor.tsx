@@ -14,11 +14,11 @@ import './CanvasEditor.css';
 
 // All protocols grouped by category
 const protocolCategories = [
-    { name: 'Settlement Layer', protocols: baseProtocols },
-    { name: 'Yield Engines', protocols: engineProtocols },
-    { name: 'Fixed Income', protocols: incomeProtocols },
-    { name: 'Credit Markets', protocols: creditProtocols },
-    { name: 'Optimizers', protocols: optimizeProtocols.filter(p => p.id !== 'none') },
+    { id: 0, name: 'Settlement Layer', protocols: baseProtocols },
+    { id: 1, name: 'Yield Engines', protocols: engineProtocols },
+    { id: 2, name: 'Fixed Income', protocols: incomeProtocols },
+    { id: 3, name: 'Credit Markets', protocols: creditProtocols },
+    { id: 4, name: 'Optimizers', protocols: optimizeProtocols.filter(p => p.id !== 'none') },
 ];
 
 function getProtocolMeta(protocol: Protocol): string {
@@ -42,6 +42,7 @@ export function CanvasEditor() {
     const [searchTerm, setSearchTerm] = useState('');
     const [capitalInput, setCapitalInput] = useState('1,250,000');
     const [activeLayer, setActiveLayer] = useState<number | null>(null);
+    const [dragOverLayer, setDragOverLayer] = useState<number | null>(null);
 
     // Filter protocols based on search
     const filteredCategories = useMemo(() => {
@@ -56,14 +57,14 @@ export function CanvasEditor() {
         })).filter(cat => cat.protocols.length > 0);
     }, [searchTerm]);
 
-    // Build the stack array for display
+    // Build the stack array for display - render ALL layers even if empty
     const stackLayers = [
         { step: 0, category: 'STABLECOIN', protocol: stack.base },
         { step: 1, category: 'YIELD ENGINE', protocol: stack.engine },
         { step: 2, category: 'FIXED INCOME', protocol: stack.income },
         { step: 3, category: 'CREDIT MARKET', protocol: stack.credit },
         { step: 4, category: 'OPTIMIZER', protocol: stack.optimize },
-    ].filter(l => l.protocol);
+    ];
 
     const totalApy = getTotalApy();
     const totalRisk = getTotalRisk();
@@ -73,24 +74,45 @@ export function CanvasEditor() {
     const dailyYield = (capital * totalApy / 100) / 365;
     const monthlyYield = dailyYield * 30;
 
-    // Yield breakdown
-    const yieldBreakdown = stackLayers.filter(l => l.protocol?.baseApy !== 0);
+    // Yield breakdown - only show filled layers
+    const yieldBreakdown = stackLayers.filter(l => l.protocol && l.protocol.baseApy !== 0);
 
     const handleDragStart = (e: React.DragEvent, protocol: Protocol, categoryIndex: number) => {
         e.dataTransfer.setData('protocol', JSON.stringify(protocol));
         e.dataTransfer.setData('categoryIndex', categoryIndex.toString());
+        e.dataTransfer.effectAllowed = 'copy';
     };
 
-    const handleDrop = (e: React.DragEvent, _targetLayerIndex: number) => {
+    const handleDragOver = (e: React.DragEvent, layerIndex: number) => {
         e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+        if (dragOverLayer !== layerIndex) {
+            setDragOverLayer(layerIndex);
+        }
+    };
+
+    const handleDragLeave = () => {
+        setDragOverLayer(null);
+    };
+
+    const handleDrop = (e: React.DragEvent, targetLayerIndex: number) => {
+        e.preventDefault();
+        setDragOverLayer(null);
+
         const protocolData = e.dataTransfer.getData('protocol');
-        const categoryIndex = parseInt(e.dataTransfer.getData('categoryIndex'));
+        const sourceCategoryIndex = parseInt(e.dataTransfer.getData('categoryIndex'));
+
+        // Validation: Only allow dropping if categories match (or strictly mapped)
+        if (sourceCategoryIndex !== targetLayerIndex) {
+            // Optional: Show error or shake animation
+            return;
+        }
 
         if (protocolData) {
             const protocol = JSON.parse(protocolData) as Protocol;
 
             // Map category to setter
-            switch (categoryIndex) {
+            switch (targetLayerIndex) {
                 case 0: setBase(protocol); break;
                 case 1: setEngine(protocol); break;
                 case 2: setIncome(protocol); break;
@@ -98,10 +120,6 @@ export function CanvasEditor() {
                 case 4: setOptimize(protocol); break;
             }
         }
-    };
-
-    const handleDragOver = (e: React.DragEvent) => {
-        e.preventDefault();
     };
 
     const handleReset = () => {
@@ -137,7 +155,7 @@ export function CanvasEditor() {
                 </div>
             </header>
 
-            <div className="workspace">
+            <div className="canvas-workspace">
                 {/* Protocol Palette */}
                 <div className="palette-col">
                     <div className="search-bar">
@@ -150,7 +168,7 @@ export function CanvasEditor() {
                         />
                     </div>
 
-                    {filteredCategories.map((category, catIdx) => (
+                    {filteredCategories.map((category) => (
                         <div key={category.name} className="category-group">
                             <div className="category-header">{category.name}</div>
                             {category.protocols.map((protocol) => (
@@ -158,7 +176,7 @@ export function CanvasEditor() {
                                     key={protocol.id}
                                     className="brick-item"
                                     draggable
-                                    onDragStart={(e) => handleDragStart(e, protocol, catIdx)}
+                                    onDragStart={(e) => handleDragStart(e, protocol, category.id)}
                                 >
                                     <span className="brick-name">{protocol.name}</span>
                                     <span className="brick-meta">{getProtocolMeta(protocol)}</span>
@@ -173,44 +191,51 @@ export function CanvasEditor() {
                     <span className="canvas-label">CANVAS AREA</span>
 
                     <div className="stack-container">
-                        {stackLayers.length > 1 && <div className="stack-connector" />}
+                        <div className="stack-connector" />
 
                         {stackLayers.map((layer, idx) => (
                             <div key={layer.step}>
-                                <div
-                                    className={`stack-brick ${activeLayer === layer.step ? 'active' : ''}`}
-                                    onClick={() => setActiveLayer(layer.step === activeLayer ? null : layer.step)}
-                                    onDrop={(e) => handleDrop(e, layer.step)}
-                                    onDragOver={handleDragOver}
-                                >
-                                    <div className="brick-header">
-                                        <span className="brick-label">{getCategoryLabel(layer.step)}</span>
-                                        <span className="brick-label">{getLayerLabel(layer.step)}</span>
+                                {layer.protocol ? (
+                                    <div
+                                        className={`stack-brick ${activeLayer === layer.step ? 'active' : ''} ${dragOverLayer === layer.step ? 'drag-over' : ''}`}
+                                        onClick={() => setActiveLayer(layer.step === activeLayer ? null : layer.step)}
+                                        onDrop={(e) => handleDrop(e, layer.step)}
+                                        onDragOver={(e) => handleDragOver(e, layer.step)}
+                                        onDragLeave={handleDragLeave}
+                                    >
+                                        <div className="brick-header">
+                                            <span className="brick-label">{getCategoryLabel(layer.step)}</span>
+                                            <span className="brick-label">{getLayerLabel(layer.step)}</span>
+                                        </div>
+                                        <div className="brick-main">
+                                            <span className="brick-title">{layer.protocol.name}</span>
+                                            <span className="brick-yield">
+                                                {layer.protocol.baseApy !== undefined && layer.protocol.baseApy !== 0
+                                                    ? `${layer.protocol.baseApy > 0 ? '+' : ''}${layer.protocol.baseApy}%`
+                                                    : '0%'}
+                                            </span>
+                                        </div>
+                                        <div className="brick-details">
+                                            <span className="brick-tag">{layer.protocol.category.split(' ')[0]}</span>
+                                            <span className="brick-tag">{getRiskLevel(layer.protocol.riskScore || 0)} RISK</span>
+                                        </div>
                                     </div>
-                                    <div className="brick-main">
-                                        <span className="brick-title">{layer.protocol?.name}</span>
-                                        <span className="brick-yield">
-                                            {layer.protocol?.baseApy !== undefined && layer.protocol.baseApy !== 0
-                                                ? `${layer.protocol.baseApy > 0 ? '+' : ''}${layer.protocol.baseApy}%`
-                                                : '0%'}
-                                        </span>
+                                ) : (
+                                    <div
+                                        className={`stack-brick empty ${dragOverLayer === layer.step ? 'drag-over' : ''}`}
+                                        onDrop={(e) => handleDrop(e, layer.step)}
+                                        onDragOver={(e) => handleDragOver(e, layer.step)}
+                                        onDragLeave={handleDragLeave}
+                                    >
+                                        <span>DROP {getCategoryLabel(layer.step)} HERE</span>
                                     </div>
-                                    <div className="brick-details">
-                                        <span className="brick-tag">{layer.protocol?.category.split(' ')[0]}</span>
-                                        <span className="brick-tag">{getRiskLevel(layer.protocol?.riskScore || 0)} RISK</span>
-                                    </div>
-                                </div>
+                                )}
+
                                 {idx < stackLayers.length - 1 && (
                                     <div className="flow-arrow">↓</div>
                                 )}
                             </div>
                         ))}
-
-                        {stackLayers.length === 0 && (
-                            <div className="empty-canvas">
-                                <p>Drag protocols from the palette to build your yield stack</p>
-                            </div>
-                        )}
                     </div>
                 </div>
 
