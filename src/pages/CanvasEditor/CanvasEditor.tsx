@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useBuilderStore } from '../../stores/builderStore';
+import { useApyStore, getEffectiveApy } from '../../stores/apyStore';
 import {
     baseProtocols,
     engineProtocols,
@@ -10,6 +11,7 @@ import {
     getRiskLevel
 } from '../../data/protocols';
 import { type Protocol } from '../../components/builder/ProtocolCard';
+import { ApyInfoIcon } from '../../components/ui/ApyTooltip/ApyTooltip';
 import './CanvasEditor.css';
 
 // All protocols grouped by category
@@ -39,11 +41,20 @@ function getCategoryLabel(step: number): string {
 
 export function CanvasEditor() {
     const { stack, setBase, setEngine, setIncome, setCredit, setOptimize, getTotalApy, getTotalRisk, resetStack } = useBuilderStore();
+    const { apyData, lastUpdated, getApyForProtocol } = useApyStore();
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
     const [capitalInput, setCapitalInput] = useState('1,250,000');
     const [activeLayer, setActiveLayer] = useState<number | null>(null);
     const [dragOverLayer, setDragOverLayer] = useState<number | null>(null);
+
+    // Helper to get live APY for a protocol
+    const getLiveApy = (protocolId: string) => {
+        const liveData = getApyForProtocol(protocolId);
+        return getEffectiveApy(protocolId, liveData);
+    };
+
+    const hasLiveData = Object.keys(apyData).length > 0;
 
     // Filter protocols based on search
     const filteredCategories = useMemo(() => {
@@ -67,7 +78,20 @@ export function CanvasEditor() {
         { step: 4, category: 'OPTIMIZER', protocol: stack.optimize },
     ];
 
-    const totalApy = getTotalApy();
+    // Calculate total APY using live data when available
+    const calculateLiveTotalApy = () => {
+        let total = 0;
+        const protocols = [stack.base, stack.engine, stack.income, stack.credit, stack.optimize];
+        protocols.forEach(protocol => {
+            if (protocol) {
+                const effectiveApy = getLiveApy(protocol.id);
+                total += effectiveApy.current;
+            }
+        });
+        return total;
+    };
+
+    const totalApy = hasLiveData ? calculateLiveTotalApy() : getTotalApy();
     const totalRisk = getTotalRisk();
 
     // Parse capital for calculations
@@ -75,8 +99,12 @@ export function CanvasEditor() {
     const dailyYield = (capital * totalApy / 100) / 365;
     const monthlyYield = dailyYield * 30;
 
-    // Yield breakdown - only show filled layers
-    const yieldBreakdown = stackLayers.filter(l => l.protocol && l.protocol.baseApy !== 0);
+    // Yield breakdown - only show filled layers with live APY data
+    const yieldBreakdown = stackLayers.filter(l => {
+        if (!l.protocol) return false;
+        const effectiveApy = getLiveApy(l.protocol.id);
+        return effectiveApy.current !== 0;
+    });
 
     const handleDragStart = (e: React.DragEvent, protocol: Protocol, categoryIndex: number) => {
         e.dataTransfer.setData('protocol', JSON.stringify(protocol));
@@ -246,10 +274,22 @@ export function CanvasEditor() {
                     <div className="metric-section">
                         <div className="hero-label">
                             <span className="metric-label">NET PROJECTED APY</span>
-                            <span className="metric-label">ANNUALIZED</span>
+                            <span className="metric-label" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                ANNUALIZED
+                                <ApyInfoIcon tooltip="Real-time APY data from DeFiLlama. Updated hourly." />
+                            </span>
                         </div>
-                        <div className="hero-value">{totalApy.toFixed(1)}%</div>
-                        <div className="rewards-note">+ REWARDS</div>
+                        <div className={`hero-value ${totalApy < 0 ? 'negative' : ''}`}>{totalApy.toFixed(1)}%</div>
+                        <div className="rewards-note">
+                            {hasLiveData ? (
+                                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e' }}></span>
+                                    LIVE DATA
+                                </span>
+                            ) : (
+                                '+ REWARDS'
+                            )}
+                        </div>
                     </div>
 
                     {/* Risk Score */}
@@ -272,21 +312,33 @@ export function CanvasEditor() {
 
                     {/* Yield Breakdown */}
                     <div className="metric-section breakdown-section">
-                        <span className="metric-label breakdown-title">YIELD BREAKDOWN</span>
+                        <span className="metric-label breakdown-title" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            YIELD BREAKDOWN
+                            {hasLiveData && <span style={{ fontSize: '7px', background: '#22c55e', color: 'white', padding: '1px 4px', fontWeight: 700 }}>LIVE</span>}
+                        </span>
 
-                        {yieldBreakdown.map((layer) => (
-                            <div key={layer.step} className="data-row">
-                                <span>{layer.protocol?.name.split(' ')[0]}</span>
-                                <span className={`mono-value ${layer.protocol!.baseApy < 0 ? 'negative' : ''}`}>
-                                    {layer.protocol!.baseApy > 0 ? '+' : ''}{layer.protocol!.baseApy.toFixed(1)}%
-                                </span>
-                            </div>
-                        ))}
+                        {yieldBreakdown.map((layer) => {
+                            const effectiveApy = getLiveApy(layer.protocol!.id);
+                            return (
+                                <div key={layer.step} className="data-row">
+                                    <span>{layer.protocol?.name.split(' ')[0]}</span>
+                                    <span className={`mono-value ${effectiveApy.current < 0 ? 'negative' : ''}`}>
+                                        {effectiveApy.current > 0 ? '+' : ''}{effectiveApy.current.toFixed(1)}%
+                                    </span>
+                                </div>
+                            );
+                        })}
 
                         <div className="data-row net-row">
                             <span>NET YIELD</span>
-                            <span className="mono-value">{totalApy.toFixed(1)}%</span>
+                            <span className={`mono-value ${totalApy < 0 ? 'negative' : ''}`}>{totalApy.toFixed(1)}%</span>
                         </div>
+
+                        {lastUpdated && (
+                            <div className="data-source-note">
+                                via DeFiLlama • {lastUpdated.toLocaleTimeString()}
+                            </div>
+                        )}
                     </div>
 
                     {/* Float Calculator */}

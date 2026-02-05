@@ -32,6 +32,26 @@
     border-top-color: rgba(255, 255, 255, 0.2);
 }
 
+.protocol-card.selected .card-footer {
+    border-top-color: rgba(255, 255, 255, 0.2);
+}
+
+.protocol-card.selected .live-indicator {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.protocol-card.selected .live-dot {
+    background: #22c55e;
+}
+
+.protocol-card.selected .apy-info-btn {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.protocol-card.selected .apy-info-btn:hover {
+    color: rgba(255, 255, 255, 0.9);
+}
+
 .card-category {
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
@@ -53,7 +73,7 @@
     font-size: 10px;
     letter-spacing: 0.05em;
     color: var(--ink-light);
-    margin-bottom: 32px;
+    margin-bottom: 24px;
     line-height: 1.6;
 }
 
@@ -66,8 +86,104 @@
     border-top: 1px solid var(--guide);
 }
 
+.stat-block {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.stat-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
 .stat-value {
     font-family: 'JetBrains Mono', monospace;
     font-size: 18px;
     font-weight: 700;
+}
+
+.stat-value.negative {
+    color: #ef4444;
+}
+
+.protocol-card.selected .stat-value.negative {
+    color: #fca5a5;
+}
+
+.stat-value.avg {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink-light);
+}
+
+.protocol-card.selected .stat-value.avg {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.live-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: var(--ink-light);
+    margin-top: 2px;
+}
+
+.live-dot {
+    width: 6px;
+    height: 6px;
+    background: #22c55e;
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.card-footer {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--guide);
+}
+
+.risk-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.risk-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .protocol-card {
+        padding: 20px;
+    }
+
+    .card-name {
+        font-size: 20px;
+    }
+
+    .card-stats {
+        gap: 16px;
+    }
+
+    .stat-value {
+        font-size: 16px;
+    }
 }

@@ -1,0 +1,243 @@
+/* APY Tooltip Component Styles */
+
+.apy-tooltip-container {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.apy-info-btn {
+    background: transparent;
+    border: none;
+    padding: 2px;
+    cursor: pointer;
+    color: var(--ink-light, #555);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease, transform 0.2s ease;
+    border-radius: 50%;
+}
+
+.apy-info-btn:hover {
+    color: var(--ink, #1a1a1a);
+    transform: scale(1.1);
+}
+
+.apy-info-btn:focus {
+    outline: 2px solid var(--ink, #1a1a1a);
+    outline-offset: 2px;
+}
+
+/* Tooltip Panel */
+.apy-tooltip {
+    position: absolute;
+    z-index: 1000;
+    width: 260px;
+    background: white;
+    border: 1px solid var(--ink, #1a1a1a);
+    box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.1);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+}
+
+.apy-tooltip.top {
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 8px;
+}
+
+.apy-tooltip.bottom {
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 8px;
+}
+
+/* Tooltip Header */
+.tooltip-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    background: var(--ink, #1a1a1a);
+    color: white;
+}
+
+.tooltip-title {
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.data-badge {
+    font-size: 8px;
+    padding: 2px 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+}
+
+.data-badge.live {
+    background: #22c55e;
+    color: white;
+}
+
+.data-badge.fallback {
+    background: #f59e0b;
+    color: white;
+}
+
+/* Tooltip Content */
+.tooltip-content {
+    padding: 12px;
+}
+
+.tooltip-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+}
+
+.row-label {
+    color: var(--ink-light, #555);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.row-value {
+    font-weight: 700;
+    font-size: 12px;
+}
+
+.row-value.negative {
+    color: #ef4444;
+}
+
+.row-value.muted {
+    color: var(--ink-light, #555);
+    font-weight: 500;
+}
+
+/* APY Breakdown */
+.tooltip-breakdown {
+    background: #f9fafb;
+    margin: 8px 0;
+    padding: 8px;
+}
+
+.breakdown-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+    padding: 2px 0;
+    color: var(--ink-light, #555);
+}
+
+.tooltip-divider {
+    height: 1px;
+    background: var(--guide, #ccc);
+    margin: 8px 0;
+}
+
+/* Tooltip Footer */
+.tooltip-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 8px;
+    margin-top: 8px;
+    border-top: 1px dashed var(--guide, #ccc);
+}
+
+.source-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--ink-light, #555);
+    font-size: 9px;
+}
+
+.update-time {
+    color: var(--ink-light, #555);
+    font-size: 8px;
+}
+
+/* Empty State */
+.tooltip-empty {
+    text-align: center;
+    padding: 16px 8px;
+}
+
+.tooltip-empty span {
+    display: block;
+    color: var(--ink-light, #555);
+}
+
+.tooltip-empty .empty-note {
+    font-size: 9px;
+    margin-top: 4px;
+}
+
+/* Simple Info Icon */
+.apy-info-icon {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    cursor: help;
+    color: var(--ink-light, #555);
+    margin-left: 4px;
+    vertical-align: middle;
+}
+
+.apy-info-icon:hover {
+    color: var(--ink, #1a1a1a);
+}
+
+.simple-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--ink, #1a1a1a);
+    color: white;
+    padding: 6px 10px;
+    font-size: 9px;
+    white-space: nowrap;
+    max-width: 200px;
+    white-space: normal;
+    text-align: center;
+    z-index: 1000;
+    margin-bottom: 6px;
+    line-height: 1.4;
+}
+
+.simple-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 4px solid transparent;
+    border-top-color: var(--ink, #1a1a1a);
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.apy-tooltip {
+    animation: fadeIn 0.15s ease-out;
+}

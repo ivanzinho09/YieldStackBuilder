@@ -35,6 +35,7 @@ export function BuilderStep3() {
             name: stack.base?.name,
             apy: stack.base?.baseApy,
             riskLevel: stack.base ? getRiskLevel(stack.base.riskScore) : undefined,
+            protocolId: stack.base?.id,
         },
         {
             step: 2,
@@ -42,6 +43,7 @@ export function BuilderStep3() {
             name: stack.engine?.name,
             apy: stack.engine?.baseApy,
             riskLevel: stack.engine ? getRiskLevel(stack.engine.riskScore) : undefined,
+            protocolId: stack.engine?.id,
         },
         {
             step: 3,
@@ -49,6 +51,7 @@ export function BuilderStep3() {
             name: selectedProtocol?.name,
             apy: selectedProtocol?.baseApy,
             riskLevel: selectedProtocol ? getRiskLevel(selectedProtocol.riskScore) : undefined,
+            protocolId: selectedProtocol?.id,
         },
         {
             step: 4,
