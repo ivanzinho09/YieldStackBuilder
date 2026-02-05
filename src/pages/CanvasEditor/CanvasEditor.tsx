@@ -44,6 +44,9 @@ export function CanvasEditor() {
     const [capitalInput, setCapitalInput] = useState('1,250,000');
     const [activeLayer, setActiveLayer] = useState<number | null>(null);
     const [dragOverLayer, setDragOverLayer] = useState<number | null>(null);
+    const [drawerLayer, setDrawerLayer] = useState<number | null>(null);
+    const [drawerSearchTerm, setDrawerSearchTerm] = useState('');
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
     // Filter protocols based on search
     const filteredCategories = useMemo(() => {
@@ -127,6 +130,43 @@ export function CanvasEditor() {
         resetStack();
     };
 
+    const openDrawer = (layerIndex: number) => {
+        setDrawerLayer(layerIndex);
+        setDrawerSearchTerm('');
+        setIsDrawerOpen(true);
+    };
+
+    const closeDrawer = () => {
+        setIsDrawerOpen(false);
+    };
+
+    const drawerCategory = useMemo(() => {
+        if (drawerLayer === null) return null;
+        return protocolCategories.find(category => category.id === drawerLayer) || null;
+    }, [drawerLayer]);
+
+    const drawerProtocols = useMemo(() => {
+        if (!drawerCategory) return [];
+        if (!drawerSearchTerm) return drawerCategory.protocols;
+        const term = drawerSearchTerm.toLowerCase();
+        return drawerCategory.protocols.filter(protocol =>
+            protocol.name.toLowerCase().includes(term) ||
+            protocol.category.toLowerCase().includes(term)
+        );
+    }, [drawerCategory, drawerSearchTerm]);
+
+    const handleDrawerSelect = (protocol: Protocol, layerIndex: number) => {
+        switch (layerIndex) {
+            case 0: setBase(protocol); break;
+            case 1: setEngine(protocol); break;
+            case 2: setIncome(protocol); break;
+            case 3: setCredit(protocol); break;
+            case 4: setOptimize(protocol); break;
+        }
+        setActiveLayer(layerIndex);
+        closeDrawer();
+    };
+
     const formatCurrency = (value: number) => {
         return value.toLocaleString('en-US', {
             minimumFractionDigits: 0,
@@ -199,7 +239,10 @@ export function CanvasEditor() {
                                 {layer.protocol ? (
                                     <div
                                         className={`stack-brick ${activeLayer === layer.step ? 'active' : ''} ${dragOverLayer === layer.step ? 'drag-over' : ''}`}
-                                        onClick={() => setActiveLayer(layer.step === activeLayer ? null : layer.step)}
+                                        onClick={() => {
+                                            setActiveLayer(layer.step === activeLayer ? null : layer.step);
+                                            openDrawer(layer.step);
+                                        }}
                                         onDrop={(e) => handleDrop(e, layer.step)}
                                         onDragOver={(e) => handleDragOver(e, layer.step)}
                                         onDragLeave={handleDragLeave}
@@ -224,11 +267,13 @@ export function CanvasEditor() {
                                 ) : (
                                     <div
                                         className={`stack-brick empty ${dragOverLayer === layer.step ? 'drag-over' : ''}`}
+                                        onClick={() => openDrawer(layer.step)}
                                         onDrop={(e) => handleDrop(e, layer.step)}
                                         onDragOver={(e) => handleDragOver(e, layer.step)}
                                         onDragLeave={handleDragLeave}
                                     >
                                         <span>DROP {getCategoryLabel(layer.step)} HERE</span>
+                                        <span className="brick-helper">TAP TO CHOOSE</span>
                                     </div>
                                 )}
 
@@ -316,6 +361,46 @@ export function CanvasEditor() {
                     </div>
                 </div>
             </div>
+            <div className={`mobile-drawer-overlay ${isDrawerOpen ? 'open' : ''}`} onClick={closeDrawer} />
+            <aside className={`mobile-drawer ${isDrawerOpen ? 'open' : ''}`} aria-hidden={!isDrawerOpen}>
+                <div className="drawer-header">
+                    <div>
+                        <div className="drawer-title">{drawerCategory?.name || 'Select a protocol'}</div>
+                        <div className="drawer-subtitle">{drawerLayer !== null ? getCategoryLabel(drawerLayer) : ''}</div>
+                    </div>
+                    <button type="button" className="drawer-close" onClick={closeDrawer}>CLOSE</button>
+                </div>
+                <div className="drawer-search">
+                    <input
+                        type="text"
+                        placeholder="SEARCH OPTIONS..."
+                        value={drawerSearchTerm}
+                        onChange={(e) => setDrawerSearchTerm(e.target.value)}
+                    />
+                </div>
+                <div className="drawer-list">
+                    {drawerProtocols.map(protocol => (
+                        <button
+                            key={protocol.id}
+                            type="button"
+                            className="drawer-item"
+                            onClick={() => drawerLayer !== null && handleDrawerSelect(protocol, drawerLayer)}
+                        >
+                            <div className="drawer-item-main">
+                                <span className="drawer-item-name">{protocol.name}</span>
+                                <span className="drawer-item-meta">{getProtocolMeta(protocol)}</span>
+                            </div>
+                            <div className="drawer-item-tags">
+                                <span>{protocol.category}</span>
+                                <span>{getRiskLevel(protocol.riskScore || 0)} RISK</span>
+                            </div>
+                        </button>
+                    ))}
+                    {!drawerProtocols.length && (
+                        <div className="drawer-empty">No protocols match that search.</div>
+                    )}
+                </div>
+            </aside>
         </div>
     );
 }
