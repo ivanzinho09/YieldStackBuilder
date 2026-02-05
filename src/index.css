@@ -71,6 +71,14 @@ body {
   background: var(--paper);
 }
 
+@media (max-width: 768px) {
+  .container {
+    padding: 0 20px;
+    border-left: none;
+    border-right: none;
+  }
+}
+
 /* Button Styles */
 .btn-main {
   background: transparent;

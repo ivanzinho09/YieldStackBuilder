@@ -376,3 +376,85 @@
         padding: 16px 20px;
     }
 }
+
+@media (max-width: 600px) {
+    .summary-table-header {
+        display: none;
+    }
+
+    .summary-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        position: relative;
+    }
+
+    .row-step {
+        font-size: 8px;
+        opacity: 0.7;
+    }
+
+    .row-strategy {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+        margin-bottom: 8px;
+    }
+
+    .row-value {
+        text-align: left;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: var(--paper);
+        padding: 8px;
+        font-size: 12px;
+    }
+
+    .row-value::before {
+        content: 'VALUE';
+        /* Placeholder, should be specific */
+        font-size: 9px;
+        color: var(--ink-light);
+    }
+
+    /* Target specifc children for labels if possible, simplified for now: */
+    /* Making it grid for clearer data presentation */
+    .summary-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+            "step step"
+            "name name"
+            "risk apy";
+    }
+
+    .row-step {
+        grid-area: step;
+        margin-bottom: 4px;
+    }
+
+    .row-strategy {
+        grid-area: name;
+        margin-bottom: 12px;
+    }
+
+    .row-value:nth-child(3) {
+        grid-area: risk;
+        text-align: left;
+    }
+
+    .row-value:nth-child(4) {
+        grid-area: apy;
+        text-align: right;
+    }
+
+    .row-value:nth-child(3)::before {
+        content: 'RISK: ';
+        margin-right: 4px;
+    }
+
+    .row-value:nth-child(4)::before {
+        content: 'APY: ';
+        margin-right: 4px;
+    }
+}

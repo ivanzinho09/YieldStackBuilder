@@ -27,6 +27,21 @@
     text-decoration: none;
 }
 
-.exit-builder:hover {
-    color: var(--ink);
+/* Mobile adjustments for BuilderHeader */
+@media (max-width: 600px) {
+    .builder-header {
+        padding: 0 20px;
+    }
+
+    .builder-brand {
+        font-size: 12px;
+    }
+
+    .exit-builder span {
+        display: none;
+    }
+
+    .exit-builder::after {
+        content: 'EXIT';
+    }
 }

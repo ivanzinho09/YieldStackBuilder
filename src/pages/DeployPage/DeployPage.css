@@ -364,5 +364,47 @@
     .deploy-footer {
         flex-direction: column;
         gap: 24px;
+        text-align: center;
+    }
+}
+
+@media (max-width: 600px) {
+    .deploy-header {
+        height: auto;
+        flex-direction: column;
+        gap: 12px;
+        padding: 16px;
+    }
+
+    .deploy-nav {
+        gap: 16px !important;
+        /* Override inline style */
+        width: 100%;
+        justify-content: center;
+    }
+
+    .panel-center {
+        padding: 24px 16px;
+        min-height: auto;
+        transform: scale(0.9);
+        /* Scale down card if needed */
+        transform-origin: center top;
+    }
+
+    .yield-card {
+        width: 300px;
+        /* Slightly narrower */
+        height: 480px;
+    }
+
+    .deploy-footer>div {
+        /* Stacking footer items */
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .deploy-footer .group {
+        width: 100%;
+        align-items: center;
     }
 }

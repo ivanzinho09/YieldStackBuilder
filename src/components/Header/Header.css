@@ -65,8 +65,89 @@
     left: -10px;
 }
 
+/* ... existing styles ... */
 .nav a:hover::after {
     content: ']';
     position: absolute;
     right: -10px;
+}
+
+/* Mobile Controls */
+.burger-btn {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    z-index: 100;
+}
+
+.logo-text {
+    display: inline-block;
+}
+
+.mobile-only {
+    display: none !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .burger-btn {
+        display: block;
+    }
+
+    .desktop-only {
+        display: none !important;
+    }
+
+    .mobile-only {
+        display: inline-block !important;
+        margin-top: 24px;
+        margin-left: 0 !important;
+        width: 100%;
+        text-align: center;
+    }
+
+    .nav {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--paper);
+        flex-direction: column;
+        padding: 24px 40px;
+        border-bottom: 2px solid var(--ink);
+        z-index: 50;
+    }
+
+    .nav.open {
+        display: flex;
+        animation: slideDown 0.2s ease-out;
+    }
+
+    .nav a {
+        margin-left: 0;
+        margin-bottom: 24px;
+        display: block;
+        font-size: 1.1rem;
+        padding: 8px 0;
+        border-bottom: 1px dashed var(--guide);
+    }
+
+    .logo-text {
+        font-size: 0.9rem;
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

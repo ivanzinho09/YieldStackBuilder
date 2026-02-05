@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useBuilderStore } from '../../stores/builderStore';
 import './DeployPage.css';
 
 export function DeployPage() {
-    const navigate = useNavigate();
+
     const { stack, getTotalApy, getTotalRisk } = useBuilderStore();
     const cardRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -89,7 +89,7 @@ export function DeployPage() {
                     <div className="font-body" style={{ fontSize: '14px', fontWeight: 600, letterSpacing: '-0.02em' }}>YIELD STACK BUILDER</div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '32px' }}>
+                <div className="deploy-nav" style={{ display: 'flex', gap: '32px' }}>
                     <Link to="/builder/step-1" className="nav-link inactive">Design</Link>
                     <Link to="/builder/canvas" className="nav-link inactive">Simulate</Link>
                     <div className="nav-link active">Deploy & Export</div>
