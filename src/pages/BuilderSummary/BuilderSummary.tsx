@@ -165,7 +165,7 @@ export function BuilderSummary() {
                     </div>
 
                     <div className="footer-nav">
-                        <button className="btn-deploy">DEPLOY STACK</button>
+                        <button className="btn-deploy" onClick={() => navigate('/deploy')}>DEPLOY STACK</button>
                         <Link to="/builder/canvas" className="btn-edit" style={{ display: 'block', textAlign: 'center' }}>
                             Open Canvas Editor
                         </Link>

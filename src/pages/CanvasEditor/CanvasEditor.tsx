@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useBuilderStore } from '../../stores/builderStore';
 import {
     baseProtocols,
@@ -39,6 +39,7 @@ function getCategoryLabel(step: number): string {
 
 export function CanvasEditor() {
     const { stack, setBase, setEngine, setIncome, setCredit, setOptimize, getTotalApy, getTotalRisk, resetStack } = useBuilderStore();
+    const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
     const [capitalInput, setCapitalInput] = useState('1,250,000');
     const [activeLayer, setActiveLayer] = useState<number | null>(null);
@@ -311,7 +312,7 @@ export function CanvasEditor() {
                             <span className="mono-value">${formatCurrency(monthlyYield)}</span>
                         </div>
 
-                        <button className="btn-deploy">DEPLOY STRATEGY</button>
+                        <button className="btn-deploy" onClick={() => navigate('/deploy')}>DEPLOY STRATEGY</button>
                     </div>
                 </div>
             </div>

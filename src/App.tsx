@@ -7,7 +7,8 @@ import { BuilderStep3 } from './pages/BuilderStep3';
 import { BuilderStep4 } from './pages/BuilderStep4';
 import { BuilderStep5 } from './pages/BuilderStep5';
 import { BuilderSummary } from './pages/BuilderSummary';
-import { CanvasEditor } from './pages/CanvasEditor';
+import { DeployPage } from './pages/DeployPage';
+import { CanvasEditor } from './pages/CanvasEditor/CanvasEditor';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/builder/step-5" element={<BuilderStep5 />} />
         <Route path="/builder/summary" element={<BuilderSummary />} />
         <Route path="/builder/canvas" element={<CanvasEditor />} />
+        <Route path="/deploy" element={<DeployPage />} />
       </Routes>
     </BrowserRouter>
   );
