@@ -1,0 +1,43 @@
+.trust-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-bottom: 1px solid var(--ink);
+}
+
+.trust-item {
+    padding: 24px;
+    border-right: 1px solid var(--ink);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.trust-item:last-child {
+    border-right: none;
+}
+
+.trust-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: var(--ink-light);
+}
+
+.trust-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+@media (max-width: 768px) {
+    .trust-strip {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .trust-item:nth-child(2) {
+        border-right: none;
+    }
+
+    .trust-item:nth-child(1),
+    .trust-item:nth-child(2) {
+        border-bottom: 1px solid var(--ink);
+    }
+}

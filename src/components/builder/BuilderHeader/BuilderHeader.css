@@ -1,0 +1,32 @@
+.builder-header {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    border-bottom: 1px solid var(--ink);
+    flex-shrink: 0;
+    background: var(--paper);
+}
+
+.builder-brand {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.exit-builder {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-light);
+    cursor: pointer;
+    background: none;
+    border: none;
+    text-decoration: none;
+}
+
+.exit-builder:hover {
+    color: var(--ink);
+}

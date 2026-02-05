@@ -1,0 +1,73 @@
+.protocol-card {
+    background: white;
+    border: 1px solid var(--ink);
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+}
+
+.protocol-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 12px 12px 0px rgba(0, 0, 0, 0.05);
+}
+
+.protocol-card.selected {
+    background: var(--ink);
+    color: var(--paper);
+    box-shadow: 12px 12px 0px rgba(0, 0, 0, 0.1);
+}
+
+.protocol-card.selected .card-category {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.protocol-card.selected .card-description {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.protocol-card.selected .card-stats {
+    border-top-color: rgba(255, 255, 255, 0.2);
+}
+
+.card-category {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-light);
+    display: block;
+}
+
+.card-name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 24px;
+    font-weight: 600;
+    margin: 8px 0 24px 0;
+}
+
+.card-description {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    color: var(--ink-light);
+    margin-bottom: 32px;
+    line-height: 1.6;
+}
+
+.card-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: auto;
+    padding-top: 24px;
+    border-top: 1px solid var(--guide);
+}
+
+.stat-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    font-weight: 700;
+}

@@ -1,0 +1,71 @@
+.cta-section {
+    padding: 100px 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-top: 2px solid var(--ink);
+    gap: 40px;
+}
+
+.cta-box {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.cta-title {
+    font-size: 3rem;
+    margin-bottom: 24px;
+}
+
+.cta-description {
+    margin-bottom: 32px;
+    font-size: 1.1rem;
+    max-width: 400px;
+}
+
+.cta-buttons {
+    display: flex;
+    gap: 16px;
+}
+
+.cta-visual {
+    border: 2px solid var(--ink);
+    display: grid;
+    place-items: center;
+    min-height: 300px;
+}
+
+.status-card {
+    background: var(--paper);
+    padding: 20px;
+    border: 1px solid var(--ink);
+    transform: rotate(-5deg);
+}
+
+.status-label {
+    font-size: 0.8rem;
+    border-bottom: 1px solid var(--ink);
+    margin-bottom: 10px;
+    padding-bottom: 4px;
+}
+
+.status-value {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+@media (max-width: 768px) {
+    .cta-section {
+        grid-template-columns: 1fr;
+        padding: 60px 0;
+    }
+
+    .cta-title {
+        font-size: 2rem;
+    }
+
+    .cta-buttons {
+        flex-direction: column;
+    }
+}

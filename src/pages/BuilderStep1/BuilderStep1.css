@@ -1,0 +1,57 @@
+.builder-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.workspace {
+    display: grid !important;
+    grid-template-columns: 1fr 340px !important;
+    flex: 1;
+    overflow: hidden;
+    width: 100%;
+}
+
+.workspace>.sidebar-col {
+    width: 340px;
+    max-width: 340px;
+    min-width: 340px;
+}
+
+.journey-col {
+    padding: 60px 80px;
+    overflow-y: auto;
+    background-image: radial-gradient(var(--guide) 1px, transparent 1px);
+    background-size: 32px 32px;
+}
+
+.hero-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 48px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 48px;
+    max-width: 600px;
+}
+
+.protocol-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+}
+
+@media (max-width: 1024px) {
+    .workspace {
+        grid-template-columns: 1fr;
+    }
+
+    .journey-col {
+        padding: 40px;
+    }
+
+    .hero-title {
+        font-size: 36px;
+    }
+}

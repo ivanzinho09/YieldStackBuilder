@@ -1,0 +1,563 @@
+/* Canvas Editor Layout */
+.canvas-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+    background-color: var(--paper);
+}
+
+/* Header */
+.canvas-header {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    border-bottom: 1px solid var(--ink);
+    flex-shrink: 0;
+    background: var(--paper);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.brand {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: -0.02em;
+}
+
+.version-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-light);
+    padding-left: 12px;
+    border-left: 1px solid var(--guide);
+}
+
+.tagline {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-light);
+}
+
+.header-actions {
+    display: flex;
+    gap: 16px;
+}
+
+.action-link {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-light);
+    cursor: pointer;
+    background: none;
+    border: none;
+    text-decoration: none;
+}
+
+.action-link:hover {
+    color: var(--ink);
+}
+
+/* Workspace */
+.workspace {
+    display: grid;
+    grid-template-columns: 280px 1fr 320px;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* Palette Column */
+.palette-col {
+    border-right: 1px solid var(--ink);
+    overflow-y: auto;
+    background: var(--paper);
+    display: flex;
+    flex-direction: column;
+}
+
+.search-bar {
+    padding: 16px;
+    border-bottom: 1px solid var(--ink);
+}
+
+.search-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--guide);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 8px 0;
+    color: var(--ink);
+    outline: none;
+}
+
+.search-input::placeholder {
+    color: var(--ink-light);
+}
+
+.category-group {
+    margin-bottom: 24px;
+}
+
+.category-header {
+    padding: 12px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--ink-light);
+}
+
+.brick-item {
+    padding: 12px 16px;
+    cursor: grab;
+    transition: all 0.2s;
+    border-bottom: 1px solid transparent;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.brick-item:hover {
+    background-color: #EAEAEA;
+}
+
+.brick-item:active {
+    cursor: grabbing;
+}
+
+.brick-name {
+    font-weight: 500;
+    font-size: 13px;
+}
+
+.brick-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    opacity: 0.6;
+}
+
+/* Canvas Column */
+.canvas-col {
+    background-color: var(--paper);
+    position: relative;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    background-image: radial-gradient(var(--guide) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+.canvas-label {
+    position: absolute;
+    top: 16px;
+    left: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-light);
+}
+
+.stack-container {
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    position: relative;
+}
+
+.stack-connector {
+    position: absolute;
+    left: 50%;
+    top: 40px;
+    bottom: 40px;
+    width: 1px;
+    background: var(--ink);
+    transform: translateX(-50%);
+    z-index: 0;
+    opacity: 0.2;
+}
+
+.empty-canvas {
+    text-align: center;
+    padding: 60px 40px;
+    border: 2px dashed var(--guide);
+    color: var(--ink-light);
+}
+
+/* Stack Brick */
+.stack-brick {
+    background: var(--paper);
+    border: 1px solid var(--ink);
+    padding: 16px;
+    position: relative;
+    z-index: 1;
+    transition: all 0.2s;
+    box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+}
+
+.stack-brick:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.1);
+}
+
+.stack-brick.active {
+    background: var(--ink);
+    color: var(--paper);
+}
+
+.stack-brick.active .brick-label {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.stack-brick.active .brick-tag {
+    border-color: rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.brick-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.brick-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-light);
+}
+
+.brick-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.brick-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    letter-spacing: -0.02em;
+}
+
+.brick-yield {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+}
+
+.brick-details {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.brick-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    padding: 2px 6px;
+    border: 1px solid var(--guide);
+    text-transform: uppercase;
+}
+
+.flow-arrow {
+    text-align: center;
+    color: var(--ink-light);
+    font-size: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+    background: var(--paper);
+    width: 24px;
+    margin: 0 auto;
+}
+
+/* Metrics Column */
+.metrics-col {
+    border-left: 1px solid var(--ink);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    background: var(--paper);
+}
+
+.metric-section {
+    padding: 32px 24px;
+    border-bottom: 1px solid var(--ink);
+}
+
+.metric-section:last-child {
+    border-bottom: none;
+}
+
+.metric-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-light);
+    display: block;
+}
+
+.hero-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.hero-value {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 64px;
+    font-weight: 500;
+    line-height: 1;
+    margin: 16px 0;
+    letter-spacing: -2px;
+    color: transparent;
+    -webkit-text-stroke: 2px var(--ink);
+}
+
+.rewards-note {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-light);
+    margin-top: -10px;
+}
+
+/* Risk Section */
+.risk-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.risk-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+}
+
+.histogram {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 60px;
+    margin-top: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--guide);
+}
+
+.bar {
+    flex: 1;
+    background: var(--ink);
+    min-width: 2px;
+    opacity: 0.8;
+    transition: height 0.3s;
+}
+
+.bar:nth-child(3n) {
+    opacity: 0.4;
+}
+
+.bar:nth-child(5n) {
+    opacity: 0.6;
+}
+
+.histogram-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+}
+
+/* Yield Breakdown */
+.breakdown-section {
+    flex: 1;
+}
+
+.breakdown-title {
+    margin-bottom: 12px;
+}
+
+.data-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--guide);
+    font-size: 12px;
+}
+
+.data-row:last-child {
+    border-bottom: none;
+}
+
+.mono-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
+}
+
+.mono-value.negative {
+    color: #dc2626;
+}
+
+.net-row {
+    font-weight: 700;
+    border-top: 1px solid var(--ink);
+    margin-top: 8px;
+    padding-top: 12px;
+}
+
+/* Float Calculator */
+.float-calc {
+    background: #EAEAEA;
+    padding: 24px;
+    margin-top: auto;
+}
+
+.calc-title {
+    margin-bottom: 16px;
+}
+
+.calc-input-group {
+    margin-bottom: 16px;
+}
+
+.calc-input {
+    width: 100%;
+    background: var(--paper);
+    border: 1px solid var(--ink);
+    padding: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+.calc-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--guide);
+}
+
+.calc-row.no-border {
+    border-bottom: none;
+}
+
+.calc-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink);
+}
+
+.btn-deploy {
+    width: 100%;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    padding: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    margin-top: 16px;
+    transition: opacity 0.2s;
+    font-weight: 600;
+}
+
+.btn-deploy:hover {
+    opacity: 0.9;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .workspace {
+        grid-template-columns: 1fr 300px;
+    }
+
+    .palette-col {
+        display: none;
+    }
+
+    .tagline {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .canvas-layout {
+        height: auto;
+        overflow: auto;
+    }
+
+    .workspace {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .palette-col {
+        display: none;
+    }
+
+    .canvas-col {
+        min-height: 60vh;
+        padding: 20px;
+        border-bottom: 1px solid var(--ink);
+    }
+
+    .metrics-col {
+        border-left: none;
+    }
+
+    .stack-container {
+        max-width: 100%;
+    }
+
+    .hero-value {
+        font-size: 48px;
+    }
+}
+
+/* Scrollbar */
+.palette-col::-webkit-scrollbar,
+.canvas-col::-webkit-scrollbar,
+.metrics-col::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.palette-col::-webkit-scrollbar-track,
+.canvas-col::-webkit-scrollbar-track,
+.metrics-col::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.palette-col::-webkit-scrollbar-thumb,
+.canvas-col::-webkit-scrollbar-thumb,
+.metrics-col::-webkit-scrollbar-thumb {
+    background: #CCC;
+}
+
+.palette-col::-webkit-scrollbar-thumb:hover,
+.canvas-col::-webkit-scrollbar-thumb:hover,
+.metrics-col::-webkit-scrollbar-thumb:hover {
+    background: #999;
+}

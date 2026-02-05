@@ -1,0 +1,101 @@
+.iso-stack-container {
+    position: relative;
+    height: 500px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    perspective: 1000px;
+}
+
+.iso-plane {
+    width: 300px;
+    height: 200px;
+    border: 2px solid var(--ink);
+    position: absolute;
+    background: var(--paper);
+    transform-style: preserve-3d;
+    transition: transform 0.4s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    box-shadow: 10px 10px 20px rgba(0, 0, 0, 0.05);
+}
+
+.iso-plane:hover {
+    background-image: repeating-linear-gradient(45deg,
+            var(--guide) 0,
+            var(--guide) 1px,
+            transparent 0,
+            transparent 4px);
+}
+
+.stack-guide-line {
+    position: absolute;
+    width: 2px;
+    height: 200px;
+    background: var(--ink);
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 0;
+    border-left: 1px dashed var(--ink);
+}
+
+.plane-label {
+    font-weight: 700;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 4px 8px;
+    font-size: 0.8rem;
+}
+
+.plane-value {
+    border: 1px solid var(--ink);
+    padding: 4px 8px;
+}
+
+.plane-dimension-line {
+    position: absolute;
+    right: -40px;
+    top: 0;
+    width: 30px;
+    border-bottom: 1px dashed var(--ink);
+}
+
+.plane-bottom-pattern {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background: repeating-linear-gradient(90deg, var(--ink), var(--ink) 1px, transparent 1px, transparent 10px);
+}
+
+.dimension-line {
+    position: absolute;
+    right: -20px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--ink);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dimension-line::before,
+.dimension-line::after {
+    content: '';
+    width: 10px;
+    height: 1px;
+    background: var(--ink);
+}
+
+.dim-text {
+    writing-mode: vertical-rl;
+    background: var(--paper);
+    padding: 8px 0;
+    font-size: 0.7rem;
+}

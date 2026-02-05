@@ -1,0 +1,76 @@
+.section-header {
+    padding: 60px 0 30px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-bottom: 1px dashed var(--ink);
+}
+
+.section-title {
+    font-size: 2rem;
+    text-transform: uppercase;
+}
+
+.section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    border-bottom: 1px solid var(--ink);
+}
+
+.feature-card {
+    padding: 40px;
+    border-right: 1px solid var(--ink);
+    border-bottom: 1px solid var(--ink);
+    position: relative;
+    transition: all 0.3s;
+}
+
+.feature-card:nth-child(even) {
+    border-right: none;
+}
+
+.feature-card:hover {
+    background-color: #f0f0eb;
+}
+
+.feature-card:hover::after {
+    content: '';
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    background-image: repeating-linear-gradient(45deg, var(--ink) 0, var(--ink) 1px, transparent 0, transparent 4px);
+    border: 1px solid var(--ink);
+}
+
+.feature-icon {
+    width: 60px;
+    height: 60px;
+    border: 1px solid var(--ink);
+    margin-bottom: 24px;
+    display: grid;
+    place-items: center;
+    font-size: 1.5rem;
+    background: white;
+    box-shadow: 4px 4px 0 var(--ink-light);
+}
+
+.feature-title {
+    margin-bottom: 12px;
+}
+
+@media (max-width: 768px) {
+    .features-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .feature-card {
+        border-right: none;
+    }
+}

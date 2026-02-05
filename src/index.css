@@ -1,0 +1,158 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Space+Grotesk:wght@300;400;600;700&display=swap');
+
+:root {
+  --paper: #f4f4f0;
+  --ink: #1a1a1a;
+  --ink-light: #555555;
+  --guide: #cccccc;
+  --hatch-size: 4px;
+  --border-width: 1px;
+  --bold-border: 2px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1.5;
+  font-size: 14px;
+  overflow-x: hidden;
+  background-image:
+    linear-gradient(var(--guide) 1px, transparent 1px),
+    linear-gradient(90deg, var(--guide) 1px, transparent 1px);
+  background-size: 100px 100px;
+  background-position: center top;
+}
+
+/* Utility Classes */
+.hatch-pattern {
+  background-image: repeating-linear-gradient(45deg,
+      var(--ink) 0,
+      var(--ink) 1px,
+      transparent 0,
+      transparent var(--hatch-size));
+}
+
+.hatch-pattern-light {
+  background-image: repeating-linear-gradient(45deg,
+      var(--guide) 0,
+      var(--guide) 1px,
+      transparent 0,
+      transparent var(--hatch-size));
+}
+
+.cross-hatch {
+  background-image:
+    repeating-linear-gradient(45deg, var(--ink) 0, var(--ink) 1px, transparent 0, transparent 4px),
+    repeating-linear-gradient(-45deg, var(--ink) 0, var(--ink) 1px, transparent 0, transparent 4px);
+}
+
+.text-display {
+  font-family: 'Space Grotesk', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+}
+
+/* Container */
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 40px;
+  border-left: 1px dashed var(--ink);
+  border-right: 1px dashed var(--ink);
+  min-height: 100vh;
+  position: relative;
+  background: var(--paper);
+}
+
+/* Button Styles */
+.btn-main {
+  background: transparent;
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  padding: 12px 24px;
+  font-family: 'JetBrains Mono', monospace;
+  text-transform: uppercase;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  box-shadow: 4px 4px 0 var(--ink);
+  text-decoration: none;
+  display: inline-block;
+  font-size: inherit;
+}
+
+.btn-main:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--ink);
+  background-image: repeating-linear-gradient(45deg, var(--ink) 0, var(--ink) 1px, transparent 0, transparent 8px);
+}
+
+.btn-main.dashed {
+  border-style: dashed;
+}
+
+.btn-small {
+  padding: 8px 16px;
+  font-size: 0.8rem;
+}
+
+.btn-clone {
+  background: none;
+  border: 1px solid var(--ink);
+  padding: 4px 8px;
+  cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.btn-clone:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* Corner Decorations */
+.corner-decoration {
+  position: fixed;
+  width: 20px;
+  height: 20px;
+}
+
+.corner-decoration.bottom-right {
+  bottom: 20px;
+  right: 20px;
+  border-right: 2px solid var(--ink);
+  border-bottom: 2px solid var(--ink);
+}
+
+.corner-decoration.top-left {
+  top: 20px;
+  left: 20px;
+  border-left: 2px solid var(--ink);
+  border-top: 2px solid var(--ink);
+}
+
+/* Guide Lines */
+.guide-line {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  z-index: -1;
+}
+
+.guide-line.left {
+  left: 40px;
+  border-left: 1px dashed var(--guide);
+}
+
+.guide-line.right {
+  right: 40px;
+  border-right: 1px dashed var(--guide);
+}

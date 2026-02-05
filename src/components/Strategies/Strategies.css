@@ -1,0 +1,98 @@
+.strategies-section {
+    padding: 80px 0;
+}
+
+.strategy-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 40px;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.strategy-table th {
+    text-align: left;
+    padding: 16px;
+    border-bottom: 2px solid var(--ink);
+    text-transform: uppercase;
+    font-size: 0.8rem;
+}
+
+.strategy-table td {
+    padding: 24px 16px;
+    border-bottom: 1px solid var(--ink);
+    vertical-align: middle;
+}
+
+.strategy-row:hover {
+    background-image: repeating-linear-gradient(-45deg,
+            rgba(0, 0, 0, 0.02) 0,
+            rgba(0, 0, 0, 0.02) 1px,
+            transparent 0,
+            transparent 8px);
+}
+
+.strategy-type {
+    color: var(--ink-light);
+    font-size: 0.7em;
+}
+
+.protocol-tags span {
+    display: inline-block;
+    border: 1px solid var(--ink);
+    padding: 2px 6px;
+    font-size: 0.7rem;
+    margin-right: 4px;
+    background: white;
+}
+
+.apy-value {
+    font-weight: 700;
+}
+
+.risk-meter-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: fit-content;
+}
+
+.risk-meter-container.hatch-pattern {
+    padding-right: 8px;
+}
+
+.risk-meter {
+    width: 100px;
+    height: 12px;
+    border: 1px solid var(--ink);
+    display: flex;
+    background: white;
+}
+
+.risk-fill {
+    height: 100%;
+    background: var(--ink);
+}
+
+.risk-score {
+    font-size: 0.8em;
+}
+
+.high-risk-score {
+    background: white;
+    padding: 0 2px;
+}
+
+@media (max-width: 768px) {
+    .strategy-table {
+        font-size: 0.75rem;
+    }
+
+    .strategy-table th,
+    .strategy-table td {
+        padding: 12px 8px;
+    }
+
+    .risk-meter {
+        width: 60px;
+    }
+}
