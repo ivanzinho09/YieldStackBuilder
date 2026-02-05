@@ -279,6 +279,82 @@
     color: #15803d;
 }
 
+/* Data Source Attribution */
+.data-source-attribution {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--guide);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.source-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-light);
+}
+
+.source-indicator .source-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #22c55e;
+}
+
+.source-indicator.loading .source-dot {
+    background: #f59e0b;
+    animation: pulse 1s ease-in-out infinite;
+}
+
+.source-info {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-light);
+    opacity: 0.7;
+}
+
+.metric-header {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Live Badge Inline */
+.live-badge-inline {
+    font-size: 8px;
+    font-weight: 700;
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.1);
+    padding: 1px 4px;
+    margin-left: 6px;
+    letter-spacing: 0.05em;
+    vertical-align: middle;
+}
+
+/* Negative APY */
+.row-value.negative {
+    color: #ef4444;
+}
+
+.big-metric.negative {
+    color: #ef4444;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
 /* Footer */
 .footer-nav {
     margin-top: auto;

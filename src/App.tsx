@@ -9,22 +9,25 @@ import { BuilderStep5 } from './pages/BuilderStep5';
 import { BuilderSummary } from './pages/BuilderSummary';
 import { DeployPage } from './pages/DeployPage';
 import { CanvasEditor } from './pages/CanvasEditor/CanvasEditor';
+import { ApyDataProvider } from './components/providers/ApyDataProvider';
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/builder/step-1" element={<BuilderStep1 />} />
-        <Route path="/builder/step-2" element={<BuilderStep2 />} />
-        <Route path="/builder/step-3" element={<BuilderStep3 />} />
-        <Route path="/builder/step-4" element={<BuilderStep4 />} />
-        <Route path="/builder/step-5" element={<BuilderStep5 />} />
-        <Route path="/builder/summary" element={<BuilderSummary />} />
-        <Route path="/builder/canvas" element={<CanvasEditor />} />
-        <Route path="/deploy" element={<DeployPage />} />
-      </Routes>
-    </BrowserRouter>
+    <ApyDataProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/builder/step-1" element={<BuilderStep1 />} />
+          <Route path="/builder/step-2" element={<BuilderStep2 />} />
+          <Route path="/builder/step-3" element={<BuilderStep3 />} />
+          <Route path="/builder/step-4" element={<BuilderStep4 />} />
+          <Route path="/builder/step-5" element={<BuilderStep5 />} />
+          <Route path="/builder/summary" element={<BuilderSummary />} />
+          <Route path="/builder/canvas" element={<CanvasEditor />} />
+          <Route path="/deploy" element={<DeployPage />} />
+        </Routes>
+      </BrowserRouter>
+    </ApyDataProvider>
   );
 }
 

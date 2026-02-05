@@ -1,7 +1,9 @@
 import { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useBuilderStore } from '../../stores/builderStore';
+import { useApyStore, getEffectiveApy } from '../../stores/apyStore';
 import { getRiskLevel } from '../../data/protocols';
+import { ApyInfoIcon } from '../../components/ui/ApyTooltip/ApyTooltip';
 import './BuilderSummary.css';
 
 function getRiskBadgeClass(risk: number): string {
@@ -49,6 +51,7 @@ function getProtocolAction(id: string): string {
 export function BuilderSummary() {
     const navigate = useNavigate();
     const { stack, getTotalApy, getTotalRisk, resetStack } = useBuilderStore();
+    const { apyData, isLoading, lastUpdated, getApyForProtocol } = useApyStore();
     const capitalInput = 100000;
 
     // Redirect if no base selected
@@ -58,7 +61,21 @@ export function BuilderSummary() {
         }
     }, [stack.base, navigate]);
 
-    const totalApy = getTotalApy();
+    // Calculate total APY using live data when available
+    const calculateLiveTotalApy = () => {
+        let total = 0;
+        const protocols = [stack.base, stack.engine, stack.income, stack.credit, stack.optimize];
+        protocols.forEach(protocol => {
+            if (protocol) {
+                const liveData = getApyForProtocol(protocol.id);
+                const effectiveApy = getEffectiveApy(protocol.id, liveData);
+                total += effectiveApy.current;
+            }
+        });
+        return total;
+    };
+
+    const totalApy = Object.keys(apyData).length > 0 ? calculateLiveTotalApy() : getTotalApy();
     const totalRisk = getTotalRisk();
     const netGain = (capitalInput * totalApy) / 100;
 
@@ -69,6 +86,13 @@ export function BuilderSummary() {
         { step: 4, label: 'CREDIT', protocol: stack.credit },
         { step: 5, label: 'OPTIMIZE', protocol: stack.optimize },
     ];
+
+    // Get live APY for a protocol
+    const getLiveApy = (protocolId: string | undefined) => {
+        if (!protocolId) return null;
+        const liveData = getApyForProtocol(protocolId);
+        return liveData ? getEffectiveApy(protocolId, liveData) : null;
+    };
 
     const handleStartOver = () => {
         resetStack();
@@ -100,24 +124,28 @@ export function BuilderSummary() {
                     </div>
 
                     <div className="summary-table">
-                        {layers.map((layer) => (
-                            <div key={layer.step} className="summary-row">
-                                <span className="row-step">{layer.step.toString().padStart(2, '0')} {layer.label}</span>
-                                <div className="row-strategy">
-                                    <span className="strategy-name">{layer.protocol?.name || 'Not selected'}</span>
-                                    <span className="strategy-action">/ {layer.protocol ? getProtocolAction(layer.protocol.id) : ''}</span>
+                        {layers.map((layer) => {
+                            const liveApy = getLiveApy(layer.protocol?.id);
+                            const displayApy = liveApy ? liveApy.current : (layer.protocol?.baseApy ?? 0);
+                            const isLive = liveApy?.isLive ?? false;
+
+                            return (
+                                <div key={layer.step} className="summary-row">
+                                    <span className="row-step">{layer.step.toString().padStart(2, '0')} {layer.label}</span>
+                                    <div className="row-strategy">
+                                        <span className="strategy-name">{layer.protocol?.name || 'Not selected'}</span>
+                                        <span className="strategy-action">/ {layer.protocol ? getProtocolAction(layer.protocol.id) : ''}</span>
+                                    </div>
+                                    <div className="row-value">
+                                        {layer.protocol?.riskScore.toFixed(1) || '0.0'}/10
+                                    </div>
+                                    <div className={`row-value ${displayApy < 0 ? 'negative' : ''}`}>
+                                        {displayApy >= 0 ? '' : ''}{displayApy.toFixed(2)}%
+                                        {isLive && <span className="live-badge-inline">LIVE</span>}
+                                    </div>
                                 </div>
-                                <div className="row-value">
-                                    {layer.protocol?.riskScore.toFixed(1) || '0.0'}/10
-                                </div>
-                                <div className="row-value">
-                                    {layer.protocol?.baseApy !== undefined
-                                        ? `${layer.protocol.baseApy >= 0 ? '' : ''}${layer.protocol.baseApy.toFixed(2)}%`
-                                        : '0.00%'
-                                    }
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
 
                     <div className="info-grid">
@@ -156,11 +184,27 @@ export function BuilderSummary() {
                     </div>
 
                     <div className="metric-group">
-                        <span className="card-label">ESTIMATED ANNUAL YIELD</span>
-                        <div className="big-metric">{totalApy.toFixed(2)}%</div>
+                        <div className="metric-header">
+                            <span className="card-label">ESTIMATED ANNUAL YIELD</span>
+                            <ApyInfoIcon tooltip="APY calculated from real-time DeFiLlama data. Individual protocol rates are summed to get total projected yield." />
+                        </div>
+                        <div className={`big-metric ${totalApy < 0 ? 'negative' : ''}`}>{totalApy.toFixed(2)}%</div>
                         <div className="gain-row">
                             <span className="gain-label">NET GAIN / ${(capitalInput / 1000).toFixed(0)}K</span>
                             <span className="gain-value">${netGain.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        </div>
+
+                        {/* Data Source Attribution */}
+                        <div className="data-source-attribution">
+                            <div className={`source-indicator ${isLoading ? 'loading' : 'live'}`}>
+                                <span className="source-dot"></span>
+                                <span>{isLoading ? 'Updating...' : 'Live APY Data'}</span>
+                            </div>
+                            {lastUpdated && (
+                                <span className="source-info">
+                                    via DeFiLlama • {lastUpdated.toLocaleTimeString()}
+                                </span>
+                            )}
                         </div>
                     </div>
 

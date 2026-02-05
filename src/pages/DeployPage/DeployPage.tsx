@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useBuilderStore } from '../../stores/builderStore';
+import { useApyStore, getEffectiveApy } from '../../stores/apyStore';
 import './DeployPage.css';
 
 export function DeployPage() {
 
     const { stack, getTotalApy, getTotalRisk } = useBuilderStore();
+    const { apyData, isLoading, lastUpdated, getApyForProtocol } = useApyStore();
     const cardRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const [cardTransform, setCardTransform] = useState('perspective(1000px) rotateX(5deg) rotateY(-12deg)');
@@ -25,8 +27,23 @@ export function DeployPage() {
         }
     }, [stack.engine]); // Run once mostly, or when engine loads
 
-    const totalApy = getTotalApy();
+    // Calculate total APY using live data when available
+    const calculateLiveTotalApy = () => {
+        let total = 0;
+        const protocols = [stack.base, stack.engine, stack.income, stack.credit, stack.optimize];
+        protocols.forEach(protocol => {
+            if (protocol) {
+                const liveData = getApyForProtocol(protocol.id);
+                const effectiveApy = getEffectiveApy(protocol.id, liveData);
+                total += effectiveApy.current;
+            }
+        });
+        return total;
+    };
+
+    const totalApy = Object.keys(apyData).length > 0 ? calculateLiveTotalApy() : getTotalApy();
     const totalRisk = getTotalRisk();
+    const hasLiveData = Object.keys(apyData).length > 0;
 
     const handleMouseMove = (e: React.MouseEvent) => {
         if (!containerRef.current || !cardRef.current) return;
@@ -270,13 +287,21 @@ export function DeployPage() {
 
                                 {/* Stats */}
                                 <div style={{ marginTop: '32px', position: 'relative', zIndex: 10 }}>
-                                    <div className="label-mono text-dim" style={{ fontSize: '9px', marginBottom: '4px' }}>NET ANNUALIZED YIELD</div>
-                                    <div className="font-display" style={{ fontSize: '64px', lineHeight: 0.85, letterSpacing: '-0.02em', color: 'black' }}>
+                                    <div className="label-mono text-dim" style={{ fontSize: '9px', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        NET ANNUALIZED YIELD
+                                        {hasLiveData && (
+                                            <span style={{ fontSize: '7px', background: '#22c55e', color: 'white', padding: '1px 4px', fontWeight: 700 }}>LIVE</span>
+                                        )}
+                                    </div>
+                                    <div className="font-display" style={{ fontSize: '64px', lineHeight: 0.85, letterSpacing: '-0.02em', color: totalApy < 0 ? '#ef4444' : 'black' }}>
                                         {totalApy?.toFixed(1) || '0.0'}%
                                     </div>
-                                    <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                                    <div style={{ display: 'flex', gap: '8px', marginTop: '8px', flexWrap: 'wrap' }}>
                                         <span style={{ padding: '2px 6px', border: '1px solid black', fontSize: '9px', textTransform: 'uppercase' }} className="font-mono">Delta Neutral</span>
                                         <span style={{ padding: '2px 6px', border: '1px solid black', fontSize: '9px', textTransform: 'uppercase' }} className="font-mono">Loopable</span>
+                                        {hasLiveData && (
+                                            <span style={{ padding: '2px 6px', border: '1px solid #22c55e', fontSize: '9px', textTransform: 'uppercase', color: '#22c55e' }} className="font-mono">DeFiLlama Data</span>
+                                        )}
                                     </div>
                                 </div>
 
@@ -305,15 +330,20 @@ export function DeployPage() {
                         </div>
                     </div>
 
-                    <div style={{ position: 'absolute', bottom: '24px', display: 'flex', gap: '16px' }}>
+                    <div style={{ position: 'absolute', bottom: '24px', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e' }}></div>
-                            <span className="label-mono" style={{ fontSize: '9px' }}>LIVE DATA</span>
+                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: hasLiveData ? '#22c55e' : '#d1d5db', animation: isLoading ? 'pulse 1s ease-in-out infinite' : 'none' }}></div>
+                            <span className="label-mono" style={{ fontSize: '9px' }}>{isLoading ? 'UPDATING...' : hasLiveData ? 'LIVE DATA' : 'CACHED DATA'}</span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#d1d5db' }}></div>
                             <span className="label-mono" style={{ fontSize: '9px' }}>ETHEREUM</span>
                         </div>
+                        {lastUpdated && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span className="label-mono text-dim" style={{ fontSize: '9px' }}>via DeFiLlama</span>
+                            </div>
+                        )}
                     </div>
                 </div>
 

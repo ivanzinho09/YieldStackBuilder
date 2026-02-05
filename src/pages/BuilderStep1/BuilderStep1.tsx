@@ -28,6 +28,7 @@ export function BuilderStep1() {
             name: selectedProtocol?.name,
             apy: selectedProtocol?.baseApy,
             riskLevel: selectedProtocol ? getRiskLevel(selectedProtocol.riskScore) : undefined,
+            protocolId: selectedProtocol?.id,
         },
         {
             step: 2,

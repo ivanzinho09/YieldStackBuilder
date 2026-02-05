@@ -35,6 +35,7 @@ export function BuilderStep5() {
             name: stack.base?.name,
             apy: stack.base?.baseApy,
             riskLevel: stack.base ? getRiskLevel(stack.base.riskScore) : undefined,
+            protocolId: stack.base?.id,
         },
         {
             step: 2,
@@ -42,6 +43,7 @@ export function BuilderStep5() {
             name: stack.engine?.name,
             apy: stack.engine?.baseApy,
             riskLevel: stack.engine ? getRiskLevel(stack.engine.riskScore) : undefined,
+            protocolId: stack.engine?.id,
         },
         {
             step: 3,
@@ -49,6 +51,7 @@ export function BuilderStep5() {
             name: stack.income?.name,
             apy: stack.income?.baseApy,
             riskLevel: stack.income ? getRiskLevel(stack.income.riskScore) : undefined,
+            protocolId: stack.income?.id,
         },
         {
             step: 4,
@@ -56,6 +59,7 @@ export function BuilderStep5() {
             name: stack.credit?.name,
             apy: stack.credit?.baseApy,
             riskLevel: stack.credit ? getRiskLevel(stack.credit.riskScore) : undefined,
+            protocolId: stack.credit?.id,
         },
         {
             step: 5,
@@ -63,6 +67,7 @@ export function BuilderStep5() {
             name: selectedProtocol?.name,
             apy: selectedProtocol?.baseApy,
             riskLevel: selectedProtocol ? getRiskLevel(selectedProtocol.riskScore) : undefined,
+            protocolId: selectedProtocol?.id,
         },
     ];
 
