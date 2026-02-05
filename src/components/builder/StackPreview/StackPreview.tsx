@@ -15,13 +15,34 @@ interface StackPreviewProps {
     nextButtonLabel: string;
     onNext: () => void;
     canProceed: boolean;
+    currentStep: number;
+    onNavigateToStep?: (step: number) => void;
+    onBack?: () => void;
 }
 
-function StackSlot({ slot }: { slot: StackSlotData }) {
+interface StackSlotProps {
+    slot: StackSlotData;
+    currentStep: number;
+    onNavigate?: (step: number) => void;
+}
+
+function StackSlot({ slot, currentStep, onNavigate }: StackSlotProps) {
     const isFilled = slot.name !== undefined;
+    const isClickable = isFilled && slot.step < currentStep && onNavigate;
+
+    const handleClick = () => {
+        if (isClickable) {
+            onNavigate(slot.step);
+        }
+    };
 
     return (
-        <div className={`stack-slot ${isFilled ? 'filled' : ''}`}>
+        <div
+            className={`stack-slot ${isFilled ? 'filled' : ''} ${isClickable ? 'clickable' : ''} ${slot.step === currentStep ? 'current' : ''}`}
+            onClick={handleClick}
+            role={isClickable ? 'button' : undefined}
+            tabIndex={isClickable ? 0 : undefined}
+        >
             <span className="slot-label">{slot.label}</span>
             {isFilled ? (
                 <>
@@ -29,6 +50,7 @@ function StackSlot({ slot }: { slot: StackSlotData }) {
                     <div className="slot-meta">
                         {slot.apy?.toFixed(0)}% APY | {slot.riskLevel} RISK
                     </div>
+                    {isClickable && <span className="slot-edit-hint">Click to edit</span>}
                 </>
             ) : slot.waiting ? (
                 <span className="slot-waiting">Waiting for selection...</span>
@@ -42,7 +64,10 @@ export function StackPreview({
     totalApy,
     nextButtonLabel,
     onNext,
-    canProceed
+    canProceed,
+    currentStep,
+    onNavigateToStep,
+    onBack
 }: StackPreviewProps) {
     return (
         <aside className="sidebar-col">
@@ -52,7 +77,12 @@ export function StackPreview({
 
             <div className="stack-preview-container">
                 {slots.map((slot) => (
-                    <StackSlot key={slot.step} slot={slot} />
+                    <StackSlot
+                        key={slot.step}
+                        slot={slot}
+                        currentStep={currentStep}
+                        onNavigate={onNavigateToStep}
+                    />
                 ))}
             </div>
 
@@ -61,13 +91,21 @@ export function StackPreview({
                     <span className="apy-label">TOTAL PROJECTED APY</span>
                     <span className="apy-value">{totalApy.toFixed(2)}%</span>
                 </div>
-                <button
-                    className="btn-primary"
-                    onClick={onNext}
-                    disabled={!canProceed}
-                >
-                    {nextButtonLabel}
-                </button>
+
+                <div className="nav-buttons">
+                    {onBack && currentStep > 1 && (
+                        <button className="btn-back" onClick={onBack}>
+                            ← BACK
+                        </button>
+                    )}
+                    <button
+                        className="btn-primary"
+                        onClick={onNext}
+                        disabled={!canProceed}
+                    >
+                        {nextButtonLabel}
+                    </button>
+                </div>
             </div>
         </aside>
     );

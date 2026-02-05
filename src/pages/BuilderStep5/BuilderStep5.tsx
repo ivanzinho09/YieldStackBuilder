@@ -106,6 +106,9 @@ export function BuilderStep5() {
                     nextButtonLabel="VIEW YOUR COMPLETE STACK"
                     onNext={handleNext}
                     canProceed={!!selectedProtocol}
+                    currentStep={5}
+                    onNavigateToStep={(step) => navigate(`/builder/step-${step}`)}
+                    onBack={() => navigate('/builder/step-4')}
                 />
             </div>
         </div>

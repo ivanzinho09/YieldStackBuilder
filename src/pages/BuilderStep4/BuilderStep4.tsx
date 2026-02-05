@@ -104,6 +104,9 @@ export function BuilderStep4() {
                     nextButtonLabel="NEXT: AUTO-OPTIMIZATION"
                     onNext={handleNext}
                     canProceed={!!selectedProtocol}
+                    currentStep={4}
+                    onNavigateToStep={(step) => navigate(`/builder/step-${step}`)}
+                    onBack={() => navigate('/builder/step-3')}
                 />
             </div>
         </div>

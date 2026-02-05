@@ -98,6 +98,9 @@ export function BuilderStep2() {
                     nextButtonLabel="NEXT: LOCK IN FIXED INCOME"
                     onNext={handleNext}
                     canProceed={!!selectedProtocol}
+                    currentStep={2}
+                    onNavigateToStep={(step) => navigate(`/builder/step-${step}`)}
+                    onBack={() => navigate('/builder/step-1')}
                 />
             </div>
         </div>

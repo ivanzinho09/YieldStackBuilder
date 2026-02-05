@@ -101,6 +101,9 @@ export function BuilderStep3() {
                     nextButtonLabel="NEXT: ADD LEVERAGE"
                     onNext={handleNext}
                     canProceed={!!selectedProtocol}
+                    currentStep={3}
+                    onNavigateToStep={(step) => navigate(`/builder/step-${step}`)}
+                    onBack={() => navigate('/builder/step-2')}
                 />
             </div>
         </div>

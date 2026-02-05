@@ -88,6 +88,8 @@ export function BuilderStep1() {
                     nextButtonLabel="NEXT: SELECT YIELD ENGINE"
                     onNext={handleNext}
                     canProceed={!!selectedProtocol}
+                    currentStep={1}
+                    onNavigateToStep={(step) => navigate(`/builder/step-${step}`)}
                 />
             </div>
         </div>
