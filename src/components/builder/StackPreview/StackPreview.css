@@ -265,3 +265,36 @@
     opacity: 0.3;
     cursor: not-allowed;
 }
+
+@media (max-width: 900px) {
+    .sidebar-col {
+        border-left: none;
+        border-top: 1px solid var(--ink);
+        padding: 24px 20px;
+    }
+
+    .stack-preview-container {
+        gap: 10px;
+    }
+
+    .footer-nav {
+        padding-top: 24px;
+    }
+}
+
+@media (max-width: 600px) {
+    .total-apy-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .nav-buttons {
+        flex-direction: column;
+    }
+
+    .btn-back,
+    .btn-primary {
+        width: 100%;
+    }
+}
