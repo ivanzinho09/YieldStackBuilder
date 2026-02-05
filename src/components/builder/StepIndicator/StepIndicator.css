@@ -22,3 +22,16 @@
     letter-spacing: 0.05em;
     color: var(--ink-light);
 }
+
+@media (max-width: 600px) {
+    .step-indicator {
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: flex-start;
+    }
+
+    .step-label {
+        width: 100%;
+    }
+}
