@@ -18,6 +18,7 @@ interface StackPreviewProps {
     currentStep: number;
     onNavigateToStep?: (step: number) => void;
     onBack?: () => void;
+    onFinish?: () => void;
 }
 
 interface StackSlotProps {
@@ -67,7 +68,8 @@ export function StackPreview({
     canProceed,
     currentStep,
     onNavigateToStep,
-    onBack
+    onBack,
+    onFinish
 }: StackPreviewProps) {
     return (
         <aside className="sidebar-col">
@@ -105,8 +107,30 @@ export function StackPreview({
                     >
                         {nextButtonLabel}
                     </button>
+
+                    {/* Early Exit Option */}
+                    {canProceed && currentStep < 5 && onFinish && (
+                        <button
+                            className="btn-secondary"
+                            onClick={onFinish}
+                            style={{
+                                background: 'transparent',
+                                border: '1px solid #e5e7eb',
+                                color: '#6b7280',
+                                marginTop: '8px',
+                                fontSize: '10px',
+                                padding: '8px',
+                                width: '100%',
+                                cursor: 'pointer',
+                                fontFamily: 'var(--font-mono)'
+                            }}
+                        >
+                            FINISH & REVIEW STRATEGY
+                        </button>
+                    )}
                 </div>
             </div>
         </aside>
     );
 }
+

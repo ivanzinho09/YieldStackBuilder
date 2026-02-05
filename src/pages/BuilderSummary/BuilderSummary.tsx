@@ -51,12 +51,12 @@ export function BuilderSummary() {
     const { stack, getTotalApy, getTotalRisk, resetStack } = useBuilderStore();
     const capitalInput = 100000;
 
-    // Redirect if stack not complete
+    // Redirect if no base selected
     useEffect(() => {
-        if (!stack.optimize) {
+        if (!stack.base) {
             navigate('/builder/step-1');
         }
-    }, [stack.optimize, navigate]);
+    }, [stack.base, navigate]);
 
     const totalApy = getTotalApy();
     const totalRisk = getTotalRisk();

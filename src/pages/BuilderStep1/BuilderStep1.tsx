@@ -90,6 +90,7 @@ export function BuilderStep1() {
                     canProceed={!!selectedProtocol}
                     currentStep={1}
                     onNavigateToStep={(step) => navigate(`/builder/step-${step}`)}
+                    onFinish={() => navigate('/builder/summary')}
                 />
             </div>
         </div>

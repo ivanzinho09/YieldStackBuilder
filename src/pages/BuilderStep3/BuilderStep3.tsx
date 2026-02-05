@@ -104,6 +104,7 @@ export function BuilderStep3() {
                     currentStep={3}
                     onNavigateToStep={(step) => navigate(`/builder/step-${step}`)}
                     onBack={() => navigate('/builder/step-2')}
+                    onFinish={() => navigate('/builder/summary')}
                 />
             </div>
         </div>

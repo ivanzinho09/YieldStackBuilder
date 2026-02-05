@@ -9,9 +9,24 @@ export function DeployPage() {
     const cardRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const [cardTransform, setCardTransform] = useState('perspective(1000px) rotateX(5deg) rotateY(-12deg)');
+    const [strategyId, setStrategyId] = useState('');
+    const [strategyName, setStrategyName] = useState('CUSTOM YIELD');
 
-    const totalApy = getTotalApy() || 35.2; // Fallback to design value if 0
-    const totalRisk = getTotalRisk() || 7.2;
+    // Generate Strategy ID & Name on mount
+    useEffect(() => {
+        const id = Math.random().toString(36).substr(2, 4).toUpperCase() + '-' +
+            Math.random().toString(36).substr(2, 4).toUpperCase();
+        setStrategyId(id);
+
+        // Auto-name strategy if generic
+        if (stack.engine && strategyName === 'CUSTOM YIELD') {
+            const engineName = stack.engine.name.split(' ')[0].toUpperCase();
+            setStrategyName(`${engineName} STRATEGY`);
+        }
+    }, [stack.engine]); // Run once mostly, or when engine loads
+
+    const totalApy = getTotalApy();
+    const totalRisk = getTotalRisk();
 
     const handleMouseMove = (e: React.MouseEvent) => {
         if (!containerRef.current || !cardRef.current) return;
@@ -33,11 +48,38 @@ export function DeployPage() {
         setCardTransform('perspective(1000px) rotateX(5deg) rotateY(-12deg)');
     };
 
-    const layers = [
-        { id: '01', name: stack.engine?.name || 'ETHENA sUSDe', type: 'YIELD ENGINE', inverse: false },
-        { id: '02', name: stack.income?.name || 'PENDLE PT', type: 'FIXED INCOME', inverse: true },
-        { id: '03', name: stack.credit?.name || 'AAVE V3', type: 'CREDIT MKT', inverse: false },
+    // Dynamic Layers
+    const allLayers = [
+        { role: 'Settlement', proto: stack.base },
+        { role: 'Yield Engine', proto: stack.engine },
+        { role: 'Fixed Income', proto: stack.income },
+        { role: 'Credit Mkt', proto: stack.credit },
+        { role: 'Optimizer', proto: stack.optimize }
     ];
+
+    // Filter and map to view model
+    const activeLayers = allLayers
+        .filter(l => l.proto !== null)
+        .map((l, i) => ({
+            id: `0${i + 1}`,
+            name: l.proto!.name,
+            type: l.role.toUpperCase(),
+            inverse: i % 2 !== 0 // Alternate styles
+        }));
+
+    // Dynamic Fees
+    const fees = activeLayers.map(l => ({
+        label: `${l.type} DEPOSIT`,
+        // Mock dynamic cost based on name length/random for "simulated" feel
+        cost: (2.0 + (l.name.length * 0.1) + (Math.random())).toFixed(2)
+    }));
+
+    // Add base fees
+    if (activeLayers.length > 0) {
+        fees.unshift({ label: 'APPROVE TOKEN', cost: '2.40' });
+    }
+
+    const totalGas = fees.reduce((acc, curr) => acc + parseFloat(curr.cost), 0).toFixed(2);
 
     return (
         <div className="deploy-layout">
@@ -100,7 +142,7 @@ export function DeployPage() {
                         <div className="est-card">
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
                                 <span className="font-body" style={{ fontSize: '12px', fontWeight: 500 }}>Est. Gas Cost</span>
-                                <span className="font-mono" style={{ fontSize: '12px', fontWeight: 700 }}>$14.82</span>
+                                <span className="font-mono" style={{ fontSize: '12px', fontWeight: 700 }}>${totalGas}</span>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '16px' }}>
                                 <span className="font-body text-dim" style={{ fontSize: '12px' }}>Network</span>
@@ -110,22 +152,12 @@ export function DeployPage() {
                             <div style={{ height: '1px', background: '#f3f4f6', margin: '12px 0' }}></div>
 
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }} className="font-mono text-dim">
-                                    <span>APPROVE USDC</span>
-                                    <span>$2.40</span>
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }} className="font-mono text-dim">
-                                    <span>DEPOSIT ETHENA</span>
-                                    <span>$5.12</span>
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }} className="font-mono text-dim">
-                                    <span>SWAP PENDLE</span>
-                                    <span>$4.10</span>
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }} className="font-mono text-dim">
-                                    <span>SUPPLY AAVE</span>
-                                    <span>$3.20</span>
-                                </div>
+                                {fees.map((fee, idx) => (
+                                    <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }} className="font-mono text-dim">
+                                        <span>{fee.label}</span>
+                                        <span>${fee.cost}</span>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </div>
@@ -164,6 +196,7 @@ export function DeployPage() {
                     ref={containerRef}
                     onMouseMove={handleMouseMove}
                     onMouseLeave={handleMouseLeave}
+                    tabIndex={0}
                 >
                     <div className="label-mono text-dim" style={{ position: 'absolute', top: '24px', left: '24px' }}>PREVIEW GENERATED</div>
 
@@ -180,51 +213,66 @@ export function DeployPage() {
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid black', paddingBottom: '16px', marginBottom: '24px', position: 'relative', zIndex: 10 }}>
                                     <div>
                                         <div className="label-mono text-dim" style={{ fontSize: '9px', marginBottom: '4px' }}>STRATEGY NAME</div>
-                                        <div className="font-display" style={{ fontWeight: 700, fontSize: '20px', lineHeight: 1 }}>CUSTOM YIELD</div>
+                                        <div
+                                            className="font-display"
+                                            style={{ fontWeight: 700, fontSize: '20px', lineHeight: 1, cursor: 'text', outline: 'none' }}
+                                            contentEditable
+                                            suppressContentEditableWarning
+                                            onBlur={(e) => setStrategyName(e.currentTarget.textContent || 'CUSTOM YIELD')}
+                                        >
+                                            {strategyName}
+                                        </div>
                                     </div>
                                     <div style={{ background: 'black', color: 'white', padding: '4px 8px' }}>
-                                        <span className="label-mono" style={{ fontSize: '10px' }}>RISK: {totalRisk?.toFixed(1) || '7.2'}</span>
+                                        <span className="label-mono" style={{ fontSize: '10px' }}>RISK: {totalRisk?.toFixed(1) || '0.0'}</span>
                                     </div>
                                 </div>
 
                                 {/* Stack Items */}
                                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative', zIndex: 10 }}>
-                                    {layers.map((layer, idx) => (
-                                        <div key={idx}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }} className="group">
-                                                <div
-                                                    style={{
-                                                        width: '32px', height: '32px', border: '1px solid black',
-                                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                        background: layer.inverse ? 'black' : 'white',
-                                                        color: layer.inverse ? 'white' : 'black',
-                                                        fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '12px'
-                                                    }}
-                                                >
-                                                    {layer.id}
-                                                </div>
-                                                <div style={{ flex: 1, borderBottom: '1px dotted black', paddingBottom: '4px', marginBottom: '4px' }}>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                                                        <span className="font-mono" style={{ fontSize: '12px', fontWeight: 700 }}>{layer.name}</span>
-                                                        <span className="font-mono text-dim" style={{ fontSize: '10px' }}>{layer.type}</span>
+                                    {activeLayers.length === 0 ? (
+                                        <div style={{ textAlign: 'center', opacity: 0.4, padding: '20px' }}>
+                                            <div className="font-mono" style={{ fontSize: '10px', marginBottom: '4px' }}>EMPTY STACK</div>
+                                            <div className="font-mono text-dim" style={{ fontSize: '9px' }}>Go to Design to add protocols</div>
+                                        </div>
+                                    ) : (
+                                        activeLayers.map((layer, idx) => (
+                                            <div key={idx}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }} className="group">
+                                                    <div
+                                                        style={{
+                                                            width: '32px', height: '32px', border: '1px solid black',
+                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                            background: layer.inverse ? 'black' : 'white',
+                                                            color: layer.inverse ? 'white' : 'black',
+                                                            fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '12px'
+                                                        }}
+                                                    >
+                                                        {layer.id}
+                                                    </div>
+                                                    <div style={{ flex: 1, borderBottom: '1px dotted black', paddingBottom: '4px', marginBottom: '4px' }}>
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                                                            <span className="font-mono" style={{ fontSize: '12px', fontWeight: 700 }}>{layer.name}</span>
+                                                            <span className="font-mono text-dim" style={{ fontSize: '10px' }}>{layer.type}</span>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
 
-                                            {idx < layers.length - 1 && (
-                                                <div style={{ paddingLeft: '16px', paddingTop: '4px', paddingBottom: '4px' }}>
-                                                    <div style={{ width: '1px', height: '16px', background: 'black', opacity: 0.2 }}></div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))}
+                                                {idx < activeLayers.length - 1 && (
+                                                    <div style={{ paddingLeft: '16px', paddingTop: '4px', paddingBottom: '4px' }}>
+                                                        <div style={{ width: '1px', height: '16px', background: 'black', opacity: 0.2 }}></div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))
+                                    )}
                                 </div>
 
                                 {/* Stats */}
                                 <div style={{ marginTop: '32px', position: 'relative', zIndex: 10 }}>
                                     <div className="label-mono text-dim" style={{ fontSize: '9px', marginBottom: '4px' }}>NET ANNUALIZED YIELD</div>
                                     <div className="font-display" style={{ fontSize: '64px', lineHeight: 0.85, letterSpacing: '-0.02em', color: 'black' }}>
-                                        {totalApy?.toFixed(1) || '35.2'}%
+                                        {totalApy?.toFixed(1) || '0.0'}%
                                     </div>
                                     <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
                                         <span style={{ padding: '2px 6px', border: '1px solid black', fontSize: '9px', textTransform: 'uppercase' }} className="font-mono">Delta Neutral</span>
@@ -247,7 +295,7 @@ export function DeployPage() {
                                             <div style={{ width: '1px', marginLeft: '2px' }} className="bc-bar"></div>
                                             <div style={{ width: '4px', marginLeft: '4px' }} className="bc-bar"></div>
                                         </div>
-                                        <div className="font-mono" style={{ fontSize: '9px', letterSpacing: '0.1em', marginTop: '4px' }}>ID: 8472-AX-SYS</div>
+                                        <div className="font-mono" style={{ fontSize: '9px', letterSpacing: '0.1em', marginTop: '4px' }}>ID: {strategyId}</div>
                                     </div>
                                     <div className="card-hologram"></div>
                                 </div>
@@ -277,7 +325,7 @@ export function DeployPage() {
                         <div style={{ background: 'white', padding: '12px', border: '1px solid #e5e7eb', marginBottom: '16px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
                             <div style={{ aspectRatio: '1.6/1', background: '#f3f4f6', marginBottom: '8px', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                                 <div className="font-display" style={{ fontSize: '40px', fontWeight: 700, color: '#d1d5db', userSelect: 'none' }}>
-                                    {totalApy?.toFixed(1) || '35.2'}%
+                                    {totalApy?.toFixed(1) || '0.0'}%
                                 </div>
                                 <div style={{ position: 'absolute', inset: '4px', border: '1px solid rgba(0,0,0,0.1)' }}></div>
                             </div>
