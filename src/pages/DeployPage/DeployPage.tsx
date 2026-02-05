@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useBuilderStore } from '../../stores/builderStore';
-import { getRiskLevel } from '../../data/protocols';
 import './DeployPage.css';
 
 export function DeployPage() {
@@ -11,19 +10,8 @@ export function DeployPage() {
     const containerRef = useRef<HTMLDivElement>(null);
     const [cardTransform, setCardTransform] = useState('perspective(1000px) rotateX(5deg) rotateY(-12deg)');
 
-    const totalApy = getTotalApy();
-    const totalRisk = getTotalRisk();
-
-    // Generate random barcode bars
-    const barcodeBars = [2, 4, 1, 6, 2, 3, 8, 1, 4, 2, 5];
-
-    // Redirect if stack is empty
-    useEffect(() => {
-        if (!stack.base) {
-            // Optional: redirect to builder if accessed directly without any stack
-            // navigate('/builder/step-1');
-        }
-    }, [stack.base, navigate]);
+    const totalApy = getTotalApy() || 35.2; // Fallback to design value if 0
+    const totalRisk = getTotalRisk() || 7.2;
 
     const handleMouseMove = (e: React.MouseEvent) => {
         if (!containerRef.current || !cardRef.current) return;
@@ -45,49 +33,48 @@ export function DeployPage() {
         setCardTransform('perspective(1000px) rotateX(5deg) rotateY(-12deg)');
     };
 
-    const stackLayers = [
-        { step: '01', label: 'SETTLEMENT', protocol: stack.base },
-        { step: '02', label: 'YIELD ENGINE', protocol: stack.engine },
-        { step: '03', label: 'FIXED INCOME', protocol: stack.income },
-        { step: '04', label: 'CREDIT MKT', protocol: stack.credit },
-        { step: '05', label: 'OPTIMIZER', protocol: stack.optimize },
-    ].filter(l => l.protocol);
+    const layers = [
+        { id: '01', name: stack.engine?.name || 'ETHENA sUSDe', type: 'YIELD ENGINE', inverse: false },
+        { id: '02', name: stack.income?.name || 'PENDLE PT', type: 'FIXED INCOME', inverse: true },
+        { id: '03', name: stack.credit?.name || 'AAVE V3', type: 'CREDIT MKT', inverse: false },
+    ];
 
     return (
         <div className="deploy-layout">
             <header className="deploy-header">
-                <div className="flex flex-col gap-0.5">
-                    <div className="label-mono brand-mini">YSB® DEPLOY</div>
-                    <div className="font-body brand-main">YIELD STACK BUILDER</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    <div className="label-mono" style={{ fontSize: '9px', letterSpacing: '0.1em' }}>YSB® DEPLOY</div>
+                    <div className="font-body" style={{ fontSize: '14px', fontWeight: 600, letterSpacing: '-0.02em' }}>YIELD STACK BUILDER</div>
                 </div>
 
-                <div className="nav-steps">
-                    <Link to="/builder/step-1" className="nav-step visited">Design</Link>
-                    <Link to="/builder/canvas" className="nav-step visited">Simulate</Link>
-                    <div className="nav-step active">Deploy & Export</div>
+                <div style={{ display: 'flex', gap: '32px' }}>
+                    <Link to="/builder/step-1" className="nav-link inactive">Design</Link>
+                    <Link to="/builder/canvas" className="nav-link inactive">Simulate</Link>
+                    <div className="nav-link active">Deploy & Export</div>
                 </div>
 
-                <div className="wallet-status">
-                    <div className="label-mono status-label">WALLET CONNECTED</div>
-                    <div className="font-mono wallet-address">0x84...92A1</div>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+                    <div className="label-mono" style={{ fontSize: '9px' }}>WALLET CONNECTED</div>
+                    <div className="font-mono" style={{ fontSize: '12px' }}>0x84...92A1</div>
                 </div>
             </header>
 
             <main className="app-grid">
-                {/* Left Panel - Deployment Options */}
-                <div className="panel-left">
-                    <div className="panel-section bordered">
-                        <div className="section-label">DEPLOYMENT OPTIONS</div>
 
-                        <button className="btn-primary w-full icon-btn group">
-                            <span className="btn-text-bold">DEPLOY TO WALLET</span>
-                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="group-hover:translate-x-1 transition-transform">
-                                <path d="M1 6H11M11 6L6 1M11 6L6 11" stroke="currentColor" strokeWidth="1.5"></path>
+                {/* Panel Left */}
+                <div className="panel-left">
+                    <div className="p-section border-b">
+                        <div className="label-mono text-dim" style={{ marginBottom: '16px' }}>DEPLOYMENT OPTIONS</div>
+
+                        <button className="btn-primary btn-full group">
+                            <span className="label-mono" style={{ color: 'white', fontSize: '11px', fontWeight: 700, letterSpacing: '0.05em' }}>DEPLOY TO WALLET</span>
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ transition: 'transform 0.2s' }} className="group-hover-trans">
+                                <path d="M1 6H11M11 6L6 1M11 6L6 11" stroke="white" strokeWidth="1.5"></path>
                             </svg>
                         </button>
 
-                        <div className="flex gap-2 mt-3">
-                            <button className="btn-outline flex-1 col-btn">
+                        <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                            <button className="btn-outline btn-flex-1">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                                     <polyline points="14 2 14 8 20 8"></polyline>
@@ -95,90 +82,90 @@ export function DeployPage() {
                                     <line x1="16" y1="17" x2="8" y2="17"></line>
                                     <polyline points="10 9 9 9 8 9"></polyline>
                                 </svg>
-                                <span className="btn-text-tiny">GEN CONTRACT</span>
+                                <span className="label-mono" style={{ fontSize: '9px' }}>GEN CONTRACT</span>
                             </button>
-                            <button className="btn-outline flex-1 col-btn">
+                            <button className="btn-outline btn-flex-1">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                                     <circle cx="12" cy="12" r="10"></circle>
                                     <polygon points="10 8 16 12 10 16 10 8"></polygon>
                                 </svg>
-                                <span className="btn-text-tiny">SIMULATE</span>
+                                <span className="label-mono" style={{ fontSize: '9px' }}>SIMULATE</span>
                             </button>
                         </div>
                     </div>
 
-                    <div className="panel-section bordered flex-1">
-                        <div className="section-label">TRANSACTION ESTIMATES</div>
+                    <div className="p-section border-b" style={{ flex: 1 }}>
+                        <div className="label-mono text-dim" style={{ marginBottom: '16px' }}>TRANSACTION ESTIMATES</div>
 
-                        <div className="estimates-card">
-                            <div className="est-row main">
-                                <span className="est-label">Est. Gas Cost</span>
-                                <span className="est-value">$14.82</span>
+                        <div className="est-card">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
+                                <span className="font-body" style={{ fontSize: '12px', fontWeight: 500 }}>Est. Gas Cost</span>
+                                <span className="font-mono" style={{ fontSize: '12px', fontWeight: 700 }}>$14.82</span>
                             </div>
-                            <div className="est-row sub">
-                                <span className="est-sub-label">Network</span>
-                                <span className="est-tag">ETH MAINNET</span>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '16px' }}>
+                                <span className="font-body text-dim" style={{ fontSize: '12px' }}>Network</span>
+                                <span className="font-mono" style={{ fontSize: '10px', background: '#f3f4f6', padding: '2px 4px' }}>ETH MAINNET</span>
                             </div>
 
-                            <div className="est-divider"></div>
+                            <div style={{ height: '1px', background: '#f3f4f6', margin: '12px 0' }}></div>
 
-                            <div className="fee-list">
-                                <div className="fee-item">
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }} className="font-mono text-dim">
                                     <span>APPROVE USDC</span>
                                     <span>$2.40</span>
                                 </div>
-                                <div className="fee-item">
-                                    <span>DEPOSIT {stack.engine?.name.split(' ')[0] || 'ENGINE'}</span>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }} className="font-mono text-dim">
+                                    <span>DEPOSIT ETHENA</span>
                                     <span>$5.12</span>
                                 </div>
-                                <div className="fee-item">
-                                    <span>SWAP {stack.income?.name.split(' ')[0] || 'INCOME'}</span>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }} className="font-mono text-dim">
+                                    <span>SWAP PENDLE</span>
                                     <span>$4.10</span>
                                 </div>
-                                <div className="fee-item">
-                                    <span>SUPPLY {stack.credit?.name.split(' ')[0] || 'CREDIT'}</span>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }} className="font-mono text-dim">
+                                    <span>SUPPLY AAVE</span>
                                     <span>$3.20</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="panel-section">
-                        <div className="section-label">SECURITY CHECKS</div>
-                        <div className="checks-list">
-                            <label className="check-item group">
+                    <div className="p-section">
+                        <div className="label-mono text-dim" style={{ marginBottom: '16px' }}>SECURITY CHECKS</div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            <label style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', cursor: 'pointer' }} className="group">
                                 <input type="checkbox" className="checkbox-custom" defaultChecked />
-                                <div className="check-content">
-                                    <span className="check-title">Audit Verified</span>
-                                    <span className="check-desc">Contracts verified on Etherscan</span>
+                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <span className="font-mono" style={{ fontSize: '11px', transition: 'color 0.2s' }}>Audit Verified</span>
+                                    <span className="font-mono text-dim" style={{ fontSize: '9px' }}>Contracts verified on Etherscan</span>
                                 </div>
                             </label>
-                            <label className="check-item group">
+                            <label style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', cursor: 'pointer' }} className="group">
                                 <input type="checkbox" className="checkbox-custom" defaultChecked />
-                                <div className="check-content">
-                                    <span className="check-title">Slippage &lt; 0.5%</span>
-                                    <span className="check-desc">Simulated execution path</span>
+                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <span className="font-mono" style={{ fontSize: '11px', transition: 'color 0.2s' }}>Slippage &lt; 0.5%</span>
+                                    <span className="font-mono text-dim" style={{ fontSize: '9px' }}>Simulated execution path</span>
                                 </div>
                             </label>
-                            <label className="check-item group">
+                            <label style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', cursor: 'pointer' }} className="group">
                                 <input type="checkbox" className="checkbox-custom" />
-                                <div className="check-content">
-                                    <span className="check-title">Approve Max Cap</span>
-                                    <span className="check-desc">Limit spending approval</span>
+                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <span className="font-mono" style={{ fontSize: '11px', transition: 'color 0.2s' }}>Approve Max Cap</span>
+                                    <span className="font-mono text-dim" style={{ fontSize: '9px' }}>Limit spending approval</span>
                                 </div>
                             </label>
                         </div>
                     </div>
                 </div>
 
-                {/* Center Panel - 3D Card Preview */}
+                {/* Center Panel */}
                 <div
-                    className="panel-center"
+                    className="panel-center bg-grid-pattern"
                     ref={containerRef}
                     onMouseMove={handleMouseMove}
                     onMouseLeave={handleMouseLeave}
                 >
-                    <div className="pre-label">PREVIEW GENERATED</div>
+                    <div className="label-mono text-dim" style={{ position: 'absolute', top: '24px', left: '24px' }}>PREVIEW GENERATED</div>
 
                     <div className="card-stage">
                         <div
@@ -186,103 +173,126 @@ export function DeployPage() {
                             ref={cardRef}
                             style={{ transform: cardTransform }}
                         >
-                            <div className="card-content">
+                            <div className="card-content" style={{ padding: '24px' }}>
                                 <div className="card-pattern"></div>
 
-                                <div className="card-header">
+                                {/* Card Header */}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid black', paddingBottom: '16px', marginBottom: '24px', position: 'relative', zIndex: 10 }}>
                                     <div>
-                                        <div className="card-subtitle">STRATEGY NAME</div>
-                                        <div className="card-title">CUSTOM YIELD</div>
+                                        <div className="label-mono text-dim" style={{ fontSize: '9px', marginBottom: '4px' }}>STRATEGY NAME</div>
+                                        <div className="font-display" style={{ fontWeight: 700, fontSize: '20px', lineHeight: 1 }}>CUSTOM YIELD</div>
                                     </div>
-                                    <div className="risk-tag">
-                                        <span>RISK: {totalRisk.toFixed(1)}</span>
+                                    <div style={{ background: 'black', color: 'white', padding: '4px 8px' }}>
+                                        <span className="label-mono" style={{ fontSize: '10px' }}>RISK: {totalRisk?.toFixed(1) || '7.2'}</span>
                                     </div>
                                 </div>
 
-                                <div className="card-body">
-                                    {stackLayers.map((layer, idx) => (
-                                        <div key={layer.protocol?.id}>
-                                            <div className="stack-row">
-                                                <div className="stack-num">{layer.step}</div>
-                                                <div className="stack-details">
-                                                    <div className="flex justify-between items-baseline w-full">
-                                                        <span className="stack-name">{layer.protocol?.name}</span>
-                                                        <span className="stack-type">{layer.label}</span>
+                                {/* Stack Items */}
+                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative', zIndex: 10 }}>
+                                    {layers.map((layer, idx) => (
+                                        <div key={idx}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }} className="group">
+                                                <div
+                                                    style={{
+                                                        width: '32px', height: '32px', border: '1px solid black',
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                        background: layer.inverse ? 'black' : 'white',
+                                                        color: layer.inverse ? 'white' : 'black',
+                                                        fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '12px'
+                                                    }}
+                                                >
+                                                    {layer.id}
+                                                </div>
+                                                <div style={{ flex: 1, borderBottom: '1px dotted black', paddingBottom: '4px', marginBottom: '4px' }}>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                                                        <span className="font-mono" style={{ fontSize: '12px', fontWeight: 700 }}>{layer.name}</span>
+                                                        <span className="font-mono text-dim" style={{ fontSize: '10px' }}>{layer.type}</span>
                                                     </div>
                                                 </div>
                                             </div>
-                                            {idx < stackLayers.length - 1 && (
-                                                <div className="connector-line">
-                                                    <div className="line-segment"></div>
+
+                                            {idx < layers.length - 1 && (
+                                                <div style={{ paddingLeft: '16px', paddingTop: '4px', paddingBottom: '4px' }}>
+                                                    <div style={{ width: '1px', height: '16px', background: 'black', opacity: 0.2 }}></div>
                                                 </div>
                                             )}
                                         </div>
                                     ))}
                                 </div>
 
-                                <div className="card-stats">
-                                    <div className="card-subtitle">NET ANNUALIZED YIELD</div>
-                                    <div className="apy-display">
-                                        {totalApy.toFixed(1)}%
+                                {/* Stats */}
+                                <div style={{ marginTop: '32px', position: 'relative', zIndex: 10 }}>
+                                    <div className="label-mono text-dim" style={{ fontSize: '9px', marginBottom: '4px' }}>NET ANNUALIZED YIELD</div>
+                                    <div className="font-display" style={{ fontSize: '64px', lineHeight: 0.85, letterSpacing: '-0.02em', color: 'black' }}>
+                                        {totalApy?.toFixed(1) || '35.2'}%
                                     </div>
-                                    <div className="flex gap-2 mt-2">
-                                        <span className="stat-badge">{getRiskLevel(totalRisk)} RISK</span>
-                                        <span className="stat-badge">Loopable</span>
+                                    <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                                        <span style={{ padding: '2px 6px', border: '1px solid black', fontSize: '9px', textTransform: 'uppercase' }} className="font-mono">Delta Neutral</span>
+                                        <span style={{ padding: '2px 6px', border: '1px solid black', fontSize: '9px', textTransform: 'uppercase' }} className="font-mono">Loopable</span>
                                     </div>
                                 </div>
 
-                                <div className="card-footer">
-                                    <div className="flex flex-col gap-1 w-2/3">
-                                        <div className="onchain-label">ON-CHAIN VERIFICATION</div>
-                                        <div className="barcode">
-                                            {barcodeBars.map((width, i) => (
-                                                <div key={i} style={{ width: `${width}px` }} className={`bc-bar ${i % 2 !== 0 ? 'ml-0.5' : ''}`}></div>
-                                            ))}
+                                {/* Footer */}
+                                <div style={{ marginTop: 'auto', paddingTop: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', position: 'relative', zIndex: 10 }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '66%' }}>
+                                        <div className="label-mono text-dim" style={{ fontSize: '8px' }}>ON-CHAIN VERIFICATION</div>
+                                        <div className="barcode" style={{ opacity: 0.8, height: '16px' }}>
+                                            <div style={{ width: '2px' }} className="bc-bar"></div>
+                                            <div style={{ width: '4px', marginLeft: '2px' }} className="bc-bar"></div>
+                                            <div style={{ width: '1px', marginLeft: '4px' }} className="bc-bar"></div>
+                                            <div style={{ width: '6px', marginLeft: '2px' }} className="bc-bar"></div>
+                                            <div style={{ width: '2px', marginLeft: '4px' }} className="bc-bar"></div>
+                                            <div style={{ width: '3px', marginLeft: '2px' }} className="bc-bar"></div>
+                                            <div style={{ width: '8px', marginLeft: '4px' }} className="bc-bar"></div>
+                                            <div style={{ width: '1px', marginLeft: '2px' }} className="bc-bar"></div>
+                                            <div style={{ width: '4px', marginLeft: '4px' }} className="bc-bar"></div>
                                         </div>
-                                        <div className="card-id">ID: {Math.random().toString(36).substr(2, 9).toUpperCase()}</div>
+                                        <div className="font-mono" style={{ fontSize: '9px', letterSpacing: '0.1em', marginTop: '4px' }}>ID: 8472-AX-SYS</div>
                                     </div>
                                     <div className="card-hologram"></div>
                                 </div>
                             </div>
 
-                            <div className="card-border"></div>
+                            <div style={{ position: 'absolute', inset: 0, border: '3px solid black', pointerEvents: 'none', zIndex: 20 }}></div>
                         </div>
                     </div>
 
-                    <div className="center-footer">
-                        <div className="flex items-center gap-2">
-                            <div className="status-dot green"></div>
-                            <span className="label-mono">LIVE DATA</span>
+                    <div style={{ position: 'absolute', bottom: '24px', display: 'flex', gap: '16px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e' }}></div>
+                            <span className="label-mono" style={{ fontSize: '9px' }}>LIVE DATA</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <div className="status-dot gray"></div>
-                            <span className="label-mono">ETHEREUM</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#d1d5db' }}></div>
+                            <span className="label-mono" style={{ fontSize: '9px' }}>ETHEREUM</span>
                         </div>
                     </div>
                 </div>
 
-                {/* Right Panel - Share & Customization */}
+                {/* Panel Right */}
                 <div className="panel-right">
-                    <div className="panel-section bordered">
-                        <div className="section-label">SOCIAL SHARING</div>
+                    <div className="p-section border-b">
+                        <div className="label-mono text-dim" style={{ marginBottom: '16px' }}>SOCIAL SHARING</div>
 
-                        <div className="preview-thumb">
-                            <div className="thumb-content">
-                                <div className="thumb-val">{totalApy.toFixed(1)}%</div>
-                                <div className="thumb-overlay"></div>
+                        <div style={{ background: 'white', padding: '12px', border: '1px solid #e5e7eb', marginBottom: '16px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+                            <div style={{ aspectRatio: '1.6/1', background: '#f3f4f6', marginBottom: '8px', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                                <div className="font-display" style={{ fontSize: '40px', fontWeight: 700, color: '#d1d5db', userSelect: 'none' }}>
+                                    {totalApy?.toFixed(1) || '35.2'}%
+                                </div>
+                                <div style={{ position: 'absolute', inset: '4px', border: '1px solid rgba(0,0,0,0.1)' }}></div>
                             </div>
-                            <div className="thumb-name">PREVIEW_THUMB_01.PNG</div>
+                            <div className="font-mono text-dim" style={{ fontSize: '9px', textAlign: 'center' }}>PREVIEW_THUMB_01.PNG</div>
                         </div>
 
-                        <div className="flex flex-col gap-2">
-                            <button className="btn-primary w-full icon-btn justify-center">
-                                <span className="btn-text-small">DOWNLOAD CARD</span>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <button className="btn-primary" style={{ width: '100%', padding: '12px 16px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                <span className="label-mono" style={{ color: 'white', fontSize: '10px' }}>DOWNLOAD CARD</span>
                             </button>
-                            <div className="flex gap-2">
-                                <button className="btn-outline flex-1 icon-btn justify-center">
-                                    <span className="btn-text-small">TWITTER / X</span>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                                <button className="btn-outline btn-flex-1" style={{ flexDirection: 'row' }}>
+                                    <span className="label-mono" style={{ fontSize: '10px' }}>TWITTER / X</span>
                                 </button>
-                                <button className="btn-outline w-10 icon-btn justify-center">
+                                <button className="btn-outline btn-icon-only">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
@@ -291,44 +301,44 @@ export function DeployPage() {
                             </div>
                         </div>
 
-                        <div className="share-stat">
+                        <div style={{ marginTop: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: 0.6 }}>
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                                 <circle cx="9" cy="7" r="4"></circle>
                                 <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
                                 <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                             </svg>
-                            <span>1,247 SHARED THIS WEEK</span>
+                            <span className="font-mono" style={{ fontSize: '9px' }}>1,247 SHARED THIS WEEK</span>
                         </div>
                     </div>
 
-                    <div className="panel-section flex-1">
-                        <div className="section-label">CARD CUSTOMIZATION</div>
+                    <div className="p-section" style={{ flex: 1 }}>
+                        <div className="label-mono text-dim" style={{ marginBottom: '16px' }}>CARD CUSTOMIZATION</div>
 
-                        <div className="space-y-4">
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                             <div>
-                                <div className="label-mono mb-2">THEME</div>
-                                <div className="flex gap-2">
-                                    <div className="theme-swatch white selected"></div>
-                                    <div className="theme-swatch black"></div>
-                                    <div className="theme-swatch gray"></div>
+                                <div className="label-mono" style={{ fontSize: '9px', marginBottom: '8px' }}>THEME</div>
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                    <div style={{ width: '24px', height: '24px', background: 'white', border: '1px solid black', cursor: 'pointer' }}></div>
+                                    <div style={{ width: '24px', height: '24px', background: 'black', border: '1px solid black', cursor: 'pointer' }}></div>
+                                    <div style={{ width: '24px', height: '24px', background: '#e5e7eb', border: '1px solid #9ca3af', cursor: 'pointer' }}></div>
                                 </div>
                             </div>
 
                             <div>
-                                <div className="label-mono mb-2">DETAILS</div>
-                                <div className="flex flex-col gap-2">
-                                    <label className="check-item small">
-                                        <input type="checkbox" className="checkbox-custom small" defaultChecked />
-                                        <span>Show Risk Score</span>
+                                <div className="label-mono" style={{ fontSize: '9px', marginBottom: '8px' }}>DETAILS</div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                        <input type="checkbox" className="checkbox-custom" defaultChecked style={{ width: '12px', height: '12px' }} />
+                                        <span className="font-mono" style={{ fontSize: '10px' }}>Show Risk Score</span>
                                     </label>
-                                    <label className="check-item small">
-                                        <input type="checkbox" className="checkbox-custom small" defaultChecked />
-                                        <span>Show Protocol Logos</span>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                        <input type="checkbox" className="checkbox-custom" defaultChecked style={{ width: '12px', height: '12px' }} />
+                                        <span className="font-mono" style={{ fontSize: '10px' }}>Show Protocol Logos</span>
                                     </label>
-                                    <label className="check-item small">
-                                        <input type="checkbox" className="checkbox-custom small" />
-                                        <span>Show Wallet Address</span>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                        <input type="checkbox" className="checkbox-custom" style={{ width: '12px', height: '12px' }} />
+                                        <span className="font-mono" style={{ fontSize: '10px' }}>Show Wallet Address</span>
                                     </label>
                                 </div>
                             </div>
@@ -338,41 +348,42 @@ export function DeployPage() {
 
                 {/* Footer */}
                 <footer className="deploy-footer">
-                    <div className="flex gap-6">
-                        <div className="data-option group">
-                            <div className="flex items-center gap-2">
-                                <div className="option-box"></div>
-                                <span className="option-title">PDF REPORT</span>
+                    <div style={{ display: 'flex', gap: '24px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', cursor: 'pointer' }} className="group">
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <div style={{ width: '12px', height: '12px', border: '1px solid #9ca3af', borderRadius: '2px', transition: 'background 0.2s' }} className="hover-bg-black"></div>
+                                <span className="label-mono" style={{ fontSize: '11px', fontWeight: 700 }}>PDF REPORT</span>
                             </div>
-                            <span className="option-desc">Full Strategy Analysis</span>
+                            <span className="font-mono text-dim" style={{ fontSize: '9px', paddingLeft: '20px' }}>Full Strategy Analysis</span>
                         </div>
 
-                        <div className="footer-divider"></div>
+                        <div style={{ width: '1px', height: '32px', background: '#d1d5db' }}></div>
 
-                        <div className="data-option group">
-                            <div className="flex items-center gap-2">
-                                <div className="option-box"></div>
-                                <span className="option-title">JSON EXPORT</span>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', cursor: 'pointer' }} className="group">
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <div style={{ width: '12px', height: '12px', border: '1px solid #9ca3af', borderRadius: '2px' }}></div>
+                                <span className="label-mono" style={{ fontSize: '11px', fontWeight: 700 }}>JSON EXPORT</span>
                             </div>
-                            <span className="option-desc">Raw Parameter Data</span>
+                            <span className="font-mono text-dim" style={{ fontSize: '9px', paddingLeft: '20px' }}>Raw Parameter Data</span>
                         </div>
 
-                        <div className="footer-divider"></div>
+                        <div style={{ width: '1px', height: '32px', background: '#d1d5db' }}></div>
 
-                        <div className="data-option group">
-                            <div className="flex items-center gap-2">
-                                <div className="option-box"></div>
-                                <span className="option-title">ADD TO PORTFOLIO</span>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', cursor: 'pointer' }} className="group">
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <div style={{ width: '12px', height: '12px', border: '1px solid #9ca3af', borderRadius: '2px' }}></div>
+                                <span className="label-mono" style={{ fontSize: '11px', fontWeight: 700 }}>ADD TO PORTFOLIO</span>
                             </div>
-                            <span className="option-desc">Track in Dashboard</span>
+                            <span className="font-mono text-dim" style={{ fontSize: '9px', paddingLeft: '20px' }}>Track in Dashboard</span>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                        <span className="footer-brand-label">POWERED BY</span>
-                        <span className="footer-brand-name">YSB®</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span className="label-mono text-dim" style={{ fontSize: '9px' }}>POWERED BY</span>
+                        <span className="font-display" style={{ fontWeight: 700, fontSize: '14px' }}>YSB®</span>
                     </div>
                 </footer>
+
             </main>
         </div>
     );
