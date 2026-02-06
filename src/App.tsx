@@ -12,6 +12,16 @@ import { DeployPage } from './pages/DeployPage';
 import { CanvasEditor } from './pages/CanvasEditor/CanvasEditor';
 import { ApyDataProvider } from './components/providers/ApyDataProvider';
 
+function NotFound() {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', fontFamily: 'var(--font-mono)' }}>
+      <h1 style={{ fontSize: '48px', marginBottom: '8px' }}>404</h1>
+      <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '24px' }}>Page not found</p>
+      <a href="/" style={{ fontSize: '12px', color: '#1a1a1a', textDecoration: 'underline' }}>Back to Home</a>
+    </div>
+  );
+}
+
 function App() {
   return (
     <ApyDataProvider>
@@ -27,6 +37,7 @@ function App() {
           <Route path="/builder/summary" element={<BuilderSummary />} />
           <Route path="/builder/canvas" element={<CanvasEditor />} />
           <Route path="/deploy" element={<DeployPage />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </ApyDataProvider>

@@ -8,7 +8,11 @@ import {
     incomeProtocols,
     creditProtocols,
     optimizeProtocols,
-    getRiskLevel
+    getRiskLevel,
+    baseToEngineRules,
+    engineToIncomeRules,
+    incomeToCreditRules,
+    creditToOptimizeRules,
 } from '../../data/protocols';
 import { type Protocol } from '../../components/builder/ProtocolCard';
 import { ApyInfoIcon } from '../../components/ui/ApyTooltip/ApyTooltip';
@@ -81,26 +85,9 @@ export function CanvasEditor() {
         { step: 4, category: 'OPTIMIZER', protocol: stack.optimize },
     ];
 
-    // Calculate total APY using live data when available
-    const calculateLiveTotalApy = () => {
-        let total = 0;
-        const protocols = [stack.base, stack.engine, stack.income, stack.optimize];
-        protocols.forEach(protocol => {
-            if (protocol) {
-                const effectiveApy = getLiveApy(protocol.id);
-                total += effectiveApy.current;
-            }
-        });
-        // Credit is handled specially for leverage
-        if (stack.credit) {
-            const effectiveApy = getLiveApy(stack.credit.id);
-            total += effectiveApy.current;
-        }
-        return total;
-    };
-
-    // Use store's leveraged calculation when leverage is active
-    const totalApy = hasLiveData ? calculateLiveTotalApy() : getTotalApy();
+    // Use the store's getTotalApy() which correctly handles income-replaces-engine
+    // logic, leverage calculations, and optimizer separation
+    const totalApy = getTotalApy();
     const totalRisk = getTotalRisk();
 
     // Parse capital for calculations
@@ -114,6 +101,34 @@ export function CanvasEditor() {
         const effectiveApy = getLiveApy(l.protocol.id);
         return effectiveApy.current !== 0;
     });
+
+    // Check if a protocol is compatible with the current stack at a given layer
+    const isCompatibleWithStack = (protocol: Protocol, layerIndex: number): boolean => {
+        switch (layerIndex) {
+            case 0: return true; // Base layer: always compatible
+            case 1: { // Engine: check base → engine rules
+                if (!stack.base) return true;
+                const rules = baseToEngineRules[stack.base.id];
+                return !rules || rules.compatible.includes(protocol.id);
+            }
+            case 2: { // Income: check engine → income rules
+                if (!stack.engine) return true;
+                const rules = engineToIncomeRules[stack.engine.id];
+                return !rules || rules.compatible.includes(protocol.id);
+            }
+            case 3: { // Credit: check income → credit rules
+                if (!stack.income) return true;
+                const rules = incomeToCreditRules[stack.income.id];
+                return !rules || rules.compatible.includes(protocol.id);
+            }
+            case 4: { // Optimize: check credit → optimize rules
+                if (!stack.credit) return true;
+                const rules = creditToOptimizeRules[stack.credit.id];
+                return !rules || rules.compatible.includes(protocol.id);
+            }
+            default: return true;
+        }
+    };
 
     const handleDragStart = (e: React.DragEvent, protocol: Protocol, categoryIndex: number) => {
         e.dataTransfer.setData('protocol', JSON.stringify(protocol));
@@ -149,6 +164,11 @@ export function CanvasEditor() {
         if (protocolData) {
             const protocol = JSON.parse(protocolData) as Protocol;
 
+            // Enforce compatibility rules
+            if (!isCompatibleWithStack(protocol, targetLayerIndex)) {
+                return;
+            }
+
             // Map category to setter
             switch (targetLayerIndex) {
                 case 0: setBase(protocol); break;
@@ -181,15 +201,19 @@ export function CanvasEditor() {
 
     const drawerProtocols = useMemo(() => {
         if (!drawerCategory) return [];
-        if (!drawerSearchTerm) return drawerCategory.protocols;
-        const term = drawerSearchTerm.toLowerCase();
-        return drawerCategory.protocols.filter(protocol =>
-            protocol.name.toLowerCase().includes(term) ||
-            protocol.category.toLowerCase().includes(term)
-        );
+        let protocols = drawerCategory.protocols;
+        if (drawerSearchTerm) {
+            const term = drawerSearchTerm.toLowerCase();
+            protocols = protocols.filter(protocol =>
+                protocol.name.toLowerCase().includes(term) ||
+                protocol.category.toLowerCase().includes(term)
+            );
+        }
+        return protocols;
     }, [drawerCategory, drawerSearchTerm]);
 
     const handleDrawerSelect = (protocol: Protocol, layerIndex: number) => {
+        if (!isCompatibleWithStack(protocol, layerIndex)) return;
         switch (layerIndex) {
             case 0: setBase(protocol); break;
             case 1: setEngine(protocol); break;
@@ -437,23 +461,28 @@ export function CanvasEditor() {
                     />
                 </div>
                 <div className="drawer-list">
-                    {drawerProtocols.map(protocol => (
-                        <button
-                            key={protocol.id}
-                            type="button"
-                            className="drawer-item"
-                            onClick={() => drawerLayer !== null && handleDrawerSelect(protocol, drawerLayer)}
-                        >
-                            <div className="drawer-item-main">
-                                <span className="drawer-item-name">{protocol.name}</span>
-                                <span className="drawer-item-meta">{getProtocolMeta(protocol)}</span>
-                            </div>
-                            <div className="drawer-item-tags">
-                                <span>{protocol.category}</span>
-                                <span>{getRiskLevel(protocol.riskScore || 0)} RISK</span>
-                            </div>
-                        </button>
-                    ))}
+                    {drawerProtocols.map(protocol => {
+                        const compatible = drawerLayer !== null ? isCompatibleWithStack(protocol, drawerLayer) : true;
+                        return (
+                            <button
+                                key={protocol.id}
+                                type="button"
+                                className={`drawer-item ${!compatible ? 'drawer-item-disabled' : ''}`}
+                                onClick={() => compatible && drawerLayer !== null && handleDrawerSelect(protocol, drawerLayer)}
+                                disabled={!compatible}
+                                style={!compatible ? { opacity: 0.4, cursor: 'not-allowed' } : undefined}
+                            >
+                                <div className="drawer-item-main">
+                                    <span className="drawer-item-name">{protocol.name}</span>
+                                    <span className="drawer-item-meta">{getProtocolMeta(protocol)}</span>
+                                </div>
+                                <div className="drawer-item-tags">
+                                    <span>{protocol.category}</span>
+                                    <span>{compatible ? `${getRiskLevel(protocol.riskScore || 0)} RISK` : 'INCOMPATIBLE'}</span>
+                                </div>
+                            </button>
+                        );
+                    })}
                     {!drawerProtocols.length && (
                         <div className="drawer-empty">No protocols match that search.</div>
                     )}

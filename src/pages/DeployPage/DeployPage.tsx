@@ -1,13 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useBuilderStore } from '../../stores/builderStore';
-import { useApyStore, getEffectiveApy } from '../../stores/apyStore';
+import { useApyStore } from '../../stores/apyStore';
 import './DeployPage.css';
 
 export function DeployPage() {
 
     const { stack, getTotalApy, getTotalRisk, leverageLoops, getLeveragedApy } = useBuilderStore();
-    const { apyData, isLoading, lastUpdated, getApyForProtocol } = useApyStore();
+    const { apyData, isLoading, lastUpdated } = useApyStore();
     const cardRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const [cardTransform, setCardTransform] = useState('perspective(1000px) rotateX(5deg) rotateY(-12deg)');
@@ -31,31 +31,9 @@ export function DeployPage() {
     const isLeveraged = leverageLoops > 1 && stack.credit && stack.credit.id !== 'skip-credit';
     const leverageInfo = getLeveragedApy();
 
-    // Calculate total APY using live data when available
-    const calculateLiveTotalApy = () => {
-        let total = 0;
-        const protocols = [stack.base, stack.engine, stack.income, stack.optimize];
-        protocols.forEach(protocol => {
-            if (protocol) {
-                const liveData = getApyForProtocol(protocol.id);
-                const effectiveApy = getEffectiveApy(protocol.id, liveData);
-                total += effectiveApy.current;
-            }
-        });
-        // Credit is handled specially for leverage
-        if (stack.credit && !isLeveraged) {
-            const liveData = getApyForProtocol(stack.credit.id);
-            const effectiveApy = getEffectiveApy(stack.credit.id, liveData);
-            total += effectiveApy.current;
-        }
-        // If leveraged, use store's calculation
-        if (isLeveraged) {
-            return getTotalApy();
-        }
-        return total;
-    };
-
-    const totalApy = Object.keys(apyData).length > 0 ? calculateLiveTotalApy() : getTotalApy();
+    // Use the store's getTotalApy() which correctly handles income-replaces-engine
+    // logic, leverage calculations, and optimizer separation
+    const totalApy = getTotalApy();
     const totalRisk = getTotalRisk();
     const hasLiveData = Object.keys(apyData).length > 0;
 
@@ -98,11 +76,10 @@ export function DeployPage() {
             inverse: i % 2 !== 0 // Alternate styles
         }));
 
-    // Dynamic Fees
+    // Estimated gas fees (simulated — not real on-chain estimates)
     const fees = activeLayers.map(l => ({
         label: `${l.type} DEPOSIT`,
-        // Mock dynamic cost based on name length/random for "simulated" feel
-        cost: (2.0 + (l.name.length * 0.1) + (Math.random())).toFixed(2)
+        cost: (2.0 + (l.name.length * 0.1)).toFixed(2)
     }));
 
     // Add base fees
@@ -168,7 +145,7 @@ export function DeployPage() {
                     </div>
 
                     <div className="p-section border-b" style={{ flex: 1 }}>
-                        <div className="label-mono text-dim" style={{ marginBottom: '16px' }}>TRANSACTION ESTIMATES</div>
+                        <div className="label-mono text-dim" style={{ marginBottom: '16px' }}>TRANSACTION ESTIMATES (SIMULATED)</div>
 
                         <div className="est-card">
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
@@ -404,15 +381,6 @@ export function DeployPage() {
                             </div>
                         </div>
 
-                        <div style={{ marginTop: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: 0.6 }}>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="9" cy="7" r="4"></circle>
-                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                            </svg>
-                            <span className="font-mono" style={{ fontSize: '9px' }}>1,247 SHARED THIS WEEK</span>
-                        </div>
                     </div>
 
                     <div className="p-section" style={{ flex: 1 }}>
