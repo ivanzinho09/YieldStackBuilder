@@ -131,7 +131,7 @@ export function StrategiesPage() {
         return tiles.flatMap((tileX) =>
             tiles.flatMap((tileY) =>
                 strategies
-                    .filter((strategy, index) => {
+                    .filter((_, index) => {
                         const seed = tileX * 31 + tileY * 17 + index * 13;
                         return randomFromSeed(seed) > 0.14;
                     })
