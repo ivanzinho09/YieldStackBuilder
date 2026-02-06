@@ -32,10 +32,10 @@ export function Header() {
         <a href="#">Strategies</a>
         <a href="#">Risk Analysis</a>
         <a href="#">Docs</a>
-        <Link to="/builder/step-1" className="btn-main mobile-only">Launch App</Link>
+        <Link to="/builder/intro" className="btn-main mobile-only">Launch App</Link>
       </nav>
 
-      <Link to="/builder/step-1" className="btn-main desktop-only">Launch App</Link>
+      <Link to="/builder/intro" className="btn-main desktop-only">Launch App</Link>
     </header>
   );
 }

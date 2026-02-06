@@ -24,27 +24,50 @@ export function DeployPage() {
         showWallet: false
     });
 
+    const stageRef = useRef<HTMLDivElement>(null); // Add stage ref for 3D capture
+
     const handleDownloadCard = useCallback(async () => {
-        if (cardRef.current === null) return;
+        if (stageRef.current === null) return;
 
         try {
-            // Reset transform for clean capture
-            const currentTransform = cardRef.current.style.transform;
-            cardRef.current.style.transform = 'none';
+            // NOTE: We do NOT reset transform here, capturing the 3D 'stage' as requested
 
-            const dataUrl = await toPng(cardRef.current, { cacheBust: true, pixelRatio: 2 });
+            // Generate clean filename
+            const slug = strategyName.replace(/\s+/g, '-').replace(/[^a-z0-9-]/gi, '').toLowerCase();
+            const filename = `${slug}-${strategyId}.png`;
 
-            // Restore transform
-            cardRef.current.style.transform = currentTransform;
+            // Wait a moment for layout stability
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            const dataUrl = await toPng(stageRef.current, {
+                cacheBust: true,
+                pixelRatio: 2,
+                backgroundColor: 'transparent',
+                // Filter out problematic elements if needed
+                filter: (node) => {
+                    // Exclude external stylesheets that might cause CORS issues
+                    if (node.tagName === 'LINK' && (node as HTMLLinkElement).rel === 'stylesheet') {
+                        const href = (node as HTMLLinkElement).href;
+                        // Check if it's a local/same-origin stylesheet
+                        if (href.startsWith(window.location.origin) || href.startsWith('/') || !href.startsWith('http')) {
+                            return true;
+                        }
+                        // Block remote styles (e.g. google fonts types) to prevent CORS/SecurityError
+                        return false;
+                    }
+                    return true;
+                }
+            });
 
             const link = document.createElement('a');
-            link.download = `ysb-strategy-${strategyId}.png`;
+            link.download = filename;
             link.href = dataUrl;
             link.click();
         } catch (err) {
             console.error('Failed to download card:', err);
+            alert('Could not generate image. Please try again or use screenshot.');
         }
-    }, [strategyId]);
+    }, [strategyId, strategyName]);
 
     // Generate Strategy ID & Name on mount
     useEffect(() => {
@@ -100,7 +123,7 @@ export function DeployPage() {
 
     // Filter and map to view model
     const activeLayers = allLayers
-        .filter(l => l.proto !== null)
+        .filter(l => l.proto !== null && !['skip-income', 'skip-credit', 'none', 'already-staked'].includes(l.proto.id))
         .map((l, i) => ({
             id: `0${i + 1}`,
             name: l.proto!.name,
@@ -198,17 +221,37 @@ export function DeployPage() {
                             ))}
                         </div>
 
+                        {/* Icon Style Select */}
+                        <div style={{ marginBottom: '12px' }}>
+                            <div className="label-mono text-dim" style={{ marginBottom: '8px', fontSize: '9px' }}>ICON STYLE</div>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                                <button
+                                    className={`btn-outline ${!cardOptions.showLogos ? 'active' : ''}`}
+                                    onClick={() => setCardOptions(prev => ({ ...prev, showLogos: false }))}
+                                    style={{
+                                        flex: 1, fontSize: '9px', padding: '6px',
+                                        background: !cardOptions.showLogos ? 'black' : 'transparent',
+                                        color: !cardOptions.showLogos ? 'white' : 'inherit'
+                                    }}
+                                >
+                                    NUMBERS
+                                </button>
+                                <button
+                                    className={`btn-outline ${cardOptions.showLogos ? 'active' : ''}`}
+                                    onClick={() => setCardOptions(prev => ({ ...prev, showLogos: true }))}
+                                    style={{
+                                        flex: 1, fontSize: '9px', padding: '6px',
+                                        background: cardOptions.showLogos ? 'black' : 'transparent',
+                                        color: cardOptions.showLogos ? 'white' : 'inherit'
+                                    }}
+                                >
+                                    LOGOS
+                                </button>
+                            </div>
+                        </div>
+
                         {/* Toggles */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                                <input
-                                    type="checkbox"
-                                    checked={cardOptions.showLogos}
-                                    onChange={e => setCardOptions(prev => ({ ...prev, showLogos: e.target.checked }))}
-                                    style={{ accentColor: 'black' }}
-                                />
-                                <span className="font-mono" style={{ fontSize: '10px' }}>SHOW LOGOS</span>
-                            </label>
                             <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                                 <input
                                     type="checkbox"
@@ -289,7 +332,7 @@ export function DeployPage() {
                 >
                     <div className="label-mono text-dim" style={{ position: 'absolute', top: '24px', left: '24px' }}>PREVIEW GENERATED</div>
 
-                    <div className="card-stage">
+                    <div className="card-stage" ref={stageRef}>
                         <div
                             className="yield-card"
                             ref={cardRef}
@@ -342,6 +385,7 @@ export function DeployPage() {
                                                                 <img
                                                                     src={meta.logo}
                                                                     alt=""
+                                                                    crossOrigin="anonymous"
                                                                     style={{ width: '20px', height: '20px', objectFit: 'contain' }}
                                                                     onError={(e) => { e.currentTarget.style.display = 'none'; }}
                                                                 />
@@ -351,7 +395,7 @@ export function DeployPage() {
                                                                 style={{
                                                                     width: '32px', height: '32px', border: `1px solid ${cardOptions.theme === 'dark' ? 'white' : 'black'}`,
                                                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                                    background: layer.inverse ? (cardOptions.theme === 'dark' ? 'white' : 'black') : 'transparent',
+                                                                    background: layer.inverse ? (cardOptions.theme === 'dark' ? 'white' : 'black') : (cardOptions.theme === 'dark' ? 'transparent' : 'white'),
                                                                     color: layer.inverse ? (cardOptions.theme === 'dark' ? 'black' : 'white') : (cardOptions.theme === 'dark' ? 'white' : 'black'),
                                                                     fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '12px'
                                                                 }}

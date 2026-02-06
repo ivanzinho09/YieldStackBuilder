@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import './CTA.css';
 
 export function CTA() {
@@ -10,7 +11,7 @@ export function CTA() {
                     No hidden fees. Open source architecture.
                 </p>
                 <div className="cta-buttons">
-                    <button className="btn-main">Launch App</button>
+                    <Link to="/builder/intro" className="btn-main">Launch App</Link>
                     <button className="btn-main dashed">Read Documentation</button>
                 </div>
             </div>

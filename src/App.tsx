@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
 import './index.css';
 import { LandingPage } from './pages/LandingPage';
 import { BuilderIntro } from './pages/BuilderIntro';
@@ -24,10 +24,12 @@ function NotFound() {
 
 function App() {
   return (
-    <ApyDataProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+
+        {/* Routes that need APY Data */}
+        <Route element={<ApyDataLayout />}>
           <Route path="/builder/intro" element={<BuilderIntro />} />
           <Route path="/builder/step-1" element={<BuilderStep1 />} />
           <Route path="/builder/step-2" element={<BuilderStep2 />} />
@@ -37,9 +39,19 @@ function App() {
           <Route path="/builder/summary" element={<BuilderSummary />} />
           <Route path="/builder/canvas" element={<CanvasEditor />} />
           <Route path="/deploy" element={<DeployPage />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+        </Route>
+
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+// Layout wrapper for routes that need APY data
+function ApyDataLayout() {
+  return (
+    <ApyDataProvider>
+      <Outlet />
     </ApyDataProvider>
   );
 }

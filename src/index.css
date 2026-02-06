@@ -93,7 +93,11 @@ body {
   position: relative;
   box-shadow: 4px 4px 0 var(--ink);
   text-decoration: none;
-  display: inline-block;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  line-height: 1.5;
   font-size: inherit;
 }
 

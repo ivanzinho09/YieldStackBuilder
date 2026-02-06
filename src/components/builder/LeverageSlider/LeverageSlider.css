@@ -167,3 +167,56 @@
         font-size: 24px;
     }
 }
+
+/* Compact Mode */
+.leverage-compact-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    padding: 6px 16px;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.leverage-compact-control {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-right: 1px solid #e5e7eb;
+    padding-right: 16px;
+}
+
+.leverage-compact-stats {
+    display: flex;
+    gap: 12px;
+}
+
+.compact-stat {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+}
+
+.text-dim {
+    color: #6b7280;
+}
+
+.text-red {
+    color: #ef4444;
+}
+
+.text-green {
+    color: #22c55e;
+}
+
+.text-ink {
+    color: #111827;
+}
+
+.leverage-slider.compact::-webkit-slider-thumb {
+    width: 16px;
+    height: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}

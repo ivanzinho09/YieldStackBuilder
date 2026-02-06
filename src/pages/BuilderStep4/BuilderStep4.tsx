@@ -4,7 +4,7 @@ import { BuilderHeader } from '../../components/builder/BuilderHeader';
 import { StepIndicator } from '../../components/builder/StepIndicator';
 import { ProtocolCard, type Protocol } from '../../components/builder/ProtocolCard';
 import { StackPreview, type StackSlotData } from '../../components/builder/StackPreview';
-import { LeverageSlider } from '../../components/builder/LeverageSlider';
+import { LeverageSlider } from '../../components/builder/LeverageSlider/LeverageSlider';
 import { useBuilderStore } from '../../stores/builderStore';
 import { creditProtocols, getRiskLevel, incomeToCreditRules } from '../../data/protocols';
 import '../BuilderStep1/BuilderStep1.css';
@@ -122,14 +122,31 @@ export function BuilderStep4() {
                         stepLabel="CREDIT MARKET"
                     />
 
-                    <h1 className="hero-title">Add Leverage to Your Stack</h1>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
+                        <div>
+                            <h1 className="hero-title" style={{ marginBottom: '8px' }}>Add Leverage to Your Stack</h1>
 
-                    {stack.income && (
-                        <p className="step-description">
-                            Select a borrowing protocol to create a looped leverage position.
-                            The borrowed funds are re-deposited to amplify yield.
-                        </p>
-                    )}
+                            {stack.income && (
+                                <p className="step-description" style={{ marginBottom: 0, maxWidth: '500px' }}>
+                                    Select a borrowing protocol to create a looped leverage position.
+                                    The borrowed funds are re-deposited to amplify yield.
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Leverage Slider - moved to header */}
+                        {isLeveraged && (
+                            <div style={{ marginTop: '8px' }}>
+                                <LeverageSlider
+                                    loops={leverageLoops}
+                                    onLoopsChange={setLeverageLoops}
+                                    borrowCost={Math.abs(selectedProtocol?.baseApy || 0)}
+                                    leverageInfo={leverageInfo}
+                                    compact={true}
+                                />
+                            </div>
+                        )}
+                    </div>
 
                     <div className="protocol-grid">
                         {compatibleProtocols.map((protocol) => (
@@ -152,16 +169,6 @@ export function BuilderStep4() {
                             />
                         ))}
                     </div>
-
-                    {/* Leverage Slider - only show when a credit protocol is selected */}
-                    {isLeveraged && (
-                        <LeverageSlider
-                            loops={leverageLoops}
-                            onLoopsChange={setLeverageLoops}
-                            borrowCost={Math.abs(selectedProtocol?.baseApy || 0)}
-                            leverageInfo={leverageInfo}
-                        />
-                    )}
                 </main>
 
                 <StackPreview

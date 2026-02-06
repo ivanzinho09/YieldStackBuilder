@@ -95,11 +95,11 @@ export const protocolMeta: Record<string, ProtocolMeta> = {
 
     // ============ FIXED INCOME ============
     'pendle-pt': {
-        logo: llamaIcon('pendle-finance'),
+        logo: tokenIcon('0x808507121b80c02388fad14726482e061b8da827'),
         color: '#0052FF',
     },
     'pendle-yt': {
-        logo: llamaIcon('pendle-finance'),
+        logo: tokenIcon('0x808507121b80c02388fad14726482e061b8da827'),
         color: '#0052FF',
     },
     'notional': {
