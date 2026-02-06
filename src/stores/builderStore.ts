@@ -24,6 +24,7 @@ interface BuilderStore {
     setOptimize: (protocol: Protocol) => void;
     setIsWhitelabel: (value: boolean) => void;
     setLeverageLoops: (loops: number) => void;
+    loadStack: (stack: StackState, leverageLoops?: number) => void;
     resetStack: () => void;
 
     // Calculations
@@ -121,6 +122,11 @@ export const useBuilderStore = create<BuilderStore>()(
             })),
 
             resetStack: () => set({ stack: initialStack, isWhitelabel: false, leverageLoops: 1 }),
+
+            loadStack: (newStack, loops = 1) => set({
+                stack: newStack,
+                leverageLoops: Math.max(1, Math.min(5, loops)),
+            }),
 
             setIsWhitelabel: (value) => set({ isWhitelabel: value }),
 

@@ -1,0 +1,253 @@
+/* Strategy Modal Styles */
+.strategy-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.strategy-modal-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 32px;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Close Button */
+.strategy-modal-close {
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.strategy-modal-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+/* 3D Card Stage */
+.strategy-modal-stage {
+    perspective: 1200px;
+    transform-style: preserve-3d;
+}
+
+/* Action Buttons */
+.strategy-modal-actions {
+    display: flex;
+    gap: 16px;
+}
+
+.strategy-modal-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 28px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.strategy-modal-btn.primary {
+    background: #121414;
+    color: #FFFFFF;
+}
+
+.strategy-modal-btn.primary:hover {
+    background: #2a2a2a;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.strategy-modal-btn.secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: #FFFFFF;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.strategy-modal-btn.secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+/* Reuse card styles from DeployPage */
+.strategy-modal-stage .yield-card {
+    --card-bg: #F2F2F2;
+    --card-content-bg: #FBFBFB;
+    --card-text: #121414;
+    --card-dim: #6B7280;
+    --card-border: #121414;
+    --card-divider: #121414;
+    --card-dotted: rgba(18, 20, 20, 0.4);
+    --card-connector: #121414;
+    --card-pill-bg: #121414;
+    --card-pill-text: #F7F8F7;
+    --card-logo-bg: #FFFFFF;
+    --card-logo-border: #121414;
+    --card-chip-border: #121414;
+    --card-chip-text: #121414;
+    --card-frame: #121414;
+    --card-bar: #121414;
+    --card-pattern: rgba(18, 20, 20, 0.18);
+    --card-shadow: 20px 20px 60px rgba(0, 0, 0, 0.25), -1px -1px 0px rgba(255, 255, 255, 0.5) inset;
+
+    width: 340px;
+    height: 520px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.1s ease-out;
+    box-shadow: var(--card-shadow);
+    color: var(--card-text);
+    user-select: none;
+    overflow: hidden;
+}
+
+.strategy-modal-stage .card-content {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--card-content-bg);
+    color: var(--card-text);
+    z-index: 8;
+}
+
+.strategy-modal-stage .card-stack-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    z-index: 10;
+}
+
+.strategy-modal-stage .card-stats-section {
+    margin-top: 32px;
+    position: relative;
+    z-index: 10;
+}
+
+.strategy-modal-stage .card-footer-section {
+    margin-top: auto;
+    padding-top: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    position: relative;
+    z-index: 10;
+}
+
+.strategy-modal-stage .card-pattern {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.05;
+    background: repeating-linear-gradient(45deg,
+            var(--card-pattern),
+            var(--card-pattern) 1px,
+            transparent 1px,
+            transparent 10px);
+    pointer-events: none;
+}
+
+.strategy-modal-stage .card-hologram {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #E0E0E0 0%, #FFFFFF 50%, #D6D6D6 100%);
+    border: 1px solid #CCC;
+    opacity: 0.8;
+}
+
+.strategy-modal-stage .text-dim {
+    color: var(--card-dim);
+}
+
+.strategy-modal-stage .label-mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.strategy-modal-stage .font-display {
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+.strategy-modal-stage .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .strategy-modal-close {
+        top: -50px;
+        right: 0;
+    }
+
+    .strategy-modal-stage .yield-card {
+        width: 300px;
+        height: 480px;
+    }
+
+    .strategy-modal-actions {
+        flex-direction: column;
+        width: 100%;
+        padding: 0 20px;
+    }
+
+    .strategy-modal-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
