@@ -34,7 +34,7 @@ export function DeployPage() {
     const stageRef = useRef<HTMLDivElement>(null); // Add stage ref for 3D capture
 
     const handleDownloadCard = useCallback(async () => {
-        if (stageRef.current === null) return;
+        if (cardRef.current === null) return;
 
         const EXPORT_WIDTH = 1200;
         const EXPORT_HEIGHT = 675; // 16:9, Twitter/X-friendly
@@ -44,39 +44,29 @@ export function DeployPage() {
             const slug = strategyName.replace(/\s+/g, '-').replace(/[^a-z0-9-]/gi, '').toLowerCase();
             const filename = `${slug}-${strategyId}.png`;
 
-            const stableTransform = 'perspective(1000px) rotateX(5deg) rotateY(-12deg)';
-            const previousTransform = cardRef.current?.style.transform ?? '';
-            if (cardRef.current) {
-                cardRef.current.style.transform = stableTransform;
-            }
-
             let cardDataUrl = '';
-            try {
-                await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-                cardDataUrl = await toPng(stageRef.current, {
-                    cacheBust: true,
-                    pixelRatio: 2,
-                    backgroundColor: 'transparent',
-                    // Filter out problematic elements if needed
-                    filter: (node) => {
-                        // Exclude external stylesheets that might cause CORS issues
-                        if (node.tagName === 'LINK' && (node as HTMLLinkElement).rel === 'stylesheet') {
-                            const href = (node as HTMLLinkElement).href;
-                            // Check if it's a local/same-origin stylesheet
-                            if (href.startsWith(window.location.origin) || href.startsWith('/') || !href.startsWith('http')) {
-                                return true;
-                            }
-                            // Block remote styles to prevent CORS/SecurityError
-                            return false;
+            await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+            // Capture the card element directly. The `style` overrides are
+            // applied to the internal clone only — the live DOM is untouched.
+            cardDataUrl = await toPng(cardRef.current, {
+                cacheBust: true,
+                pixelRatio: 2,
+                backgroundColor: 'transparent',
+                style: {
+                    transform: 'none',
+                    boxShadow: 'none',
+                },
+                filter: (node) => {
+                    if (node.tagName === 'LINK' && (node as HTMLLinkElement).rel === 'stylesheet') {
+                        const href = (node as HTMLLinkElement).href;
+                        if (href.startsWith(window.location.origin) || href.startsWith('/') || !href.startsWith('http')) {
+                            return true;
                         }
-                        return true;
+                        return false;
                     }
-                });
-            } finally {
-                if (cardRef.current) {
-                    cardRef.current.style.transform = previousTransform;
+                    return true;
                 }
-            }
+            });
 
             const drawYsbMark = (ctx: CanvasRenderingContext2D, x: number, y: number, size: number, stroke: string) => {
                 const unit = size / 24;
