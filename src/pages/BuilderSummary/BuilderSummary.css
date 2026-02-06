@@ -76,7 +76,8 @@
     background: #EAEAEA;
     padding: 12px 32px;
     display: grid;
-    grid-template-columns: 100px 1fr 120px 120px;
+    grid-template-columns: 40px 140px 1fr 120px 120px;
+    gap: 16px;
     border: 1px solid var(--ink);
     border-bottom: none;
 }
@@ -103,10 +104,26 @@
 
 .summary-row {
     background: white;
-    padding: 24px 32px;
+    padding: 20px 28px;
     display: grid;
-    grid-template-columns: 100px 1fr 120px 120px;
+    grid-template-columns: 40px 140px 1fr 120px 120px;
+    gap: 16px;
     align-items: center;
+    transition: transform 0.15s ease;
+}
+
+.summary-row:hover {
+    transform: translateX(4px);
+}
+
+/* Protocol Logo in Row */
+.row-logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: contain;
+    background: #f5f5f5;
+    padding: 4px;
 }
 
 .row-step {

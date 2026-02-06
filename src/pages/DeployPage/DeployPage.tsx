@@ -1,7 +1,9 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import { toPng } from 'html-to-image';
 import { useBuilderStore } from '../../stores/builderStore';
 import { useApyStore } from '../../stores/apyStore';
+import { getProtocolMeta } from '../../data/protocolMeta';
 import './DeployPage.css';
 
 export function DeployPage() {
@@ -13,6 +15,36 @@ export function DeployPage() {
     const [cardTransform, setCardTransform] = useState('perspective(1000px) rotateX(5deg) rotateY(-12deg)');
     const [strategyId, setStrategyId] = useState('');
     const [strategyName, setStrategyName] = useState('CUSTOM YIELD');
+
+    // Card Customization Options
+    const [cardOptions, setCardOptions] = useState({
+        theme: 'light' as 'light' | 'dark' | 'glass',
+        showLogos: true,
+        showRisk: true,
+        showWallet: false
+    });
+
+    const handleDownloadCard = useCallback(async () => {
+        if (cardRef.current === null) return;
+
+        try {
+            // Reset transform for clean capture
+            const currentTransform = cardRef.current.style.transform;
+            cardRef.current.style.transform = 'none';
+
+            const dataUrl = await toPng(cardRef.current, { cacheBust: true, pixelRatio: 2 });
+
+            // Restore transform
+            cardRef.current.style.transform = currentTransform;
+
+            const link = document.createElement('a');
+            link.download = `ysb-strategy-${strategyId}.png`;
+            link.href = dataUrl;
+            link.click();
+        } catch (err) {
+            console.error('Failed to download card:', err);
+        }
+    }, [strategyId]);
 
     // Generate Strategy ID & Name on mount
     useEffect(() => {
@@ -73,7 +105,8 @@ export function DeployPage() {
             id: `0${i + 1}`,
             name: l.proto!.name,
             type: l.role.toUpperCase(),
-            inverse: i % 2 !== 0 // Alternate styles
+            inverse: i % 2 !== 0, // Alternate styles
+            protocol: l.proto!
         }));
 
     // Estimated gas fees (simulated — not real on-chain estimates)
@@ -142,6 +175,54 @@ export function DeployPage() {
                                 <span className="label-mono" style={{ fontSize: '9px' }}>SIMULATE</span>
                             </button>
                         </div>
+                    </div>
+
+                    <div className="p-section border-b">
+                        <div className="label-mono text-dim" style={{ marginBottom: '16px' }}>CARD CUSTOMIZATION</div>
+
+                        {/* Theme Select */}
+                        <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+                            {['light', 'dark', 'glass'].map(t => (
+                                <button
+                                    key={t}
+                                    className={`btn-outline ${cardOptions.theme === t ? 'active' : ''}`}
+                                    onClick={() => setCardOptions(prev => ({ ...prev, theme: t as any }))}
+                                    style={{
+                                        flex: 1, fontSize: '9px', padding: '6px',
+                                        background: cardOptions.theme === t ? 'black' : 'transparent',
+                                        color: cardOptions.theme === t ? 'white' : 'inherit'
+                                    }}
+                                >
+                                    {t.toUpperCase()}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Toggles */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                <input
+                                    type="checkbox"
+                                    checked={cardOptions.showLogos}
+                                    onChange={e => setCardOptions(prev => ({ ...prev, showLogos: e.target.checked }))}
+                                    style={{ accentColor: 'black' }}
+                                />
+                                <span className="font-mono" style={{ fontSize: '10px' }}>SHOW LOGOS</span>
+                            </label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                <input
+                                    type="checkbox"
+                                    checked={cardOptions.showRisk}
+                                    onChange={e => setCardOptions(prev => ({ ...prev, showRisk: e.target.checked }))}
+                                    style={{ accentColor: 'black' }}
+                                />
+                                <span className="font-mono" style={{ fontSize: '10px' }}>SHOW RISK SCORE</span>
+                            </label>
+                        </div>
+
+                        <button className="btn-secondary btn-full" onClick={handleDownloadCard}>
+                            <span className="label-mono" style={{ fontSize: '11px', fontWeight: 700 }}>DOWNLOAD CARD IMAGE</span>
+                        </button>
                     </div>
 
                     <div className="p-section border-b" style={{ flex: 1 }}>
@@ -218,7 +299,7 @@ export function DeployPage() {
                                 <div className="card-pattern"></div>
 
                                 {/* Card Header */}
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid black', paddingBottom: '16px', marginBottom: '24px', position: 'relative', zIndex: 10 }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: `1px solid ${cardOptions.theme === 'dark' ? 'white' : 'black'}`, paddingBottom: '16px', marginBottom: '24px', position: 'relative', zIndex: 10 }}>
                                     <div>
                                         <div className="label-mono text-dim" style={{ fontSize: '9px', marginBottom: '4px' }}>STRATEGY NAME</div>
                                         <div
@@ -231,9 +312,11 @@ export function DeployPage() {
                                             {strategyName}
                                         </div>
                                     </div>
-                                    <div style={{ background: 'black', color: 'white', padding: '4px 8px' }}>
-                                        <span className="label-mono" style={{ fontSize: '10px' }}>RISK: {totalRisk?.toFixed(1) || '0.0'}</span>
-                                    </div>
+                                    {cardOptions.showRisk && (
+                                        <div style={{ background: cardOptions.theme === 'dark' ? 'white' : 'black', color: cardOptions.theme === 'dark' ? 'black' : 'white', padding: '4px 8px' }}>
+                                            <span className="label-mono" style={{ fontSize: '10px' }}>RISK: {totalRisk?.toFixed(1) || '0.0'}</span>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Stack Items */}
@@ -244,35 +327,54 @@ export function DeployPage() {
                                             <div className="font-mono text-dim" style={{ fontSize: '9px' }}>Go to Design to add protocols</div>
                                         </div>
                                     ) : (
-                                        activeLayers.map((layer, idx) => (
-                                            <div key={idx}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }} className="group">
-                                                    <div
-                                                        style={{
-                                                            width: '32px', height: '32px', border: '1px solid black',
-                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                            background: layer.inverse ? 'black' : 'white',
-                                                            color: layer.inverse ? 'white' : 'black',
-                                                            fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '12px'
-                                                        }}
-                                                    >
-                                                        {layer.id}
-                                                    </div>
-                                                    <div style={{ flex: 1, borderBottom: '1px dotted black', paddingBottom: '4px', marginBottom: '4px' }}>
-                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                                                            <span className="font-mono" style={{ fontSize: '12px', fontWeight: 700 }}>{layer.name}</span>
-                                                            <span className="font-mono text-dim" style={{ fontSize: '10px' }}>{layer.type}</span>
+                                        activeLayers.map((layer, idx) => {
+                                            const meta = getProtocolMeta(layer.protocol.id);
+                                            return (
+                                                <div key={idx}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }} className="group">
+                                                        {cardOptions.showLogos ? (
+                                                            <div style={{
+                                                                width: '32px', height: '32px',
+                                                                background: 'white', borderRadius: '50%',
+                                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                border: cardOptions.theme === 'dark' ? 'none' : '1px solid black'
+                                                            }}>
+                                                                <img
+                                                                    src={meta.logo}
+                                                                    alt=""
+                                                                    style={{ width: '20px', height: '20px', objectFit: 'contain' }}
+                                                                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                                                />
+                                                            </div>
+                                                        ) : (
+                                                            <div
+                                                                style={{
+                                                                    width: '32px', height: '32px', border: `1px solid ${cardOptions.theme === 'dark' ? 'white' : 'black'}`,
+                                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                    background: layer.inverse ? (cardOptions.theme === 'dark' ? 'white' : 'black') : 'transparent',
+                                                                    color: layer.inverse ? (cardOptions.theme === 'dark' ? 'black' : 'white') : (cardOptions.theme === 'dark' ? 'white' : 'black'),
+                                                                    fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '12px'
+                                                                }}
+                                                            >
+                                                                {layer.id}
+                                                            </div>
+                                                        )}
+                                                        <div style={{ flex: 1, borderBottom: `1px dotted ${cardOptions.theme === 'dark' ? '#555' : 'black'}`, paddingBottom: '4px', marginBottom: '4px' }}>
+                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                                                                <span className="font-mono" style={{ fontSize: '12px', fontWeight: 700 }}>{layer.name}</span>
+                                                                <span className="font-mono text-dim" style={{ fontSize: '10px' }}>{layer.type}</span>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
 
-                                                {idx < activeLayers.length - 1 && (
-                                                    <div style={{ paddingLeft: '16px', paddingTop: '4px', paddingBottom: '4px' }}>
-                                                        <div style={{ width: '1px', height: '16px', background: 'black', opacity: 0.2 }}></div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ))
+                                                    {idx < activeLayers.length - 1 && (
+                                                        <div style={{ paddingLeft: '16px', paddingTop: '4px', paddingBottom: '4px' }}>
+                                                            <div style={{ width: '1px', height: '16px', background: cardOptions.theme === 'dark' ? 'white' : 'black', opacity: 0.2 }}></div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })
                                     )}
                                 </div>
 

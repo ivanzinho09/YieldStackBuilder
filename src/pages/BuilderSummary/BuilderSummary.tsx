@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useBuilderStore } from '../../stores/builderStore';
 import { useApyStore, getEffectiveApy } from '../../stores/apyStore';
 import { getRiskLevel } from '../../data/protocols';
+import { getProtocolMeta } from '../../data/protocolMeta';
 import { ApyInfoIcon } from '../../components/ui/ApyTooltip/ApyTooltip';
 import './BuilderSummary.css';
 
@@ -133,9 +134,25 @@ export function BuilderSummary() {
                             const liveApy = getLiveApy(layer.protocol?.id);
                             const displayApy = liveApy ? liveApy.current : (layer.protocol?.baseApy ?? 0);
                             const isLive = liveApy?.isLive ?? false;
+                            const meta = layer.protocol ? getProtocolMeta(layer.protocol.id) : null;
 
                             return (
-                                <div key={layer.step} className="summary-row">
+                                <div
+                                    key={layer.step}
+                                    className="summary-row"
+                                    style={meta ? {
+                                        borderLeft: `4px solid ${meta.color}`,
+                                        background: `linear-gradient(90deg, ${meta.color}15 0%, transparent 40%), white`
+                                    } : undefined}
+                                >
+                                    {meta && (
+                                        <img
+                                            src={meta.logo}
+                                            alt=""
+                                            className="row-logo"
+                                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                        />
+                                    )}
                                     <span className="row-step">{layer.step.toString().padStart(2, '0')} {layer.label}</span>
                                     <div className="row-strategy">
                                         <span className="strategy-name">{layer.protocol?.name || 'Not selected'}</span>
