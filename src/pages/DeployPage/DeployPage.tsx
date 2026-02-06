@@ -59,13 +59,12 @@ export function DeployPage() {
                     cacheBust: true,
                     pixelRatio: 2,
                     backgroundColor: 'transparent',
-                    // Lock capture to the card's actual layout dimensions
-                    width: 340,
-                    height: 520,
-                    // Neutralise the stage's 3D context so the clone renders flat
+                    // Neutralise the stage's 3D context and add padding so
+                    // the card's borders aren't clipped at the capture edge.
                     style: {
                         perspective: 'none',
                         transformStyle: 'flat',
+                        padding: '6px',
                     },
                     // Filter out problematic elements if needed
                     filter: (node) => {
