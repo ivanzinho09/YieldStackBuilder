@@ -44,10 +44,12 @@ export function DeployPage() {
             const slug = strategyName.replace(/\s+/g, '-').replace(/[^a-z0-9-]/gi, '').toLowerCase();
             const filename = `${slug}-${strategyId}.png`;
 
-            const stableTransform = 'perspective(1000px) rotateX(5deg) rotateY(-12deg)';
+            // Flatten the card for capture — 3D transforms (perspective, rotateX/Y)
+            // don't render correctly in html-to-image and cause the capture to clip,
+            // showing only a portion of the card. We remove them temporarily.
             const previousTransform = cardRef.current?.style.transform ?? '';
             if (cardRef.current) {
-                cardRef.current.style.transform = stableTransform;
+                cardRef.current.style.transform = 'none';
             }
 
             let cardDataUrl = '';
@@ -57,6 +59,14 @@ export function DeployPage() {
                     cacheBust: true,
                     pixelRatio: 2,
                     backgroundColor: 'transparent',
+                    // Lock capture to the card's actual layout dimensions
+                    width: 340,
+                    height: 520,
+                    // Neutralise the stage's 3D context so the clone renders flat
+                    style: {
+                        perspective: 'none',
+                        transformStyle: 'flat',
+                    },
                     // Filter out problematic elements if needed
                     filter: (node) => {
                         // Exclude external stylesheets that might cause CORS issues
