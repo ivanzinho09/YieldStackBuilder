@@ -38,9 +38,9 @@ export const baseProtocols: Protocol[] = [
     },
     {
         id: 'frax',
-        name: 'Frax FRAX',
+        name: 'Frax frxUSD',
         category: 'HYBRID STABLE',
-        description: 'Hybrid stablecoin. Stake to sFRAX to earn protocol yield.',
+        description: 'Hybrid stablecoin. Stake to sfrxUSD to earn yield via Benchmark Yield Strategy.',
         baseApy: 0,
         riskScore: 3.5,
     },
@@ -49,24 +49,24 @@ export const baseProtocols: Protocol[] = [
         id: 'susde',
         name: 'Ethena sUSDe',
         category: 'YIELD-BEARING STABLE',
-        description: 'Staked USDe earning from funding rates. Variable 5-25% APY.',
-        baseApy: 10, // Median 5-25%
+        description: 'Staked USDe earning from funding rates. Variable 2-25% APY.',
+        baseApy: 5, // ~4-5% as of Feb 2026 (down from historical highs)
         riskScore: 5.5,
     },
     {
         id: 'usdtb',
         name: 'Ethena USDtb',
         category: 'RWA STABLE',
-        description: 'Backed by BlackRock BUIDL. Stable ~4.2% yield.',
-        baseApy: 4.2,
+        description: 'Backed by BlackRock BUIDL. Institutional-grade, tracks T-bill yield.',
+        baseApy: 3.7, // Tracks T-bill rate (~3.67% Feb 2026)
         riskScore: 2.5,
     },
     {
         id: 'susds',
         name: 'Sky sUSDS',
         category: 'CDP STABLE',
-        description: 'Staked USDS earning DSR. Variable 4-8% APY.',
-        baseApy: 6.5, // Current DSR
+        description: 'Staked USDS earning Sky Savings Rate (SSR). Variable 3.5-6% APY.',
+        baseApy: 4.5, // SSR reduced to 4.5% (Mar 2025 governance)
         riskScore: 3.0,
     },
     {
@@ -74,15 +74,15 @@ export const baseProtocols: Protocol[] = [
         name: 'Ondo USDY',
         category: 'RWA STABLE',
         description: 'Tokenized US Treasuries with yield passthrough.',
-        baseApy: 4.35,
+        baseApy: 3.7, // ~3.68% per RWA.xyz (Feb 2026)
         riskScore: 2.0,
     },
     {
         id: 'sfrax',
-        name: 'Frax sFRAX',
+        name: 'Frax sfrxUSD',
         category: 'HYBRID STABLE',
-        description: 'Staked FRAX earning protocol yield.',
-        baseApy: 5.0,
+        description: 'Staked frxUSD earning yield via Benchmark Yield Strategy (BYS).',
+        baseApy: 5.0, // sfrxUSD BYS ~5-8%
         riskScore: 4.0,
     },
 ];
@@ -102,15 +102,15 @@ export const engineProtocols: Protocol[] = [
         name: 'Aave Supply',
         category: 'LENDING PROTOCOL',
         description: 'Supply assets to earn variable interest from borrowers. Blue-chip DeFi with battle-tested security.',
-        baseApy: 3.0, // Median USDC/USDT lending rate
+        baseApy: 5.0, // Aave V3 USDC/USDT ~4-6% (Feb 2026)
         riskScore: 2.5,
     },
     {
         id: 'ethena-susde',
         name: 'Stake to sUSDe',
         category: 'FUNDING RATE ARBITRAGE',
-        description: 'Stake USDe to receive sUSDe and earn yield from perpetual funding rates. Variable 5-25% APY.',
-        baseApy: 10, // Median of 5-25% range
+        description: 'Stake USDe to receive sUSDe and earn yield from perpetual funding rates. Variable 2-25% APY.',
+        baseApy: 5, // ~4-5% as of Feb 2026 (down from historical highs)
         riskScore: 5.5,
     },
     {
@@ -118,15 +118,15 @@ export const engineProtocols: Protocol[] = [
         name: 'Lido stETH',
         category: 'ETH LIQUID STAKING',
         description: 'Stake ETH and receive liquid stETH. Earn consensus layer rewards while maintaining liquidity.',
-        baseApy: 3.2,
+        baseApy: 2.5, // ~2.5% per StakingRewards (Feb 2026)
         riskScore: 3.0,
     },
     {
         id: 'maker-dsr',
-        name: 'Maker DSR',
-        category: 'DAI SAVINGS RATE',
-        description: 'Deposit DAI into the Dai Savings Rate contract to earn yield from protocol surplus.',
-        baseApy: 5,
+        name: 'Sky SSR',
+        category: 'SKY SAVINGS RATE',
+        description: 'Deposit DAI/USDS into the Sky Savings Rate (formerly DSR) to earn yield from protocol surplus.',
+        baseApy: 4.5, // SSR reduced to 4.5% (Mar 2025 governance)
         riskScore: 3.2,
     },
     {
@@ -134,7 +134,7 @@ export const engineProtocols: Protocol[] = [
         name: 'Frax sfrxETH',
         category: 'ETH STAKING + LP',
         description: 'Liquid staking derivative with additional yield from Frax ecosystem incentives.',
-        baseApy: 4.1,
+        baseApy: 4.0, // ~3.5-5%
         riskScore: 4.5,
     },
 ];
@@ -146,7 +146,7 @@ export const incomeProtocols: Protocol[] = [
         name: 'Pendle PT',
         category: 'YIELD TOKENIZATION',
         description: 'Lock in a fixed rate by buying discounted principal tokens. Hold to maturity for guaranteed yield.',
-        baseApy: 18,
+        baseApy: 8, // Varies by market ~3-12% (Feb 2026); overrides per engine combination
         riskScore: 4.5,
     },
     {
@@ -162,7 +162,7 @@ export const incomeProtocols: Protocol[] = [
         name: 'Notional Finance',
         category: 'FIXED RATE LENDING',
         description: 'Match borrowers and lenders at fixed rates through fCash tokens. Predictable returns.',
-        baseApy: 8.5,
+        baseApy: 7.0,
         riskScore: 4.0,
     },
     {
@@ -170,7 +170,7 @@ export const incomeProtocols: Protocol[] = [
         name: 'Term Finance',
         category: 'AUCTION-BASED',
         description: 'Periodic rate auctions for fixed-term lending. Competitive price discovery mechanism.',
-        baseApy: 7.2,
+        baseApy: 6.5,
         riskScore: 4.2,
     },
     {
@@ -190,7 +190,7 @@ export const creditProtocols: Protocol[] = [
         name: 'Aave Borrow',
         category: 'VARIABLE RATE LENDING',
         description: 'Borrow against your collateral at variable rates. The foundation for leveraged strategies.',
-        baseApy: -8,
+        baseApy: -5.5, // Aave V3 borrow ~4-6% (Feb 2026)
         riskScore: 5.5,
     },
     {
@@ -198,7 +198,7 @@ export const creditProtocols: Protocol[] = [
         name: 'Morpho',
         category: 'P2P MATCHING',
         description: 'Get better rates through peer-to-peer matching layer on top of Aave and Compound.',
-        baseApy: -6.5,
+        baseApy: -5.0, // Morpho ~4-6% (Feb 2026)
         riskScore: 5.0,
     },
     {
@@ -206,7 +206,7 @@ export const creditProtocols: Protocol[] = [
         name: 'Maple Finance',
         category: 'INSTITUTIONAL LENDING',
         description: 'Under-collateralized lending for institutions. Higher yields, credit risk exposure.',
-        baseApy: -7.8,
+        baseApy: -6.5,
         riskScore: 7.0,
     },
     {
@@ -214,7 +214,7 @@ export const creditProtocols: Protocol[] = [
         name: 'Euler v2',
         category: 'MODULAR LENDING',
         description: 'Highly customizable risk parameters. Build bespoke lending markets for any asset.',
-        baseApy: -7.2,
+        baseApy: -5.5,
         riskScore: 5.8,
     },
     {
@@ -249,7 +249,7 @@ export const optimizeProtocols: Protocol[] = [
         id: 'sommelier',
         name: 'Sommelier',
         category: 'ACTIVE MANAGEMENT',
-        description: 'Actively managed vaults using off-chain computation. Dynamic strategy rebalancing.',
+        description: 'Actively managed vaults using off-chain computation. Low TVL (~$15M) — limited institutional capacity.',
         baseApy: 4,
         riskScore: 5.0,
     },
@@ -281,23 +281,23 @@ export const baseToEngineRules: Record<string, CompatibilityInfo> = {
     // ============ NON-YIELD STABLES (need yield engine) ============
     'usdc': {
         compatible: ['aave-supply'],
-        apyOverrides: { 'aave-supply': 2.87 }
+        apyOverrides: { 'aave-supply': 5.0 } // Aave V3 USDC ~4-6% (Feb 2026)
     },
     'usdt': {
         compatible: ['aave-supply'],
-        apyOverrides: { 'aave-supply': 2.52 }
+        apyOverrides: { 'aave-supply': 4.5 } // Aave V3 USDT ~4-5% (Feb 2026)
     },
     'dai': {
         compatible: ['aave-supply', 'maker-dsr'],
-        apyOverrides: { 'aave-supply': 3.1, 'maker-dsr': 6.5 }
+        apyOverrides: { 'aave-supply': 4.8, 'maker-dsr': 4.5 } // SSR 4.5% (Mar 2025 governance)
     },
     'usde': {
         compatible: ['ethena-susde'], // Stake USDe → sUSDe
-        apyOverrides: { 'ethena-susde': 10 } // Median 5-25%
+        apyOverrides: { 'ethena-susde': 5 } // ~4-5% as of Feb 2026
     },
     'frax': {
         compatible: ['aave-supply', 'frax-sfrxeth'],
-        apyOverrides: { 'aave-supply': 2.5, 'frax-sfrxeth': 5.0 }
+        apyOverrides: { 'aave-supply': 4.5, 'frax-sfrxeth': 4.0 }
     },
 
     // ============ YIELD-BEARING STABLES (already staked) ============
@@ -341,15 +341,15 @@ export const engineToIncomeRules: Record<string, CompatibilityInfo> = {
     },
     'ethena-susde': {
         compatible: ['pendle-pt', 'pendle-yt', 'skip-income'],
-        apyOverrides: { 'pendle-pt': 22 } // sUSDe Pendle market specific
+        apyOverrides: { 'pendle-pt': 10 } // PT-sUSDe market (Feb 2026)
     },
     'lido-steth': {
         compatible: ['pendle-pt', 'pendle-yt', 'skip-income'],
-        apyOverrides: { 'pendle-pt': 8 }
+        apyOverrides: { 'pendle-pt': 3 } // PT-stETH ~2.98% (Feb 2026)
     },
     'maker-dsr': {
         compatible: ['pendle-pt', 'notional', 'skip-income'],
-        apyOverrides: { 'pendle-pt': 6 }
+        apyOverrides: { 'pendle-pt': 5 } // PT-sDAI market
     },
     'frax-sfrxeth': {
         compatible: ['pendle-pt', 'skip-income']
@@ -468,35 +468,6 @@ export function getIncompatibilityReason(
     return `Not compatible with ${previousProtocolName}`;
 }
 
-// Legacy connection rules (kept for backward compatibility)
-export const connectionRules: Record<string, string[]> = {
-    // BASE → ENGINE connections
-    'usdc': ['aave-supply', 'ethena-susde', 'maker-dsr'],
-    'usdt': ['aave-supply'],
-    'dai': ['aave-supply', 'maker-dsr'],
-    'usde': ['ethena-susde'],
-    'frax': ['aave-supply', 'frax-sfrxeth'],
-
-    // ENGINE → INCOME connections
-    'aave-supply': ['pendle-pt', 'notional', 'term-finance'],
-    'ethena-susde': ['pendle-pt', 'pendle-yt'],
-    'lido-steth': ['pendle-pt', 'pendle-yt'],
-    'maker-dsr': ['pendle-pt', 'notional'],
-    'frax-sfrxeth': ['pendle-pt'],
-
-    // INCOME → CREDIT connections
-    'pendle-pt': ['aave-borrow', 'morpho', 'euler'],
-    'pendle-yt': ['aave-borrow'],
-    'notional': ['aave-borrow', 'morpho'],
-    'term-finance': ['aave-borrow'],
-
-    // CREDIT → OPTIMIZE connections
-    'aave-borrow': ['beefy', 'yearn', 'sommelier', 'none'],
-    'morpho': ['beefy', 'yearn', 'sommelier', 'none'],
-    'maple': ['yearn', 'sommelier', 'none'],
-    'euler': ['beefy', 'yearn', 'sommelier', 'none'],
-};
-
 export function getRiskLevel(score: number): 'LOW' | 'MEDIUM' | 'HIGH' {
     if (score < 3) return 'LOW';
     if (score < 6) return 'MEDIUM';
@@ -514,15 +485,13 @@ export function calculateTotalApy(selections: Record<string, Protocol | null>): 
 }
 
 export function calculateTotalRisk(selections: Record<string, Protocol | null>): number {
-    let total = 0;
-    let count = 0;
+    let maxRisk = 0;
     Object.values(selections).forEach(protocol => {
         if (protocol && protocol.riskScore > 0) {
-            total += protocol.riskScore;
-            count++;
+            maxRisk = Math.max(maxRisk, protocol.riskScore);
         }
     });
-    return count > 0 ? total / count : 0;
+    return maxRisk;
 }
 
 // ============================================================================

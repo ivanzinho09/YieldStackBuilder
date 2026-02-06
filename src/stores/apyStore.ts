@@ -52,7 +52,8 @@ export const useApyStore = create<ApyStoreState>((set, get) => ({
 }));
 
 // Default/fallback APY values when API is unavailable
-// Values represent medians from typical ranges
+// Last updated: February 2026
+// Values represent current market medians from DeFiLlama, protocol dashboards, and RWA.xyz
 export const FALLBACK_APY_DATA: Record<string, { currentApy: number; avgApy30d: number }> = {
     // BASE - Non-yield stables (0% native)
     'usdc': { currentApy: 0, avgApy30d: 0 },
@@ -62,32 +63,32 @@ export const FALLBACK_APY_DATA: Record<string, { currentApy: number; avgApy30d: 
     'frax': { currentApy: 0, avgApy30d: 0 },
 
     // BASE - Yield-bearing stables (native APY)
-    'susde': { currentApy: 10, avgApy30d: 12 }, // Median 5-25%
-    'usdtb': { currentApy: 4.2, avgApy30d: 4.2 }, // ~4.2% via BUIDL
-    'susds': { currentApy: 6.5, avgApy30d: 6.0 }, // DSR rate
-    'usdy': { currentApy: 4.35, avgApy30d: 4.35 }, // T-bill rate
-    'sfrax': { currentApy: 5.0, avgApy30d: 5.0 }, // Protocol yield
+    'susde': { currentApy: 5, avgApy30d: 5 },       // sUSDe ~4-5% (Feb 2026, down from historical 10%+)
+    'usdtb': { currentApy: 3.7, avgApy30d: 3.7 },   // USDtb backed by BUIDL, tracks T-bill rate
+    'susds': { currentApy: 4.5, avgApy30d: 4.5 },    // Sky SSR reduced to 4.5% (Mar 2025 governance)
+    'usdy': { currentApy: 3.7, avgApy30d: 3.7 },     // USDY ~3.68% per RWA.xyz
+    'sfrax': { currentApy: 5.0, avgApy30d: 5.0 },    // sfrxUSD BYS ~5-8%
 
     // ENGINE
     'already-staked': { currentApy: 0, avgApy30d: 0 },
-    'aave-supply': { currentApy: 3.0, avgApy30d: 3.0 },
-    'ethena-susde': { currentApy: 10, avgApy30d: 12 }, // Stake USDe → sUSDe
-    'lido-steth': { currentApy: 3.2, avgApy30d: 3.1 },
-    'maker-dsr': { currentApy: 6.5, avgApy30d: 6.0 },
-    'frax-sfrxeth': { currentApy: 4.1, avgApy30d: 3.8 },
+    'aave-supply': { currentApy: 5.0, avgApy30d: 4.5 },   // Aave V3 USDC ~4-6%
+    'ethena-susde': { currentApy: 5, avgApy30d: 5 },       // sUSDe ~4-5% (Feb 2026)
+    'lido-steth': { currentApy: 2.5, avgApy30d: 2.5 },     // Lido stETH ~2.5% per StakingRewards
+    'maker-dsr': { currentApy: 4.5, avgApy30d: 4.5 },      // Sky SSR 4.5%
+    'frax-sfrxeth': { currentApy: 4.0, avgApy30d: 3.8 },   // sfrxETH ~3.5-5%
 
     // INCOME
-    'pendle-pt': { currentApy: 18.0, avgApy30d: 16.0 },
+    'pendle-pt': { currentApy: 8.0, avgApy30d: 8.0 },     // Pendle PT varies by market ~3-12%
     'pendle-yt': { currentApy: 0, avgApy30d: 0 },
-    'notional': { currentApy: 8.5, avgApy30d: 8.0 },
-    'term-finance': { currentApy: 7.2, avgApy30d: 7.0 },
+    'notional': { currentApy: 7.0, avgApy30d: 7.0 },
+    'term-finance': { currentApy: 6.5, avgApy30d: 6.5 },
     'skip-income': { currentApy: 0, avgApy30d: 0 },
 
     // CREDIT (borrowing - negative)
-    'aave-borrow': { currentApy: -8.0, avgApy30d: -7.5 },
-    'morpho': { currentApy: -6.5, avgApy30d: -6.0 },
-    'maple': { currentApy: -7.8, avgApy30d: -7.5 },
-    'euler': { currentApy: -7.2, avgApy30d: -7.0 },
+    'aave-borrow': { currentApy: -5.5, avgApy30d: -5.5 },  // Aave V3 borrow ~4-6%
+    'morpho': { currentApy: -5.0, avgApy30d: -5.0 },       // Morpho ~4-6%
+    'maple': { currentApy: -6.5, avgApy30d: -6.5 },
+    'euler': { currentApy: -5.5, avgApy30d: -5.5 },
     'skip-credit': { currentApy: 0, avgApy30d: 0 },
 
     // OPTIMIZE
@@ -97,10 +98,10 @@ export const FALLBACK_APY_DATA: Record<string, { currentApy: number; avgApy30d: 
     'none': { currentApy: 0, avgApy30d: 0 },
 
     // WHITELABEL ISSUERS (hypothetical yields - require integration)
-    'paxos-wl': { currentApy: 4.5, avgApy30d: 4.5 }, // T-bill rev-share
-    'circle-wl': { currentApy: 2.5, avgApy30d: 2.5 }, // Partnership yield
-    'ethena-wl-tbill': { currentApy: 4.2, avgApy30d: 4.2 }, // USDtb backing
-    'ethena-wl-delta': { currentApy: 13, avgApy30d: 15 }, // sUSDe funding rates
+    'paxos-wl': { currentApy: 3.7, avgApy30d: 3.7 },      // T-bill rev-share (~3.67% T-bill rate)
+    'circle-wl': { currentApy: 2.5, avgApy30d: 2.5 },      // Partnership yield
+    'ethena-wl-tbill': { currentApy: 3.7, avgApy30d: 3.7 }, // USDtb/BUIDL backing
+    'ethena-wl-delta': { currentApy: 5, avgApy30d: 5 },     // sUSDe funding rates (~4-5% Feb 2026)
 };
 
 /**

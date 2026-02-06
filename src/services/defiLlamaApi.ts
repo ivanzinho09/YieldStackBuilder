@@ -70,7 +70,7 @@ export const PROTOCOL_DEFILLAMA_MAPPING: Record<string, {
     'aave-supply': { project: 'aave-v3', symbol: 'USDC', chain: 'Ethereum' },
     'ethena-susde': { project: 'ethena', symbol: 'SUSDE', chain: 'Ethereum' },
     'lido-steth': { project: 'lido', symbol: 'STETH', chain: 'Ethereum' },
-    'maker-dsr': { project: 'spark', symbol: 'SDAI', chain: 'Ethereum' },
+    'maker-dsr': { project: 'sky', symbol: 'SUSDS', chain: 'Ethereum' },
     'frax-sfrxeth': { project: 'frax-ether', symbol: 'SFRXETH', chain: 'Ethereum' },
 
     // INCOME - Fixed Income

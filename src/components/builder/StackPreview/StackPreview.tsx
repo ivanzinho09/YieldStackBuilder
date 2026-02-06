@@ -85,25 +85,11 @@ export function StackPreview({
     onBack,
     onFinish
 }: StackPreviewProps) {
-    const { lastUpdated, isLoading, getApyForProtocol, apyData } = useApyStore();
+    const { lastUpdated, isLoading } = useApyStore();
 
-    // Calculate live total APY from slots when live data is available
-    const hasLiveData = Object.keys(apyData).length > 0;
-    const liveTotalApy = hasLiveData
-        ? slots.reduce((sum, slot) => {
-            if (slot.protocolId) {
-                const liveData = getApyForProtocol(slot.protocolId);
-                if (liveData) {
-                    return sum + liveData.currentApy;
-                }
-            }
-            // Fallback to slot.apy if no live data for this protocol
-            return sum + (slot.apy ?? 0);
-        }, 0)
-        : totalApy;
-
-    // Use live total when available, otherwise fall back to prop
-    const displayTotalApy = hasLiveData ? liveTotalApy : totalApy;
+    // Use the store's totalApy which correctly handles income-replaces-engine
+    // logic and leverage calculations. Individual slot APYs are shown via StackSlot.
+    const displayTotalApy = totalApy;
 
     return (
         <aside className="sidebar-col">

@@ -64,7 +64,7 @@ function getProtocolAction(id: string): string {
 export function BuilderSummary() {
     const navigate = useNavigate();
     const { stack, getTotalApy, getTotalRisk, getLeveragedApy, leverageLoops, resetStack } = useBuilderStore();
-    const { apyData, isLoading, lastUpdated, getApyForProtocol } = useApyStore();
+    const { isLoading, lastUpdated, getApyForProtocol } = useApyStore();
     const capitalInput = 100000;
 
     // Redirect if no base selected
@@ -78,35 +78,9 @@ export function BuilderSummary() {
     const leverageInfo = getLeveragedApy();
     const isLeveraged = leverageLoops > 1 && stack.credit && stack.credit.id !== 'skip-credit';
 
-    // Calculate total APY using live data when available
-    const calculateLiveTotalApy = () => {
-        let total = 0;
-        const protocols = [stack.base, stack.engine, stack.income, stack.optimize];
-        protocols.forEach(protocol => {
-            if (protocol) {
-                const liveData = getApyForProtocol(protocol.id);
-                const effectiveApy = getEffectiveApy(protocol.id, liveData);
-                total += effectiveApy.current;
-            }
-        });
-
-        // Add credit cost (negative) if no leverage
-        if (stack.credit && !isLeveraged) {
-            const liveData = getApyForProtocol(stack.credit.id);
-            const effectiveApy = getEffectiveApy(stack.credit.id, liveData);
-            total += effectiveApy.current;
-        }
-
-        // If leveraged, calculate proper leveraged APY
-        if (isLeveraged) {
-            // For simplicity, use the store's calculation which handles leverage properly
-            return getTotalApy();
-        }
-
-        return total;
-    };
-
-    const totalApy = Object.keys(apyData).length > 0 ? calculateLiveTotalApy() : getTotalApy();
+    // Use the store's getTotalApy() which correctly handles income-replaces-engine
+    // logic, leverage calculations, and optimizer separation
+    const totalApy = getTotalApy();
     const totalRisk = getTotalRisk();
     const netGain = (capitalInput * totalApy) / 100;
 

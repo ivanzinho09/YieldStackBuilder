@@ -81,13 +81,13 @@ export const nonYieldIssuers: StablecoinIssuer[] = [
     },
     {
         id: 'frax',
-        name: 'Frax FRAX',
-        symbol: 'FRAX',
+        name: 'Frax frxUSD',
+        symbol: 'frxUSD',
         type: 'non-yield',
         nativeApy: 0,
         reserveType: 'Algo + collateral',
-        yieldMechanism: 'stake to sFRAX for yield',
-        description: 'Hybrid stablecoin. Stake to sFRAX to earn protocol yield.',
+        yieldMechanism: 'stake to sfrxUSD for yield',
+        description: 'Hybrid stablecoin. Stake to sfrxUSD to earn yield via Benchmark Yield Strategy.',
         riskScore: 3.5,
         category: 'HYBRID STABLE',
     },
@@ -105,11 +105,11 @@ export const yieldBearingIssuers: StablecoinIssuer[] = [
         name: 'Ethena sUSDe',
         symbol: 'sUSDe',
         type: 'yield-bearing',
-        nativeApy: 10, // Median: typically 5-25% variable
-        apyRange: [5, 25],
+        nativeApy: 5, // ~4-5% as of Feb 2026 (down from historical highs)
+        apyRange: [2, 25],
         reserveType: 'Staked USDe',
         yieldMechanism: 'via funding rates',
-        description: 'Staked USDe earning from perpetual futures funding rates. Variable 5-25% APY.',
+        description: 'Staked USDe earning from perpetual futures funding rates. Variable 2-25% APY.',
         riskScore: 5.5,
         category: 'SYNTHETIC STABLE',
         skipEngine: true, // Already staked
@@ -120,11 +120,11 @@ export const yieldBearingIssuers: StablecoinIssuer[] = [
         name: 'Ethena USDtb',
         symbol: 'USDtb',
         type: 'yield-bearing',
-        nativeApy: 4.2,
-        apyRange: [4, 5],
+        nativeApy: 3.7, // Tracks T-bill rate (~3.67% Feb 2026)
+        apyRange: [3.5, 4.5],
         reserveType: 'BlackRock BUIDL (90%)',
         yieldMechanism: 'via T-Bill reserves',
-        description: 'Institutional-grade stable backed by BlackRock BUIDL fund. Lower volatility than sUSDe.',
+        description: 'Institutional-grade stable backed by BlackRock BUIDL fund. Yield tracks T-bill rate.',
         riskScore: 2.5,
         category: 'RWA STABLE',
         skipEngine: true,
@@ -135,11 +135,11 @@ export const yieldBearingIssuers: StablecoinIssuer[] = [
         name: 'Sky sUSDS',
         symbol: 'sUSDS',
         type: 'yield-bearing',
-        nativeApy: 6.5, // Current DSR rate
-        apyRange: [4, 8],
+        nativeApy: 4.5, // SSR reduced to 4.5% (Mar 2025 governance)
+        apyRange: [3.5, 6],
         reserveType: 'Protocol revenue',
-        yieldMechanism: 'via DSR',
-        description: 'Savings rate from Sky/Maker protocol (formerly DAI Savings Rate).',
+        yieldMechanism: 'via SSR',
+        description: 'Sky Savings Rate (formerly DAI Savings Rate). Set by Sky governance.',
         riskScore: 3.0,
         category: 'CDP STABLE',
         skipEngine: true,
@@ -151,8 +151,8 @@ export const yieldBearingIssuers: StablecoinIssuer[] = [
         name: 'Ondo USDY',
         symbol: 'USDY',
         type: 'yield-bearing',
-        nativeApy: 4.35,
-        apyRange: [4, 5],
+        nativeApy: 3.7, // ~3.68% per RWA.xyz (Feb 2026)
+        apyRange: [3.5, 4.5],
         reserveType: 'US Treasuries',
         yieldMechanism: 'via rebase',
         description: 'Tokenized short-term US government bonds. Yield passed to holders.',
@@ -160,17 +160,17 @@ export const yieldBearingIssuers: StablecoinIssuer[] = [
         category: 'RWA STABLE',
         skipEngine: true,
     },
-    // Frax yield-bearing
+    // Frax yield-bearing (rebranded to sfrxUSD)
     {
         id: 'sfrax',
-        name: 'Frax sFRAX',
-        symbol: 'sFRAX',
+        name: 'Frax sfrxUSD',
+        symbol: 'sfrxUSD',
         type: 'yield-bearing',
-        nativeApy: 5.0,
-        apyRange: [4, 6],
-        reserveType: 'Lending + AMO',
-        yieldMechanism: 'via staking',
-        description: 'Staked FRAX earning yield from protocol operations.',
+        nativeApy: 5.0, // sfrxUSD BYS ~5-8%
+        apyRange: [4, 8],
+        reserveType: 'BYS: carry-trade, AMO, or T-Bills',
+        yieldMechanism: 'via Benchmark Yield Strategy',
+        description: 'Staked frxUSD earning yield via dynamic Benchmark Yield Strategy (BYS).',
         riskScore: 4.0,
         category: 'HYBRID STABLE',
         skipEngine: true,
@@ -186,25 +186,25 @@ export const yieldBearingIssuers: StablecoinIssuer[] = [
 // ============================================================================
 
 export const whitelabelIssuers: StablecoinIssuer[] = [
-    // Paxos - Revenue-sharing model (USDG, PYUSD infrastructure)
+    // Paxos - Revenue-sharing model (USDG, Global Dollar Network)
     {
         id: 'paxos-wl',
         name: 'Paxos (Whitelabel)',
         symbol: 'CUSTOM-USD',
         type: 'whitelabel',
-        nativeApy: 4.5, // T-Bill rate × rev share
-        apyRange: [4, 5],
-        yieldSharePercent: 90, // USDG offers generous rev-share
+        nativeApy: 3.7, // T-Bill rate (~3.67% Feb 2026) × rev share
+        apyRange: [3.5, 4.5],
+        yieldSharePercent: 90, // USDG offers generous rev-share via Global Dollar Network
         reserveType: 'US Treasuries (100%)',
         yieldMechanism: 'via T-Bill yield sharing',
-        description: 'Regulated US infrastructure (NY DFS). Revenue-share model like USDG/PYUSD. ~4-5% via T-bills.',
+        description: 'Regulated US infrastructure (NY DFS). Revenue-share model via Global Dollar Network (USDG). 90+ partners.',
         riskScore: 1.5,
         category: 'FIAT-BACKED (WL)',
     },
-    // Circle - Partnership model
+    // Circle - Embedded minting/redemption model
     {
         id: 'circle-wl',
-        name: 'Circle Mint (Whitelabel)',
+        name: 'Circle Mint (Embedded)',
         symbol: 'CUSTOM-USD',
         type: 'whitelabel',
         nativeApy: 2.5, // Negotiated partnership rate
@@ -212,7 +212,7 @@ export const whitelabelIssuers: StablecoinIssuer[] = [
         yieldSharePercent: 50, // Circle keeps more, offers lower risk
         reserveType: 'US Treasuries via Circle',
         yieldMechanism: 'via partnership yield',
-        description: 'Circle Mint API + MPC custody. Partnership yield-share model. Lower rate but trusted infra.',
+        description: 'Circle Mint API for embedded USDC minting/redemption. Partnership yield-share model.',
         riskScore: 1.2,
         category: 'FIAT-BACKED (WL)',
     },
@@ -222,12 +222,12 @@ export const whitelabelIssuers: StablecoinIssuer[] = [
         name: 'Ethena WL (T-Bill)',
         symbol: 'CUSTOM-USD',
         type: 'whitelabel',
-        nativeApy: 4.2,
-        apyRange: [4, 5],
+        nativeApy: 3.7, // Tracks T-bill rate (~3.67% Feb 2026)
+        apyRange: [3.5, 4.5],
         yieldSharePercent: 100, // Full pass-through
         reserveType: 'BlackRock BUIDL (90%)',
         yieldMechanism: 'via USDtb reserves',
-        description: 'Ethena whitelabel backed by USDtb (BlackRock BUIDL). Stable ~4.2% T-bill yield. Lower risk.',
+        description: 'Ethena Stablecoin-as-a-Service backed by USDtb (BlackRock BUIDL). Custody via Anchorage Digital.',
         riskScore: 2.5,
         category: 'RWA (WL)',
     },
@@ -237,12 +237,12 @@ export const whitelabelIssuers: StablecoinIssuer[] = [
         name: 'Ethena WL (Delta-Neutral)',
         symbol: 'CUSTOM-USD',
         type: 'whitelabel',
-        nativeApy: 13, // Median sUSDe yield
-        apyRange: [5, 25],
+        nativeApy: 5, // ~4-5% as of Feb 2026 (down from historical highs)
+        apyRange: [2, 25],
         yieldSharePercent: 100, // Full pass-through
         reserveType: 'sUSDe delta-neutral hedge',
         yieldMechanism: 'via funding rates',
-        description: 'Ethena whitelabel backed by sUSDe. Variable 5-25% from funding rates. Higher risk/reward.',
+        description: 'Ethena Stablecoin-as-a-Service backed by sUSDe. Variable 2-25% from funding rates. Higher risk/reward.',
         riskScore: 5.5,
         category: 'SYNTHETIC (WL)',
     },
@@ -273,18 +273,6 @@ export function shouldSkipEngineStep(issuerId: string): boolean {
 export function getIssuerById(id: string): StablecoinIssuer | undefined {
     const all = [...nonYieldIssuers, ...yieldBearingIssuers, ...whitelabelIssuers];
     return all.find(i => i.id === id);
-}
-
-// Check if selecting this engine would double-count with the base
-export function wouldDoublecountYield(baseId: string, engineId: string): boolean {
-    // sUSDe base + sUSDe staking engine = double count
-    if (baseId === 'susde' && engineId === 'ethena-susde') return true;
-    // sUSDS base + DSR engine = double count
-    if (baseId === 'susds' && engineId === 'maker-dsr') return true;
-    // sFRAX base + sFRAX staking = double count
-    if (baseId === 'sfrax' && engineId === 'frax-sfrxeth') return true;
-
-    return false;
 }
 
 // Export all issuers for reference
