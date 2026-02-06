@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import './Strategies.css';
 
 interface Strategy {
@@ -58,7 +59,7 @@ export function Strategies() {
         <section className="strategies-section">
             <div className="section-header">
                 <h2 className="section-title text-display">Reference Blueprints</h2>
-                <button className="btn-main btn-small">View All</button>
+                <Link to="/strategies" className="btn-main btn-small">View All</Link>
             </div>
 
             <table className="strategy-table">

@@ -29,7 +29,7 @@ export function Header() {
 
       <nav className={`nav ${isMenuOpen ? 'open' : ''}`}>
         <a href="#">Protocols</a>
-        <a href="#">Strategies</a>
+        <Link to="/strategies">Strategies</Link>
         <a href="#">Risk Analysis</a>
         <a href="#">Docs</a>
         <Link to="/builder/intro" className="btn-main mobile-only">Launch App</Link>
