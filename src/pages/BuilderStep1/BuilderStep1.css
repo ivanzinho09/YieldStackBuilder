@@ -42,6 +42,61 @@
     gap: 24px;
 }
 
+.step-description {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: var(--ink-light);
+    max-width: 540px;
+    margin: -32px 0 48px 0;
+    line-height: 1.6;
+}
+
+/* WL Integration Warning */
+.wl-integration-warning {
+    display: flex;
+    gap: 12px;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%);
+    border: 2px solid #f59e0b;
+    margin: -24px 0 48px 0;
+    max-width: 600px;
+}
+
+.wl-integration-warning .warning-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.wl-integration-warning .warning-content {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    line-height: 1.6;
+    color: #92400e;
+}
+
+.wl-integration-warning .warning-content strong {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 12px;
+    color: #78350f;
+}
+
+.back-link {
+    background: none;
+    border: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-light);
+    cursor: pointer;
+    padding: 16px 0;
+    margin-top: 32px;
+    transition: color 0.15s ease;
+}
+
+.back-link:hover {
+    color: var(--ink);
+}
+
 @media (max-width: 1024px) {
     .workspace {
         grid-template-columns: 1fr;
@@ -69,7 +124,7 @@
         overflow: visible;
     }
 
-    .workspace > .sidebar-col {
+    .workspace>.sidebar-col {
         width: 100%;
         max-width: none;
         min-width: 0;

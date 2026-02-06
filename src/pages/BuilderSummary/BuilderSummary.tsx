@@ -22,24 +22,37 @@ function getRiskLabel(risk: number): string {
 
 function getProtocolAction(id: string): string {
     const actions: Record<string, string> = {
+        // Base stablecoins
         'usdc': 'Settlement',
         'usdt': 'Settlement',
-        'dai': 'Savings',
+        'dai': 'CDP Stable',
         'usde': 'Synthetic',
         'frax': 'Hybrid',
+        'susde': 'Yield-Bearing',
+        'usdtb': 'RWA-Backed',
+        'susds': 'DSR Yield',
+        'usdy': 'Treasury Yield',
+        'sfrax': 'Staked Yield',
+        // Engines
+        'already-staked': 'Native Yield',
         'aave-supply': 'Supply',
         'ethena-susde': 'Staking',
         'lido-steth': 'Liquid Staking',
         'maker-dsr': 'Savings Rate',
         'frax-sfrxeth': 'LP Staking',
+        // Income
         'pendle-pt': 'Fixed Rate',
         'pendle-yt': 'Yield Speculation',
         'notional': 'Fixed Lending',
         'term-finance': 'Auction',
+        'skip-income': 'Skipped',
+        // Credit
         'aave-borrow': 'Borrow',
         'morpho': 'P2P Matching',
         'maple': 'Institution Pool',
         'euler': 'Modular',
+        'skip-credit': 'No Leverage',
+        // Optimize
         'beefy': 'Auto-Compounder',
         'yearn': 'Vault Strategy',
         'sommelier': 'Active Mgmt',
@@ -50,7 +63,7 @@ function getProtocolAction(id: string): string {
 
 export function BuilderSummary() {
     const navigate = useNavigate();
-    const { stack, getTotalApy, getTotalRisk, resetStack } = useBuilderStore();
+    const { stack, getTotalApy, getTotalRisk, getLeveragedApy, leverageLoops, resetStack } = useBuilderStore();
     const { apyData, isLoading, lastUpdated, getApyForProtocol } = useApyStore();
     const capitalInput = 100000;
 
@@ -61,10 +74,14 @@ export function BuilderSummary() {
         }
     }, [stack.base, navigate]);
 
+    // Get leverage info
+    const leverageInfo = getLeveragedApy();
+    const isLeveraged = leverageLoops > 1 && stack.credit && stack.credit.id !== 'skip-credit';
+
     // Calculate total APY using live data when available
     const calculateLiveTotalApy = () => {
         let total = 0;
-        const protocols = [stack.base, stack.engine, stack.income, stack.credit, stack.optimize];
+        const protocols = [stack.base, stack.engine, stack.income, stack.optimize];
         protocols.forEach(protocol => {
             if (protocol) {
                 const liveData = getApyForProtocol(protocol.id);
@@ -72,6 +89,20 @@ export function BuilderSummary() {
                 total += effectiveApy.current;
             }
         });
+
+        // Add credit cost (negative) if no leverage
+        if (stack.credit && !isLeveraged) {
+            const liveData = getApyForProtocol(stack.credit.id);
+            const effectiveApy = getEffectiveApy(stack.credit.id, liveData);
+            total += effectiveApy.current;
+        }
+
+        // If leveraged, calculate proper leveraged APY
+        if (isLeveraged) {
+            // For simplicity, use the store's calculation which handles leverage properly
+            return getTotalApy();
+        }
+
         return total;
     };
 
@@ -140,13 +171,43 @@ export function BuilderSummary() {
                                         {layer.protocol?.riskScore.toFixed(1) || '0.0'}/10
                                     </div>
                                     <div className={`row-value ${displayApy < 0 ? 'negative' : ''}`}>
-                                        {displayApy >= 0 ? '' : ''}{displayApy.toFixed(2)}%
+                                        {displayApy.toFixed(2)}%
                                         {isLive && <span className="live-badge-inline">LIVE</span>}
                                     </div>
                                 </div>
                             );
                         })}
                     </div>
+
+                    {/* Leverage Breakdown Section */}
+                    {isLeveraged && (
+                        <div className="leverage-breakdown">
+                            <span className="breakdown-title">LEVERAGE ANALYSIS ({leverageLoops}x)</span>
+                            <div className="breakdown-grid">
+                                <div className="breakdown-item">
+                                    <span className="breakdown-label">Effective Exposure</span>
+                                    <span className="breakdown-value">{leverageInfo.totalExposure.toFixed(2)}x</span>
+                                </div>
+                                <div className="breakdown-item">
+                                    <span className="breakdown-label">Borrow Cost</span>
+                                    <span className="breakdown-value negative">-{Math.abs(stack.credit?.baseApy ?? 0).toFixed(2)}%</span>
+                                </div>
+                                <div className="breakdown-item">
+                                    <span className="breakdown-label">Risk Amplification</span>
+                                    <span className="breakdown-value warning">{leverageInfo.riskMultiplier.toFixed(2)}x</span>
+                                </div>
+                                <div className="breakdown-item highlight">
+                                    <span className="breakdown-label">Net Leveraged APY</span>
+                                    <span className="breakdown-value">{leverageInfo.effectiveApy.toFixed(2)}%</span>
+                                </div>
+                            </div>
+                            <p className="leverage-explanation">
+                                Leverage loops borrow against your position to increase exposure.
+                                Your {leverageLoops}x strategy borrows {(leverageInfo.totalExposure - 1).toFixed(2)}x your capital,
+                                amplifying both yield and risk by {leverageInfo.riskMultiplier.toFixed(1)}x.
+                            </p>
+                        </div>
+                    )}
 
                     <div className="info-grid">
                         <div className="info-block">
@@ -155,15 +216,18 @@ export function BuilderSummary() {
                                 All selected protocols have passed Tier 1 security thresholds.
                                 Total Smart Contract exposure: {layers.filter(l => l.protocol).length} unique deployments.
                                 Cross-protocol dependency risk: {getRiskLevel(totalRisk)}.
-                                Insurance coverage available via Nexus Mutual.
+                                {isLeveraged && ` Leverage risk amplification active at ${leverageInfo.riskMultiplier.toFixed(1)}x.`}
                             </p>
                         </div>
                         <div className="info-block">
                             <span className="info-title">LIQUIDITY PROFILE</span>
                             <p className="info-text">
-                                85% of capital remains liquid within 24h.
+                                {isLeveraged
+                                    ? `Leveraged position requires active monitoring. Liquidation risk increases at ${leverageLoops}x exposure.`
+                                    : '85% of capital remains liquid within 24h.'
+                                }
                                 {stack.credit?.id === 'maple' ? ' 15% (Layer 04) is subject to a 7-day withdrawal cooldown.' : ''}
-                                No lock-up periods detected in current configuration.
+                                {!isLeveraged && ' No lock-up periods detected in current configuration.'}
                             </p>
                         </div>
                     </div>
@@ -179,14 +243,23 @@ export function BuilderSummary() {
                             {getRiskLabel(totalRisk)}
                         </div>
                         <p className="risk-description">
-                            Your stack is weighted towards {totalRisk < 4 ? 'blue-chip protocols with deep liquidity' : 'higher-yield strategies with increased exposure'}.
+                            {isLeveraged
+                                ? `Leverage amplifies risk by ${leverageInfo.riskMultiplier.toFixed(1)}x. Monitor liquidation thresholds.`
+                                : `Your stack is weighted towards ${totalRisk < 4 ? 'blue-chip protocols with deep liquidity' : 'higher-yield strategies with increased exposure'}.`
+                            }
                         </p>
                     </div>
 
                     <div className="metric-group">
                         <div className="metric-header">
-                            <span className="card-label">ESTIMATED ANNUAL YIELD</span>
-                            <ApyInfoIcon tooltip="APY calculated from real-time DeFiLlama data. Individual protocol rates are summed to get total projected yield." />
+                            <span className="card-label">
+                                {isLeveraged ? 'LEVERAGED ANNUAL YIELD' : 'ESTIMATED ANNUAL YIELD'}
+                            </span>
+                            <ApyInfoIcon tooltip={
+                                isLeveraged
+                                    ? `Leveraged APY: Base yield × ${leverageInfo.totalExposure.toFixed(2)}x exposure − borrow costs. Net result after ${leverageLoops} leverage loops.`
+                                    : 'APY calculated from real-time DeFiLlama data. Individual protocol rates are summed to get total projected yield.'
+                            } />
                         </div>
                         <div className={`big-metric ${totalApy < 0 ? 'negative' : ''}`}>{totalApy.toFixed(2)}%</div>
                         <div className="gain-row">

@@ -1,0 +1,155 @@
+/* BuilderIntro - uses builder-layout and workspace from BuilderStep1 */
+/* Intro-specific styles only */
+
+.intro-content {
+    max-width: 720px;
+}
+
+.intro-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-light);
+    display: block;
+    margin-bottom: 24px;
+}
+
+.intro-title {
+    font-family: var(--font-display);
+    font-size: 48px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 24px;
+}
+
+.intro-body {
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--ink-light);
+    margin-bottom: 48px;
+    max-width: 540px;
+}
+
+.process-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+    margin-bottom: 64px;
+    border-top: 1px solid var(--ink);
+    padding-top: 32px;
+}
+
+.process-step .process-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-light);
+}
+
+.process-step h4 {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 600;
+    margin: 12px 0 8px 0;
+}
+
+.process-step p {
+    font-size: 13px;
+    color: var(--ink-light);
+    line-height: 1.5;
+}
+
+/* Pathway Selection */
+.pathway-section {
+    margin-top: 32px;
+}
+
+.pathway-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-light);
+    display: block;
+    margin-bottom: 16px;
+}
+
+.pathway-buttons {
+    display: flex;
+    gap: 16px;
+}
+
+.pathway-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 24px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: 2px solid var(--ink);
+}
+
+.pathway-btn.primary {
+    background: var(--ink);
+    color: var(--paper);
+}
+
+.pathway-btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.1);
+}
+
+.pathway-btn.secondary {
+    background: transparent;
+    color: var(--ink);
+}
+
+.pathway-btn.secondary:hover {
+    background: var(--ink);
+    color: var(--paper);
+}
+
+.pathway-btn-title {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.pathway-btn-subtitle {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    opacity: 0.7;
+}
+
+/* Mobile responsive */
+@media (max-width: 900px) {
+    .intro-title {
+        font-size: 36px;
+    }
+
+    .process-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .pathway-buttons {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 600px) {
+    .intro-title {
+        font-size: 28px;
+    }
+
+    .intro-body {
+        font-size: 14px;
+    }
+}

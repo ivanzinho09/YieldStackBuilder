@@ -6,7 +6,7 @@ import './DeployPage.css';
 
 export function DeployPage() {
 
-    const { stack, getTotalApy, getTotalRisk } = useBuilderStore();
+    const { stack, getTotalApy, getTotalRisk, leverageLoops, getLeveragedApy } = useBuilderStore();
     const { apyData, isLoading, lastUpdated, getApyForProtocol } = useApyStore();
     const cardRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -27,10 +27,14 @@ export function DeployPage() {
         }
     }, [stack.engine]); // Run once mostly, or when engine loads
 
+    // Check if leveraged
+    const isLeveraged = leverageLoops > 1 && stack.credit && stack.credit.id !== 'skip-credit';
+    const leverageInfo = getLeveragedApy();
+
     // Calculate total APY using live data when available
     const calculateLiveTotalApy = () => {
         let total = 0;
-        const protocols = [stack.base, stack.engine, stack.income, stack.credit, stack.optimize];
+        const protocols = [stack.base, stack.engine, stack.income, stack.optimize];
         protocols.forEach(protocol => {
             if (protocol) {
                 const liveData = getApyForProtocol(protocol.id);
@@ -38,6 +42,16 @@ export function DeployPage() {
                 total += effectiveApy.current;
             }
         });
+        // Credit is handled specially for leverage
+        if (stack.credit && !isLeveraged) {
+            const liveData = getApyForProtocol(stack.credit.id);
+            const effectiveApy = getEffectiveApy(stack.credit.id, liveData);
+            total += effectiveApy.current;
+        }
+        // If leveraged, use store's calculation
+        if (isLeveraged) {
+            return getTotalApy();
+        }
         return total;
     };
 
@@ -288,7 +302,7 @@ export function DeployPage() {
                                 {/* Stats */}
                                 <div style={{ marginTop: '32px', position: 'relative', zIndex: 10 }}>
                                     <div className="label-mono text-dim" style={{ fontSize: '9px', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        NET ANNUALIZED YIELD
+                                        {isLeveraged ? 'LEVERAGED ANNUAL YIELD' : 'NET ANNUALIZED YIELD'}
                                         {hasLiveData && (
                                             <span style={{ fontSize: '7px', background: '#22c55e', color: 'white', padding: '1px 4px', fontWeight: 700 }}>LIVE</span>
                                         )}
@@ -298,11 +312,22 @@ export function DeployPage() {
                                     </div>
                                     <div style={{ display: 'flex', gap: '8px', marginTop: '8px', flexWrap: 'wrap' }}>
                                         <span style={{ padding: '2px 6px', border: '1px solid black', fontSize: '9px', textTransform: 'uppercase' }} className="font-mono">Delta Neutral</span>
-                                        <span style={{ padding: '2px 6px', border: '1px solid black', fontSize: '9px', textTransform: 'uppercase' }} className="font-mono">Loopable</span>
+                                        {isLeveraged ? (
+                                            <span style={{ padding: '2px 6px', border: '1px solid #f59e0b', fontSize: '9px', textTransform: 'uppercase', color: '#f59e0b', fontWeight: 700 }} className="font-mono">
+                                                {leverageLoops}x Leverage
+                                            </span>
+                                        ) : (
+                                            <span style={{ padding: '2px 6px', border: '1px solid black', fontSize: '9px', textTransform: 'uppercase' }} className="font-mono">Loopable</span>
+                                        )}
                                         {hasLiveData && (
                                             <span style={{ padding: '2px 6px', border: '1px solid #22c55e', fontSize: '9px', textTransform: 'uppercase', color: '#22c55e' }} className="font-mono">DeFiLlama Data</span>
                                         )}
                                     </div>
+                                    {isLeveraged && (
+                                        <div style={{ marginTop: '8px', fontSize: '9px', color: '#6b7280' }} className="font-mono">
+                                            {leverageInfo.totalExposure.toFixed(2)}x exposure • Risk ×{leverageInfo.riskMultiplier.toFixed(1)}
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Footer */}

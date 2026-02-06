@@ -85,7 +85,25 @@ export function StackPreview({
     onBack,
     onFinish
 }: StackPreviewProps) {
-    const { lastUpdated, isLoading } = useApyStore();
+    const { lastUpdated, isLoading, getApyForProtocol, apyData } = useApyStore();
+
+    // Calculate live total APY from slots when live data is available
+    const hasLiveData = Object.keys(apyData).length > 0;
+    const liveTotalApy = hasLiveData
+        ? slots.reduce((sum, slot) => {
+            if (slot.protocolId) {
+                const liveData = getApyForProtocol(slot.protocolId);
+                if (liveData) {
+                    return sum + liveData.currentApy;
+                }
+            }
+            // Fallback to slot.apy if no live data for this protocol
+            return sum + (slot.apy ?? 0);
+        }, 0)
+        : totalApy;
+
+    // Use live total when available, otherwise fall back to prop
+    const displayTotalApy = hasLiveData ? liveTotalApy : totalApy;
 
     return (
         <aside className="sidebar-col">
@@ -110,7 +128,7 @@ export function StackPreview({
                         <span className="apy-label">TOTAL PROJECTED APY</span>
                         <ApyInfoIcon tooltip="Total APY is calculated by summing individual protocol rates. Real-time data from DeFiLlama, updated hourly." />
                     </div>
-                    <span className={`apy-value ${totalApy < 0 ? 'negative' : ''}`}>{totalApy.toFixed(2)}%</span>
+                    <span className={`apy-value ${displayTotalApy < 0 ? 'negative' : ''}`}>{displayTotalApy.toFixed(2)}%</span>
                 </div>
 
                 {/* Data Source Attribution */}

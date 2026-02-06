@@ -84,16 +84,22 @@ export function CanvasEditor() {
     // Calculate total APY using live data when available
     const calculateLiveTotalApy = () => {
         let total = 0;
-        const protocols = [stack.base, stack.engine, stack.income, stack.credit, stack.optimize];
+        const protocols = [stack.base, stack.engine, stack.income, stack.optimize];
         protocols.forEach(protocol => {
             if (protocol) {
                 const effectiveApy = getLiveApy(protocol.id);
                 total += effectiveApy.current;
             }
         });
+        // Credit is handled specially for leverage
+        if (stack.credit) {
+            const effectiveApy = getLiveApy(stack.credit.id);
+            total += effectiveApy.current;
+        }
         return total;
     };
 
+    // Use store's leveraged calculation when leverage is active
     const totalApy = hasLiveData ? calculateLiveTotalApy() : getTotalApy();
     const totalRisk = getTotalRisk();
 

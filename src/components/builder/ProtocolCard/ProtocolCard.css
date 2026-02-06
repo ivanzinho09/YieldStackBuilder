@@ -9,6 +9,37 @@
     position: relative;
 }
 
+.card-badge {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: #22c55e;
+    color: white;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    padding: 4px 8px;
+    border-radius: 2px;
+}
+
+.protocol-card.selected .card-badge {
+    background: #4ade80;
+    color: #14532d;
+}
+
+.card-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    color: var(--ink-light);
+    margin: -16px 0 16px 0;
+    font-style: italic;
+}
+
+.protocol-card.selected .card-subtitle {
+    color: rgba(255, 255, 255, 0.6);
+}
+
 .protocol-card:hover {
     transform: translateY(-4px);
     box-shadow: 12px 12px 0px rgba(0, 0, 0, 0.05);
@@ -143,9 +174,12 @@
 }
 
 @keyframes pulse {
-    0%, 100% {
+
+    0%,
+    100% {
         opacity: 1;
     }
+
     50% {
         opacity: 0.5;
     }
@@ -186,4 +220,44 @@
     .stat-value {
         font-size: 16px;
     }
+}
+
+/* Disabled State */
+.protocol-card.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #f5f5f5;
+    border-color: #e0e0e0;
+}
+
+.protocol-card.disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.card-disabled-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    border: 2px dashed #ccc;
+}
+
+.disabled-reason {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #666;
+    text-align: center;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid #ddd;
 }

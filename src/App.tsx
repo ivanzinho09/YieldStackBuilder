@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './index.css';
 import { LandingPage } from './pages/LandingPage';
+import { BuilderIntro } from './pages/BuilderIntro';
 import { BuilderStep1 } from './pages/BuilderStep1';
 import { BuilderStep2 } from './pages/BuilderStep2';
 import { BuilderStep3 } from './pages/BuilderStep3';
@@ -17,6 +18,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/builder/intro" element={<BuilderIntro />} />
           <Route path="/builder/step-1" element={<BuilderStep1 />} />
           <Route path="/builder/step-2" element={<BuilderStep2 />} />
           <Route path="/builder/step-3" element={<BuilderStep3 />} />

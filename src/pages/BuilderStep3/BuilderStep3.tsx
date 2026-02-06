@@ -1,11 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BuilderHeader } from '../../components/builder/BuilderHeader';
 import { StepIndicator } from '../../components/builder/StepIndicator';
 import { ProtocolCard, type Protocol } from '../../components/builder/ProtocolCard';
 import { StackPreview, type StackSlotData } from '../../components/builder/StackPreview';
 import { useBuilderStore } from '../../stores/builderStore';
-import { incomeProtocols, getRiskLevel } from '../../data/protocols';
+import { incomeProtocols, getRiskLevel, engineToIncomeRules } from '../../data/protocols';
 import '../BuilderStep1/BuilderStep1.css';
 
 export function BuilderStep3() {
@@ -19,12 +19,38 @@ export function BuilderStep3() {
         }
     }, [stack.engine, navigate]);
 
-    // Set default selection
-    useEffect(() => {
-        if (!stack.income && incomeProtocols.length > 0) {
-            setIncome(incomeProtocols[0]);
+    // Get compatibility rules for selected engine
+    const compatibilityInfo = useMemo(() => {
+        if (!stack.engine) return null;
+        return engineToIncomeRules[stack.engine.id];
+    }, [stack.engine]);
+
+    // Split protocols into compatible and incompatible
+    const { compatibleProtocols, incompatibleProtocols } = useMemo(() => {
+        if (!compatibilityInfo) {
+            return { compatibleProtocols: incomeProtocols, incompatibleProtocols: [] };
         }
-    }, [stack.income, setIncome]);
+
+        const compatible: Protocol[] = [];
+        const incompatible: Protocol[] = [];
+
+        incomeProtocols.forEach(protocol => {
+            if (compatibilityInfo.compatible.includes(protocol.id)) {
+                compatible.push(protocol);
+            } else {
+                incompatible.push(protocol);
+            }
+        });
+
+        return { compatibleProtocols: compatible, incompatibleProtocols: incompatible };
+    }, [compatibilityInfo]);
+
+    // Set default selection from compatible protocols
+    useEffect(() => {
+        if (!stack.income && compatibleProtocols.length > 0) {
+            setIncome(compatibleProtocols[0]);
+        }
+    }, [stack.income, setIncome, compatibleProtocols]);
 
     const selectedProtocol = stack.income;
 
@@ -72,6 +98,10 @@ export function BuilderStep3() {
         navigate('/builder/step-4');
     };
 
+    const getApyOverride = (protocolId: string): number | undefined => {
+        return compatibilityInfo?.apyOverrides?.[protocolId];
+    };
+
     return (
         <div className="builder-layout">
             <BuilderHeader />
@@ -86,13 +116,32 @@ export function BuilderStep3() {
 
                     <h1 className="hero-title">Lock In Your Fixed Rate</h1>
 
+                    {stack.engine && (
+                        <p className="step-description">
+                            Showing fixed income options compatible with {stack.engine.name}.
+                            {incompatibleProtocols.length > 0 && ` ${incompatibleProtocols.length} options are not available.`}
+                        </p>
+                    )}
+
                     <div className="protocol-grid">
-                        {incomeProtocols.map((protocol) => (
+                        {compatibleProtocols.map((protocol) => (
                             <ProtocolCard
                                 key={protocol.id}
                                 protocol={protocol}
                                 isSelected={selectedProtocol?.id === protocol.id}
                                 onClick={() => handleSelect(protocol)}
+                                apyOverride={getApyOverride(protocol.id)}
+                            />
+                        ))}
+
+                        {incompatibleProtocols.map((protocol) => (
+                            <ProtocolCard
+                                key={protocol.id}
+                                protocol={protocol}
+                                isSelected={false}
+                                onClick={() => { }}
+                                disabled={true}
+                                disabledReason={`Not compatible with ${stack.engine?.name || 'selected engine'}`}
                             />
                         ))}
                     </div>

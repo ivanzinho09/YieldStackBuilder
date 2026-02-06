@@ -1,16 +1,18 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BuilderHeader } from '../../components/builder/BuilderHeader';
 import { StepIndicator } from '../../components/builder/StepIndicator';
 import { ProtocolCard, type Protocol } from '../../components/builder/ProtocolCard';
 import { StackPreview, type StackSlotData } from '../../components/builder/StackPreview';
+import { LeverageSlider } from '../../components/builder/LeverageSlider';
 import { useBuilderStore } from '../../stores/builderStore';
-import { creditProtocols, getRiskLevel } from '../../data/protocols';
+import { creditProtocols, getRiskLevel, incomeToCreditRules } from '../../data/protocols';
 import '../BuilderStep1/BuilderStep1.css';
+import './BuilderStep4.css';
 
 export function BuilderStep4() {
     const navigate = useNavigate();
-    const { stack, setCredit, getTotalApy } = useBuilderStore();
+    const { stack, setCredit, getTotalApy, leverageLoops, setLeverageLoops, getLeveragedApy } = useBuilderStore();
 
     // Redirect if no income selected
     useEffect(() => {
@@ -19,14 +21,42 @@ export function BuilderStep4() {
         }
     }, [stack.income, navigate]);
 
-    // Set default selection
-    useEffect(() => {
-        if (!stack.credit && creditProtocols.length > 0) {
-            setCredit(creditProtocols[0]);
+    // Get compatibility rules for selected income
+    const compatibilityInfo = useMemo(() => {
+        if (!stack.income) return null;
+        return incomeToCreditRules[stack.income.id];
+    }, [stack.income]);
+
+    // Split protocols into compatible and incompatible
+    const { compatibleProtocols, incompatibleProtocols } = useMemo(() => {
+        if (!compatibilityInfo) {
+            return { compatibleProtocols: creditProtocols, incompatibleProtocols: [] };
         }
-    }, [stack.credit, setCredit]);
+
+        const compatible: Protocol[] = [];
+        const incompatible: Protocol[] = [];
+
+        creditProtocols.forEach(protocol => {
+            if (compatibilityInfo.compatible.includes(protocol.id)) {
+                compatible.push(protocol);
+            } else {
+                incompatible.push(protocol);
+            }
+        });
+
+        return { compatibleProtocols: compatible, incompatibleProtocols: incompatible };
+    }, [compatibilityInfo]);
+
+    // Set default selection from compatible protocols
+    useEffect(() => {
+        if (!stack.credit && compatibleProtocols.length > 0) {
+            setCredit(compatibleProtocols[0]);
+        }
+    }, [stack.credit, setCredit, compatibleProtocols]);
 
     const selectedProtocol = stack.credit;
+    const leverageInfo = getLeveragedApy();
+    const isLeveraged = selectedProtocol && selectedProtocol.id !== 'skip-credit';
 
     const slots: StackSlotData[] = [
         {
@@ -70,6 +100,10 @@ export function BuilderStep4() {
 
     const handleSelect = (protocol: Protocol) => {
         setCredit(protocol);
+        // Reset leverage if "No Leverage" is selected
+        if (protocol.id === 'skip-credit') {
+            setLeverageLoops(1);
+        }
     };
 
     const handleNext = () => {
@@ -90,8 +124,15 @@ export function BuilderStep4() {
 
                     <h1 className="hero-title">Add Leverage to Your Stack</h1>
 
+                    {stack.income && (
+                        <p className="step-description">
+                            Select a borrowing protocol to create a looped leverage position.
+                            The borrowed funds are re-deposited to amplify yield.
+                        </p>
+                    )}
+
                     <div className="protocol-grid">
-                        {creditProtocols.map((protocol) => (
+                        {compatibleProtocols.map((protocol) => (
                             <ProtocolCard
                                 key={protocol.id}
                                 protocol={protocol}
@@ -99,7 +140,28 @@ export function BuilderStep4() {
                                 onClick={() => handleSelect(protocol)}
                             />
                         ))}
+
+                        {incompatibleProtocols.map((protocol) => (
+                            <ProtocolCard
+                                key={protocol.id}
+                                protocol={protocol}
+                                isSelected={false}
+                                onClick={() => { }}
+                                disabled={true}
+                                disabledReason={`Not compatible with ${stack.income?.name || 'selected income'}`}
+                            />
+                        ))}
                     </div>
+
+                    {/* Leverage Slider - only show when a credit protocol is selected */}
+                    {isLeveraged && (
+                        <LeverageSlider
+                            loops={leverageLoops}
+                            onLoopsChange={setLeverageLoops}
+                            borrowCost={Math.abs(selectedProtocol?.baseApy || 0)}
+                            leverageInfo={leverageInfo}
+                        />
+                    )}
                 </main>
 
                 <StackPreview

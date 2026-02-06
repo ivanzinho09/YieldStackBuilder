@@ -18,7 +18,7 @@ export function Hero() {
                 </p>
 
                 <div className="hero-buttons">
-                    <Link to="/builder/step-1" className="btn-main">Start Building →</Link>
+                    <Link to="/builder/intro" className="btn-main">Start Building →</Link>
                     <Link to="/builder/canvas" className="btn-secondary">Open Canvas →</Link>
                 </div>
 

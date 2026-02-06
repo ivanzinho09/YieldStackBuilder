@@ -15,6 +15,29 @@
     font-size: 14px;
 }
 
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.restart-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-light);
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    transition: color 0.15s ease;
+}
+
+.restart-btn:hover {
+    color: var(--ink);
+}
+
 .exit-builder {
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
@@ -25,6 +48,11 @@
     background: none;
     border: none;
     text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.exit-builder:hover {
+    color: var(--ink);
 }
 
 /* Mobile adjustments for BuilderHeader */
@@ -37,11 +65,11 @@
         font-size: 12px;
     }
 
-    .exit-builder span {
-        display: none;
+    .header-actions {
+        gap: 16px;
     }
 
-    .exit-builder::after {
-        content: 'EXIT';
+    .restart-btn {
+        display: none;
     }
 }

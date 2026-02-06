@@ -52,19 +52,28 @@ export const useApyStore = create<ApyStoreState>((set, get) => ({
 }));
 
 // Default/fallback APY values when API is unavailable
+// Values represent medians from typical ranges
 export const FALLBACK_APY_DATA: Record<string, { currentApy: number; avgApy30d: number }> = {
-    // BASE
+    // BASE - Non-yield stables (0% native)
     'usdc': { currentApy: 0, avgApy30d: 0 },
     'usdt': { currentApy: 0, avgApy30d: 0 },
-    'dai': { currentApy: 5.0, avgApy30d: 5.0 },
-    'usde': { currentApy: 14.2, avgApy30d: 12.5 },
+    'dai': { currentApy: 0, avgApy30d: 0 },
+    'usde': { currentApy: 0, avgApy30d: 0 },
     'frax': { currentApy: 0, avgApy30d: 0 },
 
+    // BASE - Yield-bearing stables (native APY)
+    'susde': { currentApy: 10, avgApy30d: 12 }, // Median 5-25%
+    'usdtb': { currentApy: 4.2, avgApy30d: 4.2 }, // ~4.2% via BUIDL
+    'susds': { currentApy: 6.5, avgApy30d: 6.0 }, // DSR rate
+    'usdy': { currentApy: 4.35, avgApy30d: 4.35 }, // T-bill rate
+    'sfrax': { currentApy: 5.0, avgApy30d: 5.0 }, // Protocol yield
+
     // ENGINE
-    'aave-supply': { currentApy: 4.2, avgApy30d: 4.0 },
-    'ethena-susde': { currentApy: 25.0, avgApy30d: 22.0 },
+    'already-staked': { currentApy: 0, avgApy30d: 0 },
+    'aave-supply': { currentApy: 3.0, avgApy30d: 3.0 },
+    'ethena-susde': { currentApy: 10, avgApy30d: 12 }, // Stake USDe → sUSDe
     'lido-steth': { currentApy: 3.2, avgApy30d: 3.1 },
-    'maker-dsr': { currentApy: 5.0, avgApy30d: 5.0 },
+    'maker-dsr': { currentApy: 6.5, avgApy30d: 6.0 },
     'frax-sfrxeth': { currentApy: 4.1, avgApy30d: 3.8 },
 
     // INCOME
@@ -72,18 +81,26 @@ export const FALLBACK_APY_DATA: Record<string, { currentApy: number; avgApy30d: 
     'pendle-yt': { currentApy: 0, avgApy30d: 0 },
     'notional': { currentApy: 8.5, avgApy30d: 8.0 },
     'term-finance': { currentApy: 7.2, avgApy30d: 7.0 },
+    'skip-income': { currentApy: 0, avgApy30d: 0 },
 
     // CREDIT (borrowing - negative)
     'aave-borrow': { currentApy: -8.0, avgApy30d: -7.5 },
     'morpho': { currentApy: -6.5, avgApy30d: -6.0 },
     'maple': { currentApy: -7.8, avgApy30d: -7.5 },
     'euler': { currentApy: -7.2, avgApy30d: -7.0 },
+    'skip-credit': { currentApy: 0, avgApy30d: 0 },
 
     // OPTIMIZE
     'beefy': { currentApy: 2.0, avgApy30d: 2.0 },
     'yearn': { currentApy: 3.0, avgApy30d: 3.0 },
     'sommelier': { currentApy: 4.0, avgApy30d: 4.0 },
     'none': { currentApy: 0, avgApy30d: 0 },
+
+    // WHITELABEL ISSUERS (hypothetical yields - require integration)
+    'paxos-wl': { currentApy: 4.5, avgApy30d: 4.5 }, // T-bill rev-share
+    'circle-wl': { currentApy: 2.5, avgApy30d: 2.5 }, // Partnership yield
+    'ethena-wl-tbill': { currentApy: 4.2, avgApy30d: 4.2 }, // USDtb backing
+    'ethena-wl-delta': { currentApy: 13, avgApy30d: 15 }, // sUSDe funding rates
 };
 
 /**

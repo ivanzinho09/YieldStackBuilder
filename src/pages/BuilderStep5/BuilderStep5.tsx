@@ -1,11 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BuilderHeader } from '../../components/builder/BuilderHeader';
 import { StepIndicator } from '../../components/builder/StepIndicator';
 import { ProtocolCard, type Protocol } from '../../components/builder/ProtocolCard';
 import { StackPreview, type StackSlotData } from '../../components/builder/StackPreview';
 import { useBuilderStore } from '../../stores/builderStore';
-import { optimizeProtocols, getRiskLevel } from '../../data/protocols';
+import { optimizeProtocols, getRiskLevel, creditToOptimizeRules } from '../../data/protocols';
 import '../BuilderStep1/BuilderStep1.css';
 
 export function BuilderStep5() {
@@ -19,12 +19,38 @@ export function BuilderStep5() {
         }
     }, [stack.credit, navigate]);
 
-    // Set default selection
-    useEffect(() => {
-        if (!stack.optimize && optimizeProtocols.length > 0) {
-            setOptimize(optimizeProtocols[0]);
+    // Get compatibility rules for selected credit
+    const compatibilityInfo = useMemo(() => {
+        if (!stack.credit) return null;
+        return creditToOptimizeRules[stack.credit.id];
+    }, [stack.credit]);
+
+    // Split protocols into compatible and incompatible
+    const { compatibleProtocols, incompatibleProtocols } = useMemo(() => {
+        if (!compatibilityInfo) {
+            return { compatibleProtocols: optimizeProtocols, incompatibleProtocols: [] };
         }
-    }, [stack.optimize, setOptimize]);
+
+        const compatible: Protocol[] = [];
+        const incompatible: Protocol[] = [];
+
+        optimizeProtocols.forEach(protocol => {
+            if (compatibilityInfo.compatible.includes(protocol.id)) {
+                compatible.push(protocol);
+            } else {
+                incompatible.push(protocol);
+            }
+        });
+
+        return { compatibleProtocols: compatible, incompatibleProtocols: incompatible };
+    }, [compatibilityInfo]);
+
+    // Set default selection from compatible protocols
+    useEffect(() => {
+        if (!stack.optimize && compatibleProtocols.length > 0) {
+            setOptimize(compatibleProtocols[0]);
+        }
+    }, [stack.optimize, setOptimize, compatibleProtocols]);
 
     const selectedProtocol = stack.optimize;
 
@@ -93,13 +119,31 @@ export function BuilderStep5() {
 
                     <h1 className="hero-title">Choose Your Auto-Management</h1>
 
+                    {stack.credit && (
+                        <p className="step-description">
+                            Select an optimizer to auto-manage your yield position.
+                            {incompatibleProtocols.length > 0 && ` ${incompatibleProtocols.length} options are not available.`}
+                        </p>
+                    )}
+
                     <div className="protocol-grid">
-                        {optimizeProtocols.map((protocol) => (
+                        {compatibleProtocols.map((protocol) => (
                             <ProtocolCard
                                 key={protocol.id}
                                 protocol={protocol}
                                 isSelected={selectedProtocol?.id === protocol.id}
                                 onClick={() => handleSelect(protocol)}
+                            />
+                        ))}
+
+                        {incompatibleProtocols.map((protocol) => (
+                            <ProtocolCard
+                                key={protocol.id}
+                                protocol={protocol}
+                                isSelected={false}
+                                onClick={() => { }}
+                                disabled={true}
+                                disabledReason={`Not compatible with ${stack.credit?.name || 'selected credit'}`}
                             />
                         ))}
                     </div>

@@ -1,12 +1,14 @@
 import { type Protocol } from '../components/builder/ProtocolCard';
 
 // Step 1: BASE - Your starting stablecoin
+// Non-yield bases have 0% APY, yield-bearing bases have native APY
 export const baseProtocols: Protocol[] = [
+    // NON-YIELD STABLES
     {
         id: 'usdc',
         name: 'Circle USDC',
         category: 'FIAT-BACKED STABLE',
-        description: 'The industry standard for dollar-pegged assets. Fully reserved in US cash and short-dated treasuries.',
+        description: 'Industry standard fiat-backed stablecoin. Circle retains reserve yield.',
         baseApy: 0,
         riskScore: 1.2,
     },
@@ -14,7 +16,7 @@ export const baseProtocols: Protocol[] = [
         id: 'usdt',
         name: 'Tether USDT',
         category: 'FIAT-BACKED STABLE',
-        description: 'The largest stablecoin by market cap. Backed by reserves including cash, bonds, and other assets.',
+        description: 'Largest stablecoin by market cap. Tether retains reserve yield.',
         baseApy: 0,
         riskScore: 2.5,
     },
@@ -22,45 +24,94 @@ export const baseProtocols: Protocol[] = [
         id: 'dai',
         name: 'Sky Dai (DAI)',
         category: 'CDP-BACKED STABLE',
-        description: 'The longest standing decentralized stablecoin, backed by a mix of crypto-assets and RWA.',
-        baseApy: 5,
-        riskScore: 3.8,
+        description: 'Decentralized stablecoin. Stake to sUSDS to earn DSR yield.',
+        baseApy: 0,
+        riskScore: 3.0,
     },
     {
         id: 'usde',
         name: 'Ethena USDe',
-        category: 'DELTA-NEUTRAL STABLE',
-        description: 'Synthetic dollar providing internet bond yield through delta-neutral hedging strategies.',
-        baseApy: 14.2,
-        riskScore: 6.5,
+        category: 'SYNTHETIC STABLE',
+        description: 'Synthetic dollar from delta-neutral hedging. Stake to sUSDe for yield.',
+        baseApy: 0,
+        riskScore: 4.0,
     },
     {
         id: 'frax',
         name: 'Frax FRAX',
         category: 'HYBRID STABLE',
-        description: 'Partially algorithmic stablecoin with dynamic collateral ratio and yield-generating features.',
+        description: 'Hybrid stablecoin. Stake to sFRAX to earn protocol yield.',
         baseApy: 0,
-        riskScore: 4.2,
+        riskScore: 3.5,
+    },
+    // YIELD-BEARING STABLES (native APY)
+    {
+        id: 'susde',
+        name: 'Ethena sUSDe',
+        category: 'YIELD-BEARING STABLE',
+        description: 'Staked USDe earning from funding rates. Variable 5-25% APY.',
+        baseApy: 10, // Median 5-25%
+        riskScore: 5.5,
+    },
+    {
+        id: 'usdtb',
+        name: 'Ethena USDtb',
+        category: 'RWA STABLE',
+        description: 'Backed by BlackRock BUIDL. Stable ~4.2% yield.',
+        baseApy: 4.2,
+        riskScore: 2.5,
+    },
+    {
+        id: 'susds',
+        name: 'Sky sUSDS',
+        category: 'CDP STABLE',
+        description: 'Staked USDS earning DSR. Variable 4-8% APY.',
+        baseApy: 6.5, // Current DSR
+        riskScore: 3.0,
+    },
+    {
+        id: 'usdy',
+        name: 'Ondo USDY',
+        category: 'RWA STABLE',
+        description: 'Tokenized US Treasuries with yield passthrough.',
+        baseApy: 4.35,
+        riskScore: 2.0,
+    },
+    {
+        id: 'sfrax',
+        name: 'Frax sFRAX',
+        category: 'HYBRID STABLE',
+        description: 'Staked FRAX earning protocol yield.',
+        baseApy: 5.0,
+        riskScore: 4.0,
     },
 ];
 
 // Step 2: ENGINE - Where yield comes from
 export const engineProtocols: Protocol[] = [
     {
+        id: 'already-staked',
+        name: 'Already Earning Yield',
+        category: 'NATIVE YIELD',
+        description: 'Your selected stablecoin already earns yield natively. No additional engine needed.',
+        baseApy: 0,
+        riskScore: 0,
+    },
+    {
         id: 'aave-supply',
         name: 'Aave Supply',
         category: 'LENDING PROTOCOL',
         description: 'Supply assets to earn variable interest from borrowers. Blue-chip DeFi with battle-tested security.',
-        baseApy: 4.2,
+        baseApy: 3.0, // Median USDC/USDT lending rate
         riskScore: 2.5,
     },
     {
         id: 'ethena-susde',
-        name: 'Ethena sUSDe',
+        name: 'Stake to sUSDe',
         category: 'FUNDING RATE ARBITRAGE',
-        description: 'Stake USDe to earn yield from perpetual funding rates. Higher yield, higher complexity.',
-        baseApy: 25,
-        riskScore: 6.8,
+        description: 'Stake USDe to receive sUSDe and earn yield from perpetual funding rates. Variable 5-25% APY.',
+        baseApy: 10, // Median of 5-25% range
+        riskScore: 5.5,
     },
     {
         id: 'lido-steth',
@@ -122,6 +173,14 @@ export const incomeProtocols: Protocol[] = [
         baseApy: 7.2,
         riskScore: 4.2,
     },
+    {
+        id: 'skip-income',
+        name: 'Skip This Step',
+        category: 'VARIABLE RATE',
+        description: 'Continue with variable yield rather than locking in a fixed rate. Simpler but less predictable.',
+        baseApy: 0,
+        riskScore: 0,
+    },
 ];
 
 // Step 4: CREDIT - Add leverage
@@ -157,6 +216,14 @@ export const creditProtocols: Protocol[] = [
         description: 'Highly customizable risk parameters. Build bespoke lending markets for any asset.',
         baseApy: -7.2,
         riskScore: 5.8,
+    },
+    {
+        id: 'skip-credit',
+        name: 'No Leverage',
+        category: 'UNLEVERAGED',
+        description: 'Skip borrowing and keep your position unleveraged. Lower risk, lower potential returns.',
+        baseApy: 0,
+        riskScore: 0,
     },
 ];
 
@@ -196,7 +263,212 @@ export const optimizeProtocols: Protocol[] = [
     },
 ];
 
-// Connection rules for validation
+// ============================================================================
+// COMPATIBILITY RULES
+// Maps: protocolId -> array of compatible next-step protocol IDs
+// If a protocol is not in the list, it's incompatible with that selection
+// ============================================================================
+
+export interface CompatibilityInfo {
+    compatible: string[];
+    apyOverrides?: Record<string, number>; // Override APY for specific combinations
+}
+
+// BASE (issuers) → ENGINE compatibility
+// Yield-bearing stables show "already-staked" option (0% additional APY)
+// Non-yield stables show actual yield engines
+export const baseToEngineRules: Record<string, CompatibilityInfo> = {
+    // ============ NON-YIELD STABLES (need yield engine) ============
+    'usdc': {
+        compatible: ['aave-supply'],
+        apyOverrides: { 'aave-supply': 2.87 }
+    },
+    'usdt': {
+        compatible: ['aave-supply'],
+        apyOverrides: { 'aave-supply': 2.52 }
+    },
+    'dai': {
+        compatible: ['aave-supply', 'maker-dsr'],
+        apyOverrides: { 'aave-supply': 3.1, 'maker-dsr': 6.5 }
+    },
+    'usde': {
+        compatible: ['ethena-susde'], // Stake USDe → sUSDe
+        apyOverrides: { 'ethena-susde': 10 } // Median 5-25%
+    },
+    'frax': {
+        compatible: ['aave-supply', 'frax-sfrxeth'],
+        apyOverrides: { 'aave-supply': 2.5, 'frax-sfrxeth': 5.0 }
+    },
+
+    // ============ YIELD-BEARING STABLES (already staked) ============
+    // These show "Already Earning Yield" - base APY counted, engine = 0%
+    'susde': {
+        compatible: ['already-staked', 'aave-supply'],
+        apyOverrides: { 'already-staked': 0, 'aave-supply': 0 } // Use as collateral only
+    },
+    'usdtb': {
+        compatible: ['already-staked', 'aave-supply'],
+        apyOverrides: { 'already-staked': 0, 'aave-supply': 0 }
+    },
+    'susds': {
+        compatible: ['already-staked', 'aave-supply'],
+        apyOverrides: { 'already-staked': 0, 'aave-supply': 0 }
+    },
+    'usdy': {
+        compatible: ['already-staked', 'aave-supply'],
+        apyOverrides: { 'already-staked': 0, 'aave-supply': 0 }
+    },
+    'sfrax': {
+        compatible: ['already-staked', 'aave-supply'],
+        apyOverrides: { 'already-staked': 0, 'aave-supply': 0 }
+    },
+
+    // ============ WHITELABEL ISSUERS ============
+    // Note: WL stablecoins require protocol integration before yield engines work
+    'paxos-wl': { compatible: ['already-staked', 'aave-supply'] }, // Already has T-bill yield
+    'circle-wl': { compatible: ['already-staked', 'aave-supply'] }, // Partnership yield baked in
+    'ethena-wl-tbill': { compatible: ['already-staked', 'aave-supply'] }, // USDtb backing = T-bill yield
+    'ethena-wl-delta': { compatible: ['already-staked'] }, // sUSDe backing = funding rate yield
+};
+
+// ENGINE → INCOME compatibility  
+export const engineToIncomeRules: Record<string, CompatibilityInfo> = {
+    'already-staked': {
+        compatible: ['pendle-pt', 'skip-income'], // Can use PT for fixed rate
+    },
+    'aave-supply': {
+        compatible: ['pendle-pt', 'notional', 'term-finance', 'skip-income']
+    },
+    'ethena-susde': {
+        compatible: ['pendle-pt', 'pendle-yt', 'skip-income'],
+        apyOverrides: { 'pendle-pt': 22 } // sUSDe Pendle market specific
+    },
+    'lido-steth': {
+        compatible: ['pendle-pt', 'pendle-yt', 'skip-income'],
+        apyOverrides: { 'pendle-pt': 8 }
+    },
+    'maker-dsr': {
+        compatible: ['pendle-pt', 'notional', 'skip-income'],
+        apyOverrides: { 'pendle-pt': 6 }
+    },
+    'frax-sfrxeth': {
+        compatible: ['pendle-pt', 'skip-income']
+    },
+};
+
+// INCOME → CREDIT compatibility
+export const incomeToCreditRules: Record<string, CompatibilityInfo> = {
+    'pendle-pt': {
+        compatible: ['aave-borrow', 'morpho', 'euler', 'skip-credit']
+    },
+    'pendle-yt': {
+        compatible: ['aave-borrow', 'skip-credit'] // YT less accepted as collateral
+    },
+    'notional': {
+        compatible: ['aave-borrow', 'morpho', 'skip-credit']
+    },
+    'term-finance': {
+        compatible: ['aave-borrow', 'skip-credit']
+    },
+    'skip-income': {
+        compatible: ['aave-borrow', 'morpho', 'euler', 'skip-credit']
+    },
+};
+
+// CREDIT → OPTIMIZE compatibility
+export const creditToOptimizeRules: Record<string, CompatibilityInfo> = {
+    'aave-borrow': {
+        compatible: ['beefy', 'yearn', 'sommelier', 'none']
+    },
+    'morpho': {
+        compatible: ['beefy', 'yearn', 'sommelier', 'none']
+    },
+    'maple': {
+        compatible: ['yearn', 'sommelier', 'none'] // Less aggregator support
+    },
+    'euler': {
+        compatible: ['beefy', 'yearn', 'sommelier', 'none']
+    },
+    'skip-credit': {
+        compatible: ['beefy', 'yearn', 'sommelier', 'none']
+    },
+};
+
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+export function getCompatibleEngines(baseId: string): { protocol: Protocol; apyOverride?: number }[] {
+    const rules = baseToEngineRules[baseId];
+    if (!rules) return engineProtocols.map(p => ({ protocol: p })); // Allow all if no rules
+
+    return engineProtocols.map(protocol => ({
+        protocol,
+        apyOverride: rules.apyOverrides?.[protocol.id],
+        isCompatible: rules.compatible.includes(protocol.id)
+    })).filter(p => p.isCompatible);
+}
+
+export function getCompatibleIncome(engineId: string): { protocol: Protocol; apyOverride?: number }[] {
+    const rules = engineToIncomeRules[engineId];
+    if (!rules) return incomeProtocols.map(p => ({ protocol: p }));
+
+    return incomeProtocols.map(protocol => ({
+        protocol,
+        apyOverride: rules.apyOverrides?.[protocol.id],
+        isCompatible: rules.compatible.includes(protocol.id)
+    })).filter(p => p.isCompatible);
+}
+
+export function getCompatibleCredit(incomeId: string): { protocol: Protocol; apyOverride?: number }[] {
+    const rules = incomeToCreditRules[incomeId];
+    if (!rules) return creditProtocols.map(p => ({ protocol: p }));
+
+    return creditProtocols.map(protocol => ({
+        protocol,
+        apyOverride: rules.apyOverrides?.[protocol.id],
+        isCompatible: rules.compatible.includes(protocol.id)
+    })).filter(p => p.isCompatible);
+}
+
+export function getCompatibleOptimize(creditId: string): { protocol: Protocol }[] {
+    const rules = creditToOptimizeRules[creditId];
+    if (!rules) return optimizeProtocols.map(p => ({ protocol: p }));
+
+    return optimizeProtocols
+        .filter(protocol => rules.compatible.includes(protocol.id))
+        .map(protocol => ({ protocol }));
+}
+
+// Check if a specific protocol is compatible with the current selection
+export function isProtocolCompatible(
+    step: 'engine' | 'income' | 'credit' | 'optimize',
+    protocolId: string,
+    previousSelectionId: string
+): boolean {
+    let rules: Record<string, CompatibilityInfo>;
+
+    switch (step) {
+        case 'engine': rules = baseToEngineRules; break;
+        case 'income': rules = engineToIncomeRules; break;
+        case 'credit': rules = incomeToCreditRules; break;
+        case 'optimize': rules = creditToOptimizeRules; break;
+    }
+
+    const rule = rules[previousSelectionId];
+    if (!rule) return true; // No rules = all compatible
+    return rule.compatible.includes(protocolId);
+}
+
+// Get incompatibility reason
+export function getIncompatibilityReason(
+    _protocolName: string,
+    previousProtocolName: string
+): string {
+    return `Not compatible with ${previousProtocolName}`;
+}
+
+// Legacy connection rules (kept for backward compatibility)
 export const connectionRules: Record<string, string[]> = {
     // BASE → ENGINE connections
     'usdc': ['aave-supply', 'ethena-susde', 'maker-dsr'],
@@ -251,4 +523,40 @@ export function calculateTotalRisk(selections: Record<string, Protocol | null>):
         }
     });
     return count > 0 ? total / count : 0;
+}
+
+// ============================================================================
+// LEVERAGE CALCULATION
+// ============================================================================
+
+/**
+ * Calculate leveraged APY using the looping formula
+ * @param baseYield - The yield you earn on deposited collateral
+ * @param borrowCost - The interest rate you pay on borrowed funds (positive number)
+ * @param ltv - Loan-to-value ratio (e.g., 0.75 for 75% LTV)
+ * @param loops - Number of leverage loops (1 = no leverage)
+ */
+export function calculateLeveragedApy(
+    baseYield: number,
+    borrowCost: number,
+    ltv: number,
+    loops: number
+): { effectiveApy: number; totalExposure: number; riskMultiplier: number } {
+    if (loops <= 1) {
+        return { effectiveApy: baseYield, totalExposure: 1, riskMultiplier: 1 };
+    }
+
+    // Calculate total exposure multiplier: 1 + LTV + LTV^2 + ... + LTV^(loops-1)
+    // This is a geometric series: (1 - LTV^loops) / (1 - LTV)
+    const totalExposure = (1 - Math.pow(ltv, loops)) / (1 - ltv);
+
+    // Effective APY = baseYield * exposure - borrowCost * (exposure - 1)
+    const leveragedYield = baseYield * totalExposure;
+    const totalBorrowCost = borrowCost * (totalExposure - 1);
+    const effectiveApy = leveragedYield - totalBorrowCost;
+
+    // Risk multiplier (simplified: each loop adds ~1x risk)
+    const riskMultiplier = Math.min(loops * 0.8 + 0.2, 3); // Cap at 3x
+
+    return { effectiveApy, totalExposure, riskMultiplier };
 }
