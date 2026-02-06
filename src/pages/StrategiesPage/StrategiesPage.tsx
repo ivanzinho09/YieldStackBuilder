@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { strategies, type Strategy } from '../../data/strategies';
 import { StrategyCard } from '../../components/StrategyCard';
@@ -102,6 +102,56 @@ export function StrategiesPage() {
         return acc;
     }, {} as Record<string, number>);
 
+    const tiledStrategies = useMemo(() => {
+        const bounds = strategies.reduce(
+            (acc, strategy) => {
+                acc.minX = Math.min(acc.minX, strategy.position.x);
+                acc.maxX = Math.max(acc.maxX, strategy.position.x);
+                acc.minY = Math.min(acc.minY, strategy.position.y);
+                acc.maxY = Math.max(acc.maxY, strategy.position.y);
+                return acc;
+            },
+            {
+                minX: Number.POSITIVE_INFINITY,
+                maxX: Number.NEGATIVE_INFINITY,
+                minY: Number.POSITIVE_INFINITY,
+                maxY: Number.NEGATIVE_INFINITY,
+            }
+        );
+
+        const tileWidth = bounds.maxX - bounds.minX + 500;
+        const tileHeight = bounds.maxY - bounds.minY + 420;
+        const tiles = [-2, -1, 0, 1, 2];
+
+        const randomFromSeed = (seed: number) => {
+            const x = Math.sin(seed) * 10000;
+            return x - Math.floor(x);
+        };
+
+        return tiles.flatMap((tileX) =>
+            tiles.flatMap((tileY) =>
+                strategies
+                    .filter((strategy, index) => {
+                        const seed = tileX * 31 + tileY * 17 + index * 13;
+                        return randomFromSeed(seed) > 0.14;
+                    })
+                    .map((strategy, index) => {
+                        const seed = tileX * 37 + tileY * 29 + index * 11;
+                        const jitterX = (randomFromSeed(seed) - 0.5) * 120;
+                        const jitterY = (randomFromSeed(seed + 5) - 0.5) * 120;
+                        return {
+                            key: `${strategy.id}-${tileX}-${tileY}`,
+                            strategy,
+                            position: {
+                                x: strategy.position.x + tileX * tileWidth + jitterX,
+                                y: strategy.position.y + tileY * tileHeight + jitterY,
+                            },
+                        };
+                    })
+            )
+        );
+    }, []);
+
     return (
         <div className="strategies-layout">
             {/* Header */}
@@ -150,8 +200,9 @@ export function StrategiesPage() {
 
                 {/* Strategy count */}
                 <div className="canvas-count">
-                    <span className="count-number">{strategies.length}</span>
+                    <span className="count-number">∞</span>
                     <span>STRATEGIES</span>
+                    <span className="count-subtitle">25 blueprints, endlessly remixed</span>
                 </div>
 
                 {/* Infinite Canvas */}
@@ -162,18 +213,18 @@ export function StrategiesPage() {
                         transform: `translate(${offset.x}px, ${offset.y}px)`,
                     }}
                 >
-                    {strategies.map((strategy) => (
+                    {tiledStrategies.map((entry) => (
                         <div
-                            key={strategy.id}
+                            key={entry.key}
                             className="canvas-card-wrapper"
                             style={{
-                                left: strategy.position.x,
-                                top: strategy.position.y,
+                                left: entry.position.x,
+                                top: entry.position.y,
                             }}
                         >
                             <StrategyCard
-                                strategy={strategy}
-                                onClick={() => handleCardClick(strategy)}
+                                strategy={entry.strategy}
+                                onClick={() => handleCardClick(entry.strategy)}
                             />
                         </div>
                     ))}
