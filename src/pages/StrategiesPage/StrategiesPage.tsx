@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { strategies, type Strategy } from '../../data/strategies';
 import { StrategyCard } from '../../components/StrategyCard';
@@ -8,12 +8,16 @@ import './StrategiesPage.css';
 export function StrategiesPage() {
     const canvasRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+    const offsetRef = useRef({ x: 0, y: 0 });
+    const dragStartRef = useRef({ x: 0, y: 0 });
+    const initialOffsetRef = useRef({ x: 0, y: 0 });
+    const pendingOffsetRef = useRef({ x: 0, y: 0 });
+    const animationFrameRef = useRef<number | null>(null);
+    const lastTapRef = useRef<{ id: string | null; time: number }>({ id: null, time: 0 });
 
     // Canvas pan state
     const [offset, setOffset] = useState({ x: 0, y: 0 });
     const [isDragging, setIsDragging] = useState(false);
-    const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-    const [initialOffset, setInitialOffset] = useState({ x: 0, y: 0 });
 
     // Modal state
     const [selectedStrategy, setSelectedStrategy] = useState<Strategy | null>(null);
@@ -27,30 +31,46 @@ export function StrategiesPage() {
                 x: rect.width / 2 - 800,
                 y: rect.height / 2 - 500,
             });
+            offsetRef.current = {
+                x: rect.width / 2 - 800,
+                y: rect.height / 2 - 500,
+            };
+        }
+    }, []);
+
+    const scheduleOffsetUpdate = useCallback((nextOffset: { x: number; y: number }) => {
+        pendingOffsetRef.current = nextOffset;
+        if (animationFrameRef.current === null) {
+            animationFrameRef.current = window.requestAnimationFrame(() => {
+                setOffset(pendingOffsetRef.current);
+                offsetRef.current = pendingOffsetRef.current;
+                animationFrameRef.current = null;
+            });
         }
     }, []);
 
     // Mouse handlers for panning
     const handleMouseDown = useCallback((e: React.MouseEvent) => {
         // Don't start drag if clicking on a card
-        if ((e.target as HTMLElement).closest('.strategy-card-flat')) return;
+        if ((e.target as HTMLElement).closest('.canvas-card')) return;
 
         setIsDragging(true);
-        setDragStart({ x: e.clientX, y: e.clientY });
-        setInitialOffset({ ...offset });
-    }, [offset]);
+        const start = { x: e.clientX, y: e.clientY };
+        dragStartRef.current = start;
+        initialOffsetRef.current = { ...offsetRef.current };
+    }, []);
 
     const handleMouseMove = useCallback((e: React.MouseEvent) => {
         if (!isDragging) return;
 
-        const deltaX = e.clientX - dragStart.x;
-        const deltaY = e.clientY - dragStart.y;
+        const deltaX = e.clientX - dragStartRef.current.x;
+        const deltaY = e.clientY - dragStartRef.current.y;
 
-        setOffset({
-            x: initialOffset.x + deltaX,
-            y: initialOffset.y + deltaY,
+        scheduleOffsetUpdate({
+            x: initialOffsetRef.current.x + deltaX,
+            y: initialOffsetRef.current.y + deltaY,
         });
-    }, [isDragging, dragStart, initialOffset]);
+    }, [isDragging, scheduleOffsetUpdate]);
 
     const handleMouseUp = useCallback(() => {
         setIsDragging(false);
@@ -62,33 +82,50 @@ export function StrategiesPage() {
 
     // Touch handlers for mobile
     const handleTouchStart = useCallback((e: React.TouchEvent) => {
-        if ((e.target as HTMLElement).closest('.strategy-card-flat')) return;
+        if ((e.target as HTMLElement).closest('.canvas-card')) return;
 
         const touch = e.touches[0];
         setIsDragging(true);
-        setDragStart({ x: touch.clientX, y: touch.clientY });
-        setInitialOffset({ ...offset });
-    }, [offset]);
+        const start = { x: touch.clientX, y: touch.clientY };
+        dragStartRef.current = start;
+        initialOffsetRef.current = { ...offsetRef.current };
+    }, []);
 
     const handleTouchMove = useCallback((e: React.TouchEvent) => {
         if (!isDragging) return;
 
+        e.preventDefault();
         const touch = e.touches[0];
-        const deltaX = touch.clientX - dragStart.x;
-        const deltaY = touch.clientY - dragStart.y;
+        const deltaX = touch.clientX - dragStartRef.current.x;
+        const deltaY = touch.clientY - dragStartRef.current.y;
 
-        setOffset({
-            x: initialOffset.x + deltaX,
-            y: initialOffset.y + deltaY,
+        scheduleOffsetUpdate({
+            x: initialOffsetRef.current.x + deltaX,
+            y: initialOffsetRef.current.y + deltaY,
         });
-    }, [isDragging, dragStart, initialOffset]);
+    }, [isDragging, scheduleOffsetUpdate]);
 
     const handleTouchEnd = useCallback(() => {
         setIsDragging(false);
     }, []);
 
     // Card selection
-    const handleCardClick = (strategy: Strategy) => {
+    const handleCardSelect = (strategy: Strategy, event: React.PointerEvent<HTMLDivElement>) => {
+        if (isDragging) return;
+
+        if (event.pointerType === 'touch') {
+            const now = Date.now();
+            const lastTap = lastTapRef.current;
+
+            if (lastTap.id === strategy.id && now - lastTap.time < 450) {
+                setSelectedStrategy(strategy);
+                lastTapRef.current = { id: null, time: 0 };
+            } else {
+                lastTapRef.current = { id: strategy.id, time: now };
+            }
+            return;
+        }
+
         setSelectedStrategy(strategy);
     };
 
@@ -101,6 +138,56 @@ export function StrategiesPage() {
         acc[s.type] = (acc[s.type] || 0) + 1;
         return acc;
     }, {} as Record<string, number>);
+
+    const tiledStrategies = useMemo(() => {
+        const bounds = strategies.reduce(
+            (acc, strategy) => {
+                acc.minX = Math.min(acc.minX, strategy.position.x);
+                acc.maxX = Math.max(acc.maxX, strategy.position.x);
+                acc.minY = Math.min(acc.minY, strategy.position.y);
+                acc.maxY = Math.max(acc.maxY, strategy.position.y);
+                return acc;
+            },
+            {
+                minX: Number.POSITIVE_INFINITY,
+                maxX: Number.NEGATIVE_INFINITY,
+                minY: Number.POSITIVE_INFINITY,
+                maxY: Number.NEGATIVE_INFINITY,
+            }
+        );
+
+        const tileWidth = bounds.maxX - bounds.minX + 500;
+        const tileHeight = bounds.maxY - bounds.minY + 420;
+        const tiles = [-2, -1, 0, 1, 2];
+
+        const randomFromSeed = (seed: number) => {
+            const x = Math.sin(seed) * 10000;
+            return x - Math.floor(x);
+        };
+
+        return tiles.flatMap((tileX) =>
+            tiles.flatMap((tileY) =>
+                strategies
+                    .filter((_, index) => {
+                        const seed = tileX * 31 + tileY * 17 + index * 13;
+                        return randomFromSeed(seed) > 0.14;
+                    })
+                    .map((strategy, index) => {
+                        const seed = tileX * 37 + tileY * 29 + index * 11;
+                        const jitterX = (randomFromSeed(seed) - 0.5) * 120;
+                        const jitterY = (randomFromSeed(seed + 5) - 0.5) * 120;
+                        return {
+                            key: `${strategy.id}-${tileX}-${tileY}`,
+                            strategy,
+                            position: {
+                                x: strategy.position.x + tileX * tileWidth + jitterX,
+                                y: strategy.position.y + tileY * tileHeight + jitterY,
+                            },
+                        };
+                    })
+            )
+        );
+    }, []);
 
     return (
         <div className="strategies-layout">
@@ -136,6 +223,13 @@ export function StrategiesPage() {
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseLeave}
+                onWheel={(event) => {
+                    event.preventDefault();
+                    scheduleOffsetUpdate({
+                        x: offsetRef.current.x - event.deltaX,
+                        y: offsetRef.current.y - event.deltaY,
+                    });
+                }}
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
@@ -150,8 +244,9 @@ export function StrategiesPage() {
 
                 {/* Strategy count */}
                 <div className="canvas-count">
-                    <span className="count-number">{strategies.length}</span>
+                    <span className="count-number">∞</span>
                     <span>STRATEGIES</span>
+                    <span className="count-subtitle">25 blueprints, endlessly remixed</span>
                 </div>
 
                 {/* Infinite Canvas */}
@@ -162,18 +257,18 @@ export function StrategiesPage() {
                         transform: `translate(${offset.x}px, ${offset.y}px)`,
                     }}
                 >
-                    {strategies.map((strategy) => (
+                    {tiledStrategies.map((entry) => (
                         <div
-                            key={strategy.id}
+                            key={entry.key}
                             className="canvas-card-wrapper"
                             style={{
-                                left: strategy.position.x,
-                                top: strategy.position.y,
+                                left: entry.position.x,
+                                top: entry.position.y,
                             }}
                         >
                             <StrategyCard
-                                strategy={strategy}
-                                onClick={() => handleCardClick(strategy)}
+                                strategy={entry.strategy}
+                                onSelect={(event) => handleCardSelect(entry.strategy, event)}
                             />
                         </div>
                     ))}
