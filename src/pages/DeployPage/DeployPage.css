@@ -123,41 +123,204 @@
 }
 
 .yield-card {
+    --card-bg: #F2F2F2;
+    --card-content-bg: #FBFBFB;
+    --card-text: #121414;
+    --card-dim: #6B7280;
+    --card-border: #121414;
+    --card-divider: #121414;
+    --card-dotted: rgba(18, 20, 20, 0.4);
+    --card-connector: #121414;
+    --card-pill-bg: #121414;
+    --card-pill-text: #F7F8F7;
+    --card-logo-bg: #FFFFFF;
+    --card-logo-border: #121414;
+    --card-token-bg: #FFFFFF;
+    --card-token-text: #121414;
+    --card-token-inverse-bg: #121414;
+    --card-token-inverse-text: #F7F8F7;
+    --card-chip-border: #121414;
+    --card-chip-text: #121414;
+    --card-frame: #121414;
+    --card-bar: #121414;
+    --card-pattern: rgba(18, 20, 20, 0.18);
+    --card-shadow: 20px 20px 60px rgba(0, 0, 0, 0.1), -1px -1px 0px rgba(255, 255, 255, 0.5) inset;
+    --card-holo-grad: linear-gradient(135deg, #E0E0E0 0%, #FFFFFF 50%, #D6D6D6 100%);
+    --card-holo-border: #CCC;
+
     width: 340px;
     height: 520px;
-    background: #F2F2F2;
-    border: 1px solid var(--text-main);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
     position: relative;
     transform: rotateY(-12deg) rotateX(5deg);
     /* Initial state moved to inline style in React for JS control, but keep as fallback */
     transform-style: preserve-3d;
     transition: transform 0.1s ease-out;
     /* Faster transition for mouse tracking */
-    box-shadow: 20px 20px 60px rgba(0, 0, 0, 0.1),
-        -1px -1px 0px rgba(255, 255, 255, 0.5) inset;
+    box-shadow: var(--card-shadow);
+    color: var(--card-text);
     user-select: none;
+    overflow: hidden;
 }
 
 /* Card Themes */
 .theme-dark {
-    background: #111;
-    color: white;
-    border: 1px solid #333;
+    --card-bg: #0D0F11;
+    --card-content-bg: linear-gradient(180deg, #101317 0%, #090B0F 100%);
+    --card-text: #F5F5F5;
+    --card-dim: #A1A8B3;
+    --card-border: #3B404A;
+    --card-divider: rgba(245, 245, 245, 0.7);
+    --card-dotted: rgba(209, 213, 219, 0.45);
+    --card-connector: #D1D5DB;
+    --card-pill-bg: #F5F5F5;
+    --card-pill-text: #0D0F11;
+    --card-logo-bg: #161A20;
+    --card-logo-border: #4B5563;
+    --card-token-bg: #151922;
+    --card-token-text: #F5F5F5;
+    --card-token-inverse-bg: #F5F5F5;
+    --card-token-inverse-text: #0D0F11;
+    --card-chip-border: #6B7280;
+    --card-chip-text: #F5F5F5;
+    --card-frame: #F5F5F5;
+    --card-bar: #F5F5F5;
+    --card-pattern: rgba(255, 255, 255, 0.14);
+    --card-shadow: 26px 24px 64px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+    --card-holo-grad: linear-gradient(135deg, #7B92B4 0%, #C6D1E5 45%, #8094B7 100%);
+    --card-holo-border: rgba(209, 213, 219, 0.8);
 }
 
-.theme-dark .card-content {
-    background: #111;
-}
-
+/* Improved Liquid Glass */
 .theme-glass {
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    --card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0) 40%, rgba(255, 255, 255, 0.05));
+    --card-content-bg: transparent;
+    /* fully transparent main layer */
+    --card-text: #0B1324;
+    --card-dim: rgba(11, 19, 36, 0.6);
+    --card-border: rgba(255, 255, 255, 0.4);
+    --card-divider: rgba(11, 19, 36, 0.2);
+    --card-dotted: rgba(11, 19, 36, 0.15);
+    --card-connector: rgba(11, 19, 36, 0.2);
+    --card-pill-bg: rgba(255, 255, 255, 0.6);
+    --card-pill-text: #0B1324;
+    --card-logo-bg: rgba(255, 255, 255, 0.5);
+    --card-logo-border: rgba(255, 255, 255, 0.6);
+    --card-token-bg: rgba(255, 255, 255, 0.3);
+    --card-token-text: #0B1324;
+    --card-token-inverse-bg: rgba(11, 19, 36, 0.9);
+    --card-token-inverse-text: #F8FAFC;
+    --card-chip-border: rgba(11, 19, 36, 0.2);
+    --card-chip-text: #0B1324;
+    --card-frame: rgba(255, 255, 255, 0.3);
+    --card-bar: rgba(11, 19, 36, 0.6);
+    --card-pattern: rgba(11, 19, 36, 0.05);
+    --card-shadow:
+        30px 30px 80px rgba(0, 0, 0, 0.25),
+        -1px -1px 0px rgba(255, 255, 255, 0.5) inset;
+
+    background: var(--card-bg);
+    /* Clean, high-fidelity blur - NO distortion filter */
+    backdrop-filter: blur(30px) saturate(180%) contrast(1.1);
+    -webkit-backdrop-filter: blur(30px) saturate(180%) contrast(1.1);
 }
 
-.theme-glass .card-content {
-    background: transparent;
+.liquid-backdrop {
+    position: absolute;
+    inset: 0;
+    opacity: 0.9;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.card-liquid-layer {
+    position: absolute;
+    pointer-events: none;
+    inset: 0;
+    mix-blend-mode: overlay;
+}
+
+.liquid-caustic {
+    inset: -24%;
+    background:
+        radial-gradient(at 0% 0%, rgba(255, 0, 0, 0.1), transparent 50%),
+        radial-gradient(at 100% 0%, rgba(0, 255, 255, 0.15), transparent 50%),
+        radial-gradient(at 100% 100%, rgba(0, 0, 255, 0.1), transparent 50%),
+        radial-gradient(at 0% 100%, rgba(255, 0, 255, 0.15), transparent 50%);
+    mix-blend-mode: color-dodge;
+    filter: blur(20px);
+    opacity: 0.8;
+    z-index: 1;
+    animation: liquidDrift 15s ease-in-out infinite;
+}
+
+.liquid-sheen {
+    inset: -10%;
+    background: linear-gradient(125deg,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.05) 30%,
+            rgba(255, 255, 255, 0.3) 48%,
+            rgba(255, 255, 255, 0.4) 50%,
+            rgba(255, 255, 255, 0.3) 52%,
+            rgba(255, 255, 255, 0.05) 70%,
+            rgba(255, 255, 255, 0) 100%);
+    z-index: 5;
+    mix-blend-mode: overlay;
+    opacity: 0.7;
+    background-size: 200% 200%;
+    filter: blur(8px);
+    animation: liquidSheen 6s ease-in-out infinite;
+}
+
+.liquid-grain {
+    /* Subtle iridescence */
+    opacity: 0.15;
+    background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.2), transparent 1px);
+    background-size: 4px 4px;
+    z-index: 2;
+    mix-blend-mode: overlay;
+}
+
+@keyframes liquidDrift {
+    0% {
+        transform: translate3d(-2.5%, -1.5%, 0) rotate(0deg) scale(1);
+    }
+
+    50% {
+        transform: translate3d(2%, 2.8%, 0) rotate(7deg) scale(1.06);
+    }
+
+    100% {
+        transform: translate3d(-1.5%, -2.2%, 0) rotate(-5deg) scale(1.02);
+    }
+}
+
+@keyframes liquidSheen {
+    0% {
+        background-position: 0% 50%;
+        opacity: 0.7;
+    }
+
+    50% {
+        background-position: 100% 50%;
+        opacity: 0.8;
+    }
+
+    100% {
+        background-position: 0% 50%;
+        opacity: 0.7;
+    }
+}
+
+@keyframes liquidGrain {
+    0% {
+        transform: translate3d(0, 0, 0);
+    }
+
+    100% {
+        transform: translate3d(1px, 1px, 0);
+    }
 }
 
 .yield-card:hover {
@@ -170,7 +333,38 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background: #FBFBFB;
+    background: var(--card-content-bg);
+    color: var(--card-text);
+    z-index: 8;
+}
+
+.card-stack-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    z-index: 10;
+}
+
+.card-stats-section {
+    margin-top: 32px;
+    position: relative;
+    z-index: 10;
+}
+
+.card-footer-section {
+    margin-top: auto;
+    padding-top: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    position: relative;
+    z-index: 10;
+}
+
+.yield-card .text-dim {
+    color: var(--card-dim);
 }
 
 .card-pattern {
@@ -181,8 +375,8 @@
     height: 100%;
     opacity: 0.05;
     background: repeating-linear-gradient(45deg,
-            #000,
-            #000 1px,
+            var(--card-pattern),
+            var(--card-pattern) 1px,
             transparent 1px,
             transparent 10px);
     pointer-events: none;
@@ -192,8 +386,8 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #e0e0e0 0%, #ffffff 50%, #d6d6d6 100%);
-    border: 1px solid #ccc;
+    background: var(--card-holo-grad);
+    border: 1px solid var(--card-holo-border);
     opacity: 0.8;
 }
 
@@ -206,7 +400,7 @@
 }
 
 .bc-bar {
-    background: var(--text-main);
+    background: var(--card-bar);
     flex-grow: 1;
 }
 

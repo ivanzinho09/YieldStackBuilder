@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, type CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import { toPng } from 'html-to-image';
 import { useBuilderStore } from '../../stores/builderStore';
@@ -13,6 +13,7 @@ export function DeployPage() {
     const cardRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const [cardTransform, setCardTransform] = useState('perspective(1000px) rotateX(5deg) rotateY(-12deg)');
+    const [glassPointer, setGlassPointer] = useState({ x: 34, y: 22 });
     const [strategyId, setStrategyId] = useState('');
     const [strategyName, setStrategyName] = useState('CUSTOM YIELD');
 
@@ -23,41 +24,260 @@ export function DeployPage() {
         showRisk: true,
         showWallet: false
     });
+    const themeOptions: Array<'light' | 'dark' | 'glass'> = ['light', 'dark', 'glass'];
+    const cardStyle = {
+        transform: cardTransform,
+        '--glass-pointer-x': `${glassPointer.x}%`,
+        '--glass-pointer-y': `${glassPointer.y}%`
+    } as CSSProperties;
 
     const stageRef = useRef<HTMLDivElement>(null); // Add stage ref for 3D capture
 
     const handleDownloadCard = useCallback(async () => {
         if (stageRef.current === null) return;
 
-        try {
-            // NOTE: We do NOT reset transform here, capturing the 3D 'stage' as requested
+        const EXPORT_WIDTH = 1200;
+        const EXPORT_HEIGHT = 675; // 16:9, Twitter/X-friendly
 
+        try {
             // Generate clean filename
             const slug = strategyName.replace(/\s+/g, '-').replace(/[^a-z0-9-]/gi, '').toLowerCase();
             const filename = `${slug}-${strategyId}.png`;
 
-            // Wait a moment for layout stability
-            await new Promise(resolve => setTimeout(resolve, 100));
+            const stableTransform = 'perspective(1000px) rotateX(5deg) rotateY(-12deg)';
+            const previousTransform = cardRef.current?.style.transform ?? '';
+            if (cardRef.current) {
+                cardRef.current.style.transform = stableTransform;
+            }
 
-            const dataUrl = await toPng(stageRef.current, {
-                cacheBust: true,
-                pixelRatio: 2,
-                backgroundColor: 'transparent',
-                // Filter out problematic elements if needed
-                filter: (node) => {
-                    // Exclude external stylesheets that might cause CORS issues
-                    if (node.tagName === 'LINK' && (node as HTMLLinkElement).rel === 'stylesheet') {
-                        const href = (node as HTMLLinkElement).href;
-                        // Check if it's a local/same-origin stylesheet
-                        if (href.startsWith(window.location.origin) || href.startsWith('/') || !href.startsWith('http')) {
-                            return true;
+            let cardDataUrl = '';
+            try {
+                await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+                cardDataUrl = await toPng(stageRef.current, {
+                    cacheBust: true,
+                    pixelRatio: 2,
+                    backgroundColor: 'transparent',
+                    // Filter out problematic elements if needed
+                    filter: (node) => {
+                        // Exclude external stylesheets that might cause CORS issues
+                        if (node.tagName === 'LINK' && (node as HTMLLinkElement).rel === 'stylesheet') {
+                            const href = (node as HTMLLinkElement).href;
+                            // Check if it's a local/same-origin stylesheet
+                            if (href.startsWith(window.location.origin) || href.startsWith('/') || !href.startsWith('http')) {
+                                return true;
+                            }
+                            // Block remote styles to prevent CORS/SecurityError
+                            return false;
                         }
-                        // Block remote styles (e.g. google fonts types) to prevent CORS/SecurityError
-                        return false;
+                        return true;
                     }
-                    return true;
+                });
+            } finally {
+                if (cardRef.current) {
+                    cardRef.current.style.transform = previousTransform;
                 }
+            }
+
+            const drawYsbMark = (ctx: CanvasRenderingContext2D, x: number, y: number, size: number, stroke: string) => {
+                const unit = size / 24;
+                const b = 12 * unit;
+                const offset = 3.2 * unit;
+                const x1 = x;
+                const y1 = y + 1.5 * unit;
+                const x2 = x + offset;
+                const y2 = y + offset + 1.5 * unit;
+                const x3 = x + offset * 2;
+                const y3 = y + offset * 2 + 1.5 * unit;
+
+                ctx.save();
+                ctx.strokeStyle = stroke;
+                ctx.lineWidth = Math.max(1.2, 1.4 * unit);
+                ctx.strokeRect(x1, y1, b, b);
+                ctx.strokeRect(x2, y2, b, b);
+                ctx.strokeRect(x3, y3, b, b);
+
+                ctx.beginPath();
+                ctx.rect(x2, y2, b, b);
+                ctx.clip();
+                for (let i = -b; i < b * 2; i += 2.4 * unit) {
+                    ctx.beginPath();
+                    ctx.moveTo(x2 + i, y2);
+                    ctx.lineTo(x2 + i - b, y2 + b);
+                    ctx.stroke();
+                }
+                ctx.restore();
+            };
+
+            const cardImage = await new Promise<HTMLImageElement>((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = () => reject(new Error('Card image failed to load'));
+                img.src = cardDataUrl;
             });
+
+            const canvas = document.createElement('canvas');
+            canvas.width = EXPORT_WIDTH;
+            canvas.height = EXPORT_HEIGHT;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) throw new Error('Could not create export canvas');
+
+            // Theme-aware background so exported card blends naturally with the canvas.
+            if (cardOptions.theme === 'glass') {
+                const base = ctx.createLinearGradient(0, 0, EXPORT_WIDTH, EXPORT_HEIGHT);
+                base.addColorStop(0, '#fdf6fb');
+                base.addColorStop(0.48, '#f4f8ff');
+                base.addColorStop(1, '#eefbff');
+                ctx.fillStyle = base;
+                ctx.fillRect(0, 0, EXPORT_WIDTH, EXPORT_HEIGHT);
+
+                const cyanBloom = ctx.createRadialGradient(
+                    EXPORT_WIDTH * 0.82,
+                    EXPORT_HEIGHT * 0.22,
+                    30,
+                    EXPORT_WIDTH * 0.82,
+                    EXPORT_HEIGHT * 0.22,
+                    EXPORT_WIDTH * 0.52
+                );
+                cyanBloom.addColorStop(0, 'rgba(79, 230, 255, 0.28)');
+                cyanBloom.addColorStop(1, 'rgba(79, 230, 255, 0)');
+                ctx.fillStyle = cyanBloom;
+                ctx.fillRect(0, 0, EXPORT_WIDTH, EXPORT_HEIGHT);
+
+                const pinkBloom = ctx.createRadialGradient(
+                    EXPORT_WIDTH * 0.2,
+                    EXPORT_HEIGHT * 0.86,
+                    20,
+                    EXPORT_WIDTH * 0.2,
+                    EXPORT_HEIGHT * 0.86,
+                    EXPORT_WIDTH * 0.5
+                );
+                pinkBloom.addColorStop(0, 'rgba(255, 176, 240, 0.24)');
+                pinkBloom.addColorStop(1, 'rgba(255, 176, 240, 0)');
+                ctx.fillStyle = pinkBloom;
+                ctx.fillRect(0, 0, EXPORT_WIDTH, EXPORT_HEIGHT);
+            } else if (cardOptions.theme === 'dark') {
+                const base = ctx.createLinearGradient(0, 0, EXPORT_WIDTH, EXPORT_HEIGHT);
+                base.addColorStop(0, '#0d1117');
+                base.addColorStop(1, '#141b29');
+                ctx.fillStyle = base;
+                ctx.fillRect(0, 0, EXPORT_WIDTH, EXPORT_HEIGHT);
+
+                const bloom = ctx.createRadialGradient(
+                    EXPORT_WIDTH * 0.78,
+                    EXPORT_HEIGHT * 0.25,
+                    20,
+                    EXPORT_WIDTH * 0.78,
+                    EXPORT_HEIGHT * 0.25,
+                    EXPORT_WIDTH * 0.55
+                );
+                bloom.addColorStop(0, 'rgba(90, 133, 255, 0.2)');
+                bloom.addColorStop(1, 'rgba(90, 133, 255, 0)');
+                ctx.fillStyle = bloom;
+                ctx.fillRect(0, 0, EXPORT_WIDTH, EXPORT_HEIGHT);
+            } else {
+                const base = ctx.createLinearGradient(0, 0, EXPORT_WIDTH, EXPORT_HEIGHT);
+                base.addColorStop(0, '#fafafa');
+                base.addColorStop(1, '#f1f2f1');
+                ctx.fillStyle = base;
+                ctx.fillRect(0, 0, EXPORT_WIDTH, EXPORT_HEIGHT);
+
+                const bloom = ctx.createRadialGradient(
+                    EXPORT_WIDTH * 0.2,
+                    EXPORT_HEIGHT * 0.2,
+                    30,
+                    EXPORT_WIDTH * 0.2,
+                    EXPORT_HEIGHT * 0.2,
+                    EXPORT_WIDTH * 0.48
+                );
+                bloom.addColorStop(0, 'rgba(255,255,255,0.78)');
+                bloom.addColorStop(1, 'rgba(255,255,255,0)');
+                ctx.fillStyle = bloom;
+                ctx.fillRect(0, 0, EXPORT_WIDTH, EXPORT_HEIGHT);
+            }
+
+            const maxCardWidth = EXPORT_WIDTH * 0.58;
+            const maxCardHeight = EXPORT_HEIGHT * 0.9;
+            const scale = Math.min(maxCardWidth / cardImage.width, maxCardHeight / cardImage.height);
+            const drawWidth = cardImage.width * scale;
+            const drawHeight = cardImage.height * scale;
+            const drawX = (EXPORT_WIDTH - drawWidth) / 2;
+            const drawY = (EXPORT_HEIGHT - drawHeight) / 2;
+
+            const aura = ctx.createRadialGradient(
+                drawX + drawWidth * 0.5,
+                drawY + drawHeight * 0.5,
+                drawWidth * 0.2,
+                drawX + drawWidth * 0.5,
+                drawY + drawHeight * 0.5,
+                drawWidth * 0.84
+            );
+            if (cardOptions.theme === 'glass') {
+                aura.addColorStop(0, 'rgba(255, 255, 255, 0.45)');
+                aura.addColorStop(0.45, 'rgba(158, 223, 255, 0.14)');
+                aura.addColorStop(1, 'rgba(158, 223, 255, 0)');
+            } else if (cardOptions.theme === 'dark') {
+                aura.addColorStop(0, 'rgba(138, 160, 255, 0.2)');
+                aura.addColorStop(1, 'rgba(138, 160, 255, 0)');
+            } else {
+                aura.addColorStop(0, 'rgba(255, 255, 255, 0.5)');
+                aura.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            }
+            ctx.fillStyle = aura;
+            ctx.fillRect(drawX - drawWidth * 0.3, drawY - drawHeight * 0.3, drawWidth * 1.6, drawHeight * 1.6);
+
+            ctx.shadowColor = cardOptions.theme === 'dark' ? 'rgba(0, 0, 0, 0.42)' : 'rgba(15, 23, 42, 0.12)';
+            ctx.shadowBlur = cardOptions.theme === 'glass' ? 20 : 26;
+            ctx.shadowOffsetY = cardOptions.theme === 'glass' ? 12 : 16;
+            ctx.drawImage(cardImage, drawX, drawY, drawWidth, drawHeight);
+            ctx.shadowColor = 'transparent';
+
+            // Watermark: YSB mark + attribution URL (bottom-right).
+            const markSize = 36;
+            const watermarkY = EXPORT_HEIGHT - 30;
+            const spacing = 10;
+            const prefix = 'POWERED BY';
+            const brand = 'YSB®';
+            const site = 'ystack.xyz';
+
+            const prefixFont = '600 13px "JetBrains Mono", monospace';
+            const brandFont = '700 20px "Space Grotesk", sans-serif';
+            const siteFont = '500 14px "Manrope", sans-serif';
+
+            ctx.font = prefixFont;
+            const prefixW = ctx.measureText(prefix).width;
+            ctx.font = brandFont;
+            const brandW = ctx.measureText(brand).width;
+            ctx.font = siteFont;
+            const siteW = ctx.measureText(site).width;
+
+            const totalW = markSize + spacing + prefixW + 12 + brandW + 12 + siteW;
+            const startX = EXPORT_WIDTH - totalW - 28;
+            const markY = watermarkY - markSize + 4;
+
+            const baseText = cardOptions.theme === 'dark' ? 'rgba(229, 231, 235, 0.78)' : 'rgba(15, 23, 42, 0.5)';
+            const strongText = cardOptions.theme === 'dark' ? 'rgba(248, 250, 252, 0.95)' : 'rgba(15, 23, 42, 0.9)';
+            const siteText = cardOptions.theme === 'dark' ? 'rgba(147, 197, 253, 0.85)' : 'rgba(30, 64, 175, 0.7)';
+            const markStroke = cardOptions.theme === 'dark' ? 'rgba(241, 245, 249, 0.88)' : 'rgba(15, 23, 42, 0.78)';
+
+            drawYsbMark(ctx, startX, markY, markSize, markStroke);
+
+            let textX = startX + markSize + spacing;
+            ctx.textBaseline = 'alphabetic';
+            ctx.font = prefixFont;
+            ctx.fillStyle = baseText;
+            ctx.fillText(prefix, textX, watermarkY);
+            textX += prefixW + 12;
+
+            ctx.font = brandFont;
+            ctx.fillStyle = strongText;
+            ctx.fillText(brand, textX, watermarkY);
+            textX += brandW + 12;
+
+            ctx.font = siteFont;
+            ctx.fillStyle = siteText;
+            ctx.fillText(site, textX, watermarkY);
+
+            const dataUrl = canvas.toDataURL('image/png');
 
             const link = document.createElement('a');
             link.download = filename;
@@ -67,7 +287,7 @@ export function DeployPage() {
             console.error('Failed to download card:', err);
             alert('Could not generate image. Please try again or use screenshot.');
         }
-    }, [strategyId, strategyName]);
+    }, [strategyId, strategyName, cardOptions.theme]);
 
     // Generate Strategy ID & Name on mount
     useEffect(() => {
@@ -106,10 +326,15 @@ export function DeployPage() {
         const rotateY = ((x - centerX) / centerX) * 10;
 
         setCardTransform(`perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`);
+        setGlassPointer({
+            x: Math.max(0, Math.min(100, (x / rect.width) * 100)),
+            y: Math.max(0, Math.min(100, (y / rect.height) * 100))
+        });
     };
 
     const handleMouseLeave = () => {
         setCardTransform('perspective(1000px) rotateX(5deg) rotateY(-12deg)');
+        setGlassPointer({ x: 34, y: 22 });
     };
 
     // Dynamic Layers
@@ -205,11 +430,11 @@ export function DeployPage() {
 
                         {/* Theme Select */}
                         <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-                            {['light', 'dark', 'glass'].map(t => (
+                            {themeOptions.map(t => (
                                 <button
                                     key={t}
                                     className={`btn-outline ${cardOptions.theme === t ? 'active' : ''}`}
-                                    onClick={() => setCardOptions(prev => ({ ...prev, theme: t as any }))}
+                                    onClick={() => setCardOptions(prev => ({ ...prev, theme: t }))}
                                     style={{
                                         flex: 1, fontSize: '9px', padding: '6px',
                                         background: cardOptions.theme === t ? 'black' : 'transparent',
@@ -334,15 +559,22 @@ export function DeployPage() {
 
                     <div className="card-stage" ref={stageRef}>
                         <div
-                            className="yield-card"
+                            className={`yield-card theme-${cardOptions.theme}`}
                             ref={cardRef}
-                            style={{ transform: cardTransform }}
+                            style={cardStyle}
                         >
+                            {cardOptions.theme === 'glass' && (
+                                <div className="liquid-backdrop">
+                                    <div className="card-liquid-layer liquid-caustic"></div>
+                                    <div className="card-liquid-layer liquid-sheen"></div>
+                                    <div className="card-liquid-layer liquid-grain"></div>
+                                </div>
+                            )}
                             <div className="card-content" style={{ padding: '24px' }}>
                                 <div className="card-pattern"></div>
 
                                 {/* Card Header */}
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: `1px solid ${cardOptions.theme === 'dark' ? 'white' : 'black'}`, paddingBottom: '16px', marginBottom: '24px', position: 'relative', zIndex: 10 }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid var(--card-divider)', paddingBottom: '16px', marginBottom: '24px', position: 'relative', zIndex: 10 }}>
                                     <div>
                                         <div className="label-mono text-dim" style={{ fontSize: '9px', marginBottom: '4px' }}>STRATEGY NAME</div>
                                         <div
@@ -356,14 +588,14 @@ export function DeployPage() {
                                         </div>
                                     </div>
                                     {cardOptions.showRisk && (
-                                        <div style={{ background: cardOptions.theme === 'dark' ? 'white' : 'black', color: cardOptions.theme === 'dark' ? 'black' : 'white', padding: '4px 8px' }}>
+                                        <div style={{ background: 'var(--card-pill-bg)', color: 'var(--card-pill-text)', padding: '4px 8px' }}>
                                             <span className="label-mono" style={{ fontSize: '10px' }}>RISK: {totalRisk?.toFixed(1) || '0.0'}</span>
                                         </div>
                                     )}
                                 </div>
 
                                 {/* Stack Items */}
-                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative', zIndex: 10 }}>
+                                <div className="card-stack-section">
                                     {activeLayers.length === 0 ? (
                                         <div style={{ textAlign: 'center', opacity: 0.4, padding: '20px' }}>
                                             <div className="font-mono" style={{ fontSize: '10px', marginBottom: '4px' }}>EMPTY STACK</div>
@@ -378,9 +610,9 @@ export function DeployPage() {
                                                         {cardOptions.showLogos ? (
                                                             <div style={{
                                                                 width: '32px', height: '32px',
-                                                                background: 'white', borderRadius: '50%',
+                                                                background: 'var(--card-logo-bg)', borderRadius: '50%',
                                                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                                border: cardOptions.theme === 'dark' ? 'none' : '1px solid black'
+                                                                border: '1px solid var(--card-logo-border)'
                                                             }}>
                                                                 <img
                                                                     src={meta.logo}
@@ -393,17 +625,17 @@ export function DeployPage() {
                                                         ) : (
                                                             <div
                                                                 style={{
-                                                                    width: '32px', height: '32px', border: `1px solid ${cardOptions.theme === 'dark' ? 'white' : 'black'}`,
+                                                                    width: '32px', height: '32px', border: '1px solid var(--card-border)',
                                                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                                    background: layer.inverse ? (cardOptions.theme === 'dark' ? 'white' : 'black') : (cardOptions.theme === 'dark' ? 'transparent' : 'white'),
-                                                                    color: layer.inverse ? (cardOptions.theme === 'dark' ? 'black' : 'white') : (cardOptions.theme === 'dark' ? 'white' : 'black'),
+                                                                    background: layer.inverse ? 'var(--card-token-inverse-bg)' : 'var(--card-token-bg)',
+                                                                    color: layer.inverse ? 'var(--card-token-inverse-text)' : 'var(--card-token-text)',
                                                                     fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '12px'
                                                                 }}
                                                             >
                                                                 {layer.id}
                                                             </div>
                                                         )}
-                                                        <div style={{ flex: 1, borderBottom: `1px dotted ${cardOptions.theme === 'dark' ? '#555' : 'black'}`, paddingBottom: '4px', marginBottom: '4px' }}>
+                                                        <div style={{ flex: 1, borderBottom: '1px dotted var(--card-dotted)', paddingBottom: '4px', marginBottom: '4px' }}>
                                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                                                                 <span className="font-mono" style={{ fontSize: '12px', fontWeight: 700 }}>{layer.name}</span>
                                                                 <span className="font-mono text-dim" style={{ fontSize: '10px' }}>{layer.type}</span>
@@ -413,7 +645,7 @@ export function DeployPage() {
 
                                                     {idx < activeLayers.length - 1 && (
                                                         <div style={{ paddingLeft: '16px', paddingTop: '4px', paddingBottom: '4px' }}>
-                                                            <div style={{ width: '1px', height: '16px', background: cardOptions.theme === 'dark' ? 'white' : 'black', opacity: 0.2 }}></div>
+                                                            <div style={{ width: '1px', height: '16px', background: 'var(--card-connector)', opacity: 0.25 }}></div>
                                                         </div>
                                                     )}
                                                 </div>
@@ -423,38 +655,38 @@ export function DeployPage() {
                                 </div>
 
                                 {/* Stats */}
-                                <div style={{ marginTop: '32px', position: 'relative', zIndex: 10 }}>
+                                <div className="card-stats-section">
                                     <div className="label-mono text-dim" style={{ fontSize: '9px', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                         {isLeveraged ? 'LEVERAGED ANNUAL YIELD' : 'NET ANNUALIZED YIELD'}
                                         {hasLiveData && (
                                             <span style={{ fontSize: '7px', background: '#22c55e', color: 'white', padding: '1px 4px', fontWeight: 700 }}>LIVE</span>
                                         )}
                                     </div>
-                                    <div className="font-display" style={{ fontSize: '64px', lineHeight: 0.85, letterSpacing: '-0.02em', color: totalApy < 0 ? '#ef4444' : 'black' }}>
+                                    <div className="font-display" style={{ fontSize: '64px', lineHeight: 0.85, letterSpacing: '-0.02em', color: totalApy < 0 ? '#ef4444' : 'var(--card-text)' }}>
                                         {totalApy?.toFixed(1) || '0.0'}%
                                     </div>
                                     <div style={{ display: 'flex', gap: '8px', marginTop: '8px', flexWrap: 'wrap' }}>
-                                        <span style={{ padding: '2px 6px', border: '1px solid black', fontSize: '9px', textTransform: 'uppercase' }} className="font-mono">Delta Neutral</span>
+                                        <span style={{ padding: '2px 6px', border: '1px solid var(--card-chip-border)', color: 'var(--card-chip-text)', fontSize: '9px', textTransform: 'uppercase' }} className="font-mono">Delta Neutral</span>
                                         {isLeveraged ? (
                                             <span style={{ padding: '2px 6px', border: '1px solid #f59e0b', fontSize: '9px', textTransform: 'uppercase', color: '#f59e0b', fontWeight: 700 }} className="font-mono">
                                                 {leverageLoops}x Leverage
                                             </span>
                                         ) : (
-                                            <span style={{ padding: '2px 6px', border: '1px solid black', fontSize: '9px', textTransform: 'uppercase' }} className="font-mono">Loopable</span>
+                                            <span style={{ padding: '2px 6px', border: '1px solid var(--card-chip-border)', color: 'var(--card-chip-text)', fontSize: '9px', textTransform: 'uppercase' }} className="font-mono">Loopable</span>
                                         )}
                                         {hasLiveData && (
                                             <span style={{ padding: '2px 6px', border: '1px solid #22c55e', fontSize: '9px', textTransform: 'uppercase', color: '#22c55e' }} className="font-mono">DeFiLlama Data</span>
                                         )}
                                     </div>
                                     {isLeveraged && (
-                                        <div style={{ marginTop: '8px', fontSize: '9px', color: '#6b7280' }} className="font-mono">
+                                        <div style={{ marginTop: '8px', fontSize: '9px', color: 'var(--card-dim)' }} className="font-mono">
                                             {leverageInfo.totalExposure.toFixed(2)}x exposure • Risk ×{leverageInfo.riskMultiplier.toFixed(1)}
                                         </div>
                                     )}
                                 </div>
 
                                 {/* Footer */}
-                                <div style={{ marginTop: 'auto', paddingTop: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', position: 'relative', zIndex: 10 }}>
+                                <div className="card-footer-section">
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '66%' }}>
                                         <div className="label-mono text-dim" style={{ fontSize: '8px' }}>ON-CHAIN VERIFICATION</div>
                                         <div className="barcode" style={{ opacity: 0.8, height: '16px' }}>
@@ -474,7 +706,7 @@ export function DeployPage() {
                                 </div>
                             </div>
 
-                            <div style={{ position: 'absolute', inset: 0, border: '3px solid black', pointerEvents: 'none', zIndex: 20 }}></div>
+                            <div style={{ position: 'absolute', inset: 0, border: '3px solid var(--card-frame)', pointerEvents: 'none', zIndex: 20 }}></div>
                         </div>
                     </div>
 
