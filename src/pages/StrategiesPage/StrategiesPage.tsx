@@ -225,6 +225,55 @@ export function StrategiesPage() {
             )
         );
     }, [tileConfig]);
+    const tiledStrategies = useMemo(() => {
+        const bounds = strategies.reduce(
+            (acc, strategy) => {
+                acc.minX = Math.min(acc.minX, strategy.position.x);
+                acc.maxX = Math.max(acc.maxX, strategy.position.x);
+                acc.minY = Math.min(acc.minY, strategy.position.y);
+                acc.maxY = Math.max(acc.maxY, strategy.position.y);
+                return acc;
+            },
+            {
+                minX: Number.POSITIVE_INFINITY,
+                maxX: Number.NEGATIVE_INFINITY,
+                minY: Number.POSITIVE_INFINITY,
+                maxY: Number.NEGATIVE_INFINITY,
+            }
+        );
+
+        const tileWidth = bounds.maxX - bounds.minX + 500;
+        const tileHeight = bounds.maxY - bounds.minY + 420;
+        const tiles = [-2, -1, 0, 1, 2];
+
+        const randomFromSeed = (seed: number) => {
+            const x = Math.sin(seed) * 10000;
+            return x - Math.floor(x);
+        };
+
+        return tiles.flatMap((tileX) =>
+            tiles.flatMap((tileY) =>
+                strategies
+                    .filter((_, index) => {
+                        const seed = tileX * 31 + tileY * 17 + index * 13;
+                        return randomFromSeed(seed) > 0.14;
+                    })
+                    .map((strategy, index) => {
+                        const seed = tileX * 37 + tileY * 29 + index * 11;
+                        const jitterX = (randomFromSeed(seed) - 0.5) * 120;
+                        const jitterY = (randomFromSeed(seed + 5) - 0.5) * 120;
+                        return {
+                            key: `${strategy.id}-${tileX}-${tileY}`,
+                            strategy,
+                            position: {
+                                x: strategy.position.x + tileX * tileWidth + jitterX,
+                                y: strategy.position.y + tileY * tileHeight + jitterY,
+                            },
+                        };
+                    })
+            )
+        );
+    }, []);
 
     return (
         <div className="strategies-layout">
@@ -307,6 +356,7 @@ export function StrategiesPage() {
                                 strategy={entry.strategy}
                                 theme={entry.theme}
                                 onSelect={(event) => handleCardSelect(entry.strategy, event)}
+                                onClick={() => handleCardClick(entry.strategy)}
                             />
                         </div>
                     ))}
