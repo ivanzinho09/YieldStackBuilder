@@ -187,6 +187,15 @@ export function StrategiesPage() {
         const tileWidth = columns * spacingX;
         const tileHeight = rows * spacingY;
         const tiles = Array.from({ length: tileRadius * 2 + 1 }, (_, idx) => idx - tileRadius);
+        const themes = ['light', 'dark', 'glass'] as const;
+
+        const hashString = (value: string) => {
+            let hash = 0;
+            for (let i = 0; i < value.length; i += 1) {
+                hash = (hash * 31 + value.charCodeAt(i)) % 2147483647;
+            }
+            return hash;
+        };
 
         const basePositions = strategies.map((strategy, index) => ({
             strategy,
@@ -201,6 +210,7 @@ export function StrategiesPage() {
                 basePositions.map((entry) => ({
                     key: `${entry.strategy.id}-${tileX}-${tileY}`,
                     strategy: entry.strategy,
+                    theme: themes[hashString(`${entry.strategy.id}-${tileX}-${tileY}`) % themes.length],
                     position: {
                         x: entry.position.x + tileX * tileWidth,
                         y: entry.position.y + tileY * tileHeight,
@@ -289,6 +299,7 @@ export function StrategiesPage() {
                         >
                             <StrategyCard
                                 strategy={entry.strategy}
+                                theme={entry.theme}
                                 onSelect={(event) => handleCardSelect(entry.strategy, event)}
                             />
                         </div>

@@ -5,9 +5,10 @@ import './StrategyCard.css';
 interface StrategyCardProps {
     strategy: Strategy;
     onSelect: (event: React.PointerEvent<HTMLDivElement>) => void;
+    theme: 'light' | 'dark' | 'glass';
 }
 
-export function StrategyCard({ strategy, onSelect }: StrategyCardProps) {
+export function StrategyCard({ strategy, onSelect, theme }: StrategyCardProps) {
     const { stack } = strategy;
 
     // Build active layers for display
@@ -32,7 +33,7 @@ export function StrategyCard({ strategy, onSelect }: StrategyCardProps) {
     const isLeveraged = strategy.leverageLoops > 1;
 
     return (
-        <div className="yield-card theme-light canvas-card" onPointerUp={onSelect} role="button" tabIndex={0}>
+        <div className={`yield-card theme-${theme} canvas-card`} onPointerUp={onSelect} role="button" tabIndex={0}>
             <div className="card-content" style={{ padding: '24px' }}>
                 <div className="card-pattern"></div>
 
