@@ -1,1 +1,184 @@
 /* BuilderStep4 specific styles */
+
+/* Leverage Explanation Box */
+.leverage-explanation-box {
+    margin-top: 48px;
+    padding: 32px;
+    background: linear-gradient(135deg, #f0f9ff 0%, #fefce8 100%);
+    border: 2px solid #0ea5e9;
+    position: relative;
+}
+
+.leverage-explanation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.leverage-explanation-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #0369a1;
+    font-weight: 700;
+}
+
+.leverage-explanation-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 4px 10px;
+    background: #0ea5e9;
+    color: white;
+    letter-spacing: 0.05em;
+}
+
+/* Loop Diagram */
+.leverage-loop-diagram {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.loop-diagram-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.loop-diagram-number {
+    width: 24px;
+    height: 24px;
+    background: #0ea5e9;
+    color: white;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    border-radius: 2px;
+}
+
+.loop-diagram-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.loop-diagram-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.loop-bar-deposit {
+    height: 24px;
+    background: #0ea5e9;
+    color: white;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    min-width: 100px;
+    white-space: nowrap;
+}
+
+.loop-bar-borrow {
+    height: 20px;
+    background: #f59e0b;
+    color: white;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    min-width: 90px;
+    white-space: nowrap;
+}
+
+.loop-arrow {
+    font-size: 14px;
+    color: #0369a1;
+    font-weight: 700;
+}
+
+/* Leverage Summary */
+.leverage-explanation-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    padding: 16px 0;
+    border-top: 1px dashed #0ea5e9;
+    border-bottom: 1px dashed #0ea5e9;
+    margin-bottom: 16px;
+}
+
+.leverage-summary-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.leverage-summary-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-light);
+}
+
+.leverage-summary-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: #0369a1;
+}
+
+.leverage-summary-value.cost {
+    color: #f59e0b;
+}
+
+.leverage-summary-value.highlight {
+    font-size: 18px;
+    color: #15803d;
+}
+
+.leverage-explanation-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    line-height: 1.7;
+    color: #0369a1;
+    margin: 0;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .leverage-explanation-box {
+        padding: 20px;
+        margin-top: 32px;
+    }
+
+    .leverage-explanation-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .leverage-explanation-summary {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .loop-bar-deposit,
+    .loop-bar-borrow {
+        min-width: 80px;
+    }
+}

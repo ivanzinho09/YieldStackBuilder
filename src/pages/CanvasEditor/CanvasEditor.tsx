@@ -18,6 +18,8 @@ import { type Protocol } from '../../components/builder/ProtocolCard';
 import { ApyInfoIcon } from '../../components/ui/ApyTooltip/ApyTooltip';
 import './CanvasEditor.css';
 
+const DEFAULT_LTV = 0.75;
+
 // All protocols grouped by category
 const protocolCategories = [
     { id: 0, name: 'Settlement Layer', protocols: baseProtocols },
@@ -44,7 +46,7 @@ function getCategoryLabel(step: number): string {
 }
 
 export function CanvasEditor() {
-    const { stack, setBase, setEngine, setIncome, setCredit, setOptimize, getTotalApy, getTotalRisk, resetStack } = useBuilderStore();
+    const { stack, setBase, setEngine, setIncome, setCredit, setOptimize, getTotalApy, getTotalRisk, getLeveragedApy, leverageLoops, resetStack } = useBuilderStore();
     const { apyData, lastUpdated, getApyForProtocol } = useApyStore();
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
@@ -89,6 +91,10 @@ export function CanvasEditor() {
     // logic, leverage calculations, and optimizer separation
     const totalApy = getTotalApy();
     const totalRisk = getTotalRisk();
+
+    // Leverage info
+    const leverageInfo = getLeveragedApy();
+    const isLeveraged = leverageLoops > 1 && stack.credit && stack.credit.id !== 'skip-credit';
 
     // Parse capital for calculations
     const capital = parseFloat(capitalInput.replace(/,/g, '')) || 0;
@@ -311,15 +317,24 @@ export function CanvasEditor() {
                                         </div>
                                         <div className="brick-main">
                                             <span className="brick-title">{layer.protocol.name}</span>
-                                            <span className="brick-yield">
-                                                {layer.protocol.baseApy !== undefined && layer.protocol.baseApy !== 0
-                                                    ? `${layer.protocol.baseApy > 0 ? '+' : ''}${layer.protocol.baseApy}%`
-                                                    : '0%'}
+                                            <span className={`brick-yield ${layer.step === 3 && layer.protocol.baseApy < 0 ? 'borrow-cost' : ''}`}>
+                                                {layer.step === 3 && layer.protocol.baseApy < 0
+                                                    ? `${Math.abs(layer.protocol.baseApy)}% cost`
+                                                    : layer.protocol.baseApy !== undefined && layer.protocol.baseApy !== 0
+                                                        ? `${layer.protocol.baseApy > 0 ? '+' : ''}${layer.protocol.baseApy}%`
+                                                        : '0%'}
                                             </span>
                                         </div>
                                         <div className="brick-details">
-                                            <span className="brick-tag">{layer.protocol.category.split(' ')[0]}</span>
+                                            {layer.step === 3 && layer.protocol.baseApy < 0 ? (
+                                                <span className="brick-tag borrow-tag">BORROW COST</span>
+                                            ) : (
+                                                <span className="brick-tag">{layer.protocol.category.split(' ')[0]}</span>
+                                            )}
                                             <span className="brick-tag">{getRiskLevel(layer.protocol.riskScore || 0)} RISK</span>
+                                            {layer.step === 3 && isLeveraged && (
+                                                <span className="brick-tag leverage-tag">{leverageLoops}x LOOP</span>
+                                            )}
                                         </div>
                                     </div>
                                 ) : (
@@ -394,18 +409,29 @@ export function CanvasEditor() {
 
                         {yieldBreakdown.map((layer) => {
                             const effectiveApy = getLiveApy(layer.protocol!.id);
+                            const isCreditLayer = layer.step === 3 && effectiveApy.current < 0;
                             return (
                                 <div key={layer.step} className="data-row">
-                                    <span>{layer.protocol?.name.split(' ')[0]}</span>
-                                    <span className={`mono-value ${effectiveApy.current < 0 ? 'negative' : ''}`}>
-                                        {effectiveApy.current > 0 ? '+' : ''}{effectiveApy.current.toFixed(1)}%
+                                    <span>{isCreditLayer ? 'Borrow Cost' : layer.protocol?.name.split(' ')[0]}</span>
+                                    <span className={`mono-value ${isCreditLayer ? 'borrow-cost-value' : effectiveApy.current < 0 ? 'negative' : ''}`}>
+                                        {isCreditLayer
+                                            ? `−${Math.abs(effectiveApy.current).toFixed(1)}%`
+                                            : `${effectiveApy.current > 0 ? '+' : ''}${effectiveApy.current.toFixed(1)}%`
+                                        }
                                     </span>
                                 </div>
                             );
                         })}
 
+                        {isLeveraged && (
+                            <div className="data-row leverage-row">
+                                <span>Leverage ({leverageLoops}x)</span>
+                                <span className="mono-value">{leverageInfo.totalExposure.toFixed(2)}x exp.</span>
+                            </div>
+                        )}
+
                         <div className="data-row net-row">
-                            <span>NET YIELD</span>
+                            <span>{isLeveraged ? 'NET LEVERAGED' : 'NET YIELD'}</span>
                             <span className={`mono-value ${totalApy < 0 ? 'negative' : ''}`}>{totalApy.toFixed(1)}%</span>
                         </div>
 
@@ -415,6 +441,63 @@ export function CanvasEditor() {
                             </div>
                         )}
                     </div>
+
+                    {/* Leverage Analysis */}
+                    {isLeveraged && (
+                        <div className="metric-section leverage-section">
+                            <span className="metric-label leverage-title">LEVERAGE ANALYSIS</span>
+                            <div className="leverage-detail-grid">
+                                <div className="leverage-detail-item">
+                                    <span className="leverage-detail-label">LOOPS</span>
+                                    <span className="leverage-detail-value">{leverageLoops}x</span>
+                                </div>
+                                <div className="leverage-detail-item">
+                                    <span className="leverage-detail-label">LTV</span>
+                                    <span className="leverage-detail-value">{(DEFAULT_LTV * 100).toFixed(0)}%</span>
+                                </div>
+                                <div className="leverage-detail-item">
+                                    <span className="leverage-detail-label">EXPOSURE</span>
+                                    <span className="leverage-detail-value">{leverageInfo.totalExposure.toFixed(2)}x</span>
+                                </div>
+                                <div className="leverage-detail-item">
+                                    <span className="leverage-detail-label">RISK AMP.</span>
+                                    <span className="leverage-detail-value warning">{leverageInfo.riskMultiplier.toFixed(1)}x</span>
+                                </div>
+                            </div>
+                            <div className="leverage-how-it-works">
+                                <span className="leverage-how-title">HOW IT WORKS</span>
+                                <div className="leverage-loop-visual">
+                                    {Array.from({ length: leverageLoops }, (_, i) => {
+                                        const exposure = Math.pow(DEFAULT_LTV, i);
+                                        return (
+                                            <div key={i} className="loop-step">
+                                                <span className="loop-number">Loop {i + 1}</span>
+                                                <div className="loop-bar" style={{ width: `${exposure * 100}%` }} />
+                                                <span className="loop-amount">{(exposure * 100).toFixed(0)}%</span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                <p className="leverage-note">
+                                    Each loop deposits collateral, borrows at {(DEFAULT_LTV * 100).toFixed(0)}% LTV
+                                    via {stack.credit?.name}, and re-deposits.
+                                    Total exposure: {leverageInfo.totalExposure.toFixed(2)}x on a base yield
+                                    of {(() => {
+                                        // Calculate core yield for display
+                                        let coreYield = stack.base?.baseApy || 0;
+                                        if (stack.income && stack.income.id !== 'skip-income' && stack.income.baseApy !== 0) {
+                                            coreYield += stack.income.baseApy;
+                                        } else if (stack.engine) {
+                                            coreYield += stack.engine.baseApy;
+                                        }
+                                        return coreYield.toFixed(1);
+                                    })()}%,
+                                    minus {Math.abs(stack.credit?.baseApy ?? 0).toFixed(1)}% borrow cost
+                                    on {(leverageInfo.totalExposure - 1).toFixed(2)}x borrowed capital.
+                                </p>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Float Calculator */}
                     <div className="float-calc">

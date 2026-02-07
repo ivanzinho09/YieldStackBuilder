@@ -10,6 +10,8 @@ import { creditProtocols, getRiskLevel, incomeToCreditRules } from '../../data/p
 import '../BuilderStep1/BuilderStep1.css';
 import './BuilderStep4.css';
 
+const DEFAULT_LTV = 0.75;
+
 export function BuilderStep4() {
     const navigate = useNavigate();
     const { stack, setCredit, getTotalApy, leverageLoops, setLeverageLoops, getLeveragedApy } = useBuilderStore();
@@ -169,6 +171,61 @@ export function BuilderStep4() {
                             />
                         ))}
                     </div>
+
+                    {/* Leverage Explanation */}
+                    {isLeveraged && leverageLoops > 1 && (
+                        <div className="leverage-explanation-box">
+                            <div className="leverage-explanation-header">
+                                <span className="leverage-explanation-title">HOW LEVERAGE LOOPING WORKS</span>
+                                <span className="leverage-explanation-badge">{leverageLoops}x LOOPS</span>
+                            </div>
+                            <div className="leverage-loop-diagram">
+                                {Array.from({ length: leverageLoops }, (_, i) => {
+                                    const depositPct = Math.pow(DEFAULT_LTV, i) * 100;
+                                    const borrowPct = Math.pow(DEFAULT_LTV, i) * DEFAULT_LTV * 100;
+                                    const isLast = i === leverageLoops - 1;
+                                    return (
+                                        <div key={i} className="loop-diagram-step">
+                                            <div className="loop-diagram-number">{i + 1}</div>
+                                            <div className="loop-diagram-content">
+                                                <div className="loop-diagram-bar-row">
+                                                    <div className="loop-bar-deposit" style={{ width: `${depositPct}%` }}>
+                                                        <span>Deposit {depositPct.toFixed(1)}%</span>
+                                                    </div>
+                                                </div>
+                                                {!isLast && (
+                                                    <div className="loop-diagram-bar-row">
+                                                        <div className="loop-bar-borrow" style={{ width: `${borrowPct}%` }}>
+                                                            <span>Borrow {borrowPct.toFixed(1)}%</span>
+                                                        </div>
+                                                        <span className="loop-arrow">→</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                            <div className="leverage-explanation-summary">
+                                <div className="leverage-summary-item">
+                                    <span className="leverage-summary-label">Total Exposure</span>
+                                    <span className="leverage-summary-value">{leverageInfo.totalExposure.toFixed(2)}x your capital</span>
+                                </div>
+                                <div className="leverage-summary-item">
+                                    <span className="leverage-summary-label">Borrow Cost</span>
+                                    <span className="leverage-summary-value cost">{Math.abs(selectedProtocol?.baseApy || 0).toFixed(1)}% on {(leverageInfo.totalExposure - 1).toFixed(2)}x borrowed</span>
+                                </div>
+                                <div className="leverage-summary-item">
+                                    <span className="leverage-summary-label">Net Leveraged APY</span>
+                                    <span className="leverage-summary-value highlight">{leverageInfo.effectiveApy.toFixed(2)}%</span>
+                                </div>
+                            </div>
+                            <p className="leverage-explanation-text">
+                                Each loop: deposit collateral → borrow at {(DEFAULT_LTV * 100).toFixed(0)}% LTV via {selectedProtocol?.name} → re-deposit borrowed funds as new collateral.
+                                You earn yield on total {leverageInfo.totalExposure.toFixed(2)}x exposure but pay {Math.abs(selectedProtocol?.baseApy || 0).toFixed(1)}% borrow rate on {(leverageInfo.totalExposure - 1).toFixed(2)}x borrowed capital.
+                            </p>
+                        </div>
+                    )}
                 </main>
 
                 <StackPreview

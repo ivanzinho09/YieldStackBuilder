@@ -139,8 +139,16 @@
     color: #ef4444;
 }
 
+.stat-value.borrow-cost {
+    color: #f59e0b;
+}
+
 .protocol-card.selected .stat-value.negative {
     color: #fca5a5;
+}
+
+.protocol-card.selected .stat-value.borrow-cost {
+    color: #fbbf24;
 }
 
 .stat-value.avg {

@@ -72,15 +72,18 @@ export function ProtocolCard({
             <div className="card-stats">
                 <div className="stat-block">
                     <div className="stat-header">
-                        <span className="card-category">CURRENT APY</span>
+                        <span className="card-category">{displayApy < 0 ? 'BORROW RATE' : 'CURRENT APY'}</span>
                         <ApyTooltip
                             protocolName={protocol.name}
                             apyData={liveApyData}
                             isLive={effectiveApy.isLive}
                         />
                     </div>
-                    <div className={`stat-value ${displayApy < 0 ? 'negative' : ''}`}>
-                        ~{displayApy.toFixed(2)}% {yieldMechanism || ''}
+                    <div className={`stat-value ${displayApy < 0 ? 'borrow-cost' : ''}`}>
+                        {displayApy < 0
+                            ? `~${Math.abs(displayApy).toFixed(2)}% cost`
+                            : `~${displayApy.toFixed(2)}% ${yieldMechanism || ''}`
+                        }
                     </div>
                     {effectiveApy.isLive && (
                         <span className="live-indicator">
@@ -91,10 +94,13 @@ export function ProtocolCard({
                 </div>
                 <div className="stat-block">
                     <div className="stat-header">
-                        <span className="card-category">30D AVG APY</span>
+                        <span className="card-category">{avgApy !== null && avgApy < 0 ? '30D AVG RATE' : '30D AVG APY'}</span>
                     </div>
-                    <div className={`stat-value avg ${avgApy !== null && avgApy < 0 ? 'negative' : ''}`}>
-                        {avgApy !== null ? `${avgApy.toFixed(2)}%` : 'N/A'}
+                    <div className={`stat-value avg ${avgApy !== null && avgApy < 0 ? 'borrow-cost' : ''}`}>
+                        {avgApy !== null
+                            ? (avgApy < 0 ? `${Math.abs(avgApy).toFixed(2)}% cost` : `${avgApy.toFixed(2)}%`)
+                            : 'N/A'
+                        }
                     </div>
                 </div>
             </div>
