@@ -49,9 +49,9 @@ export function StrategiesPage() {
             const width = window.innerWidth;
             if (width <= 600) {
                 setTileConfig({
-                    columns: 3,
-                    tileRadius: 1,
-                    spacingX: 300,
+                    columns: 2,
+                    tileRadius: 0,
+                    spacingX: 320,
                     spacingY: 360,
                 });
                 return;

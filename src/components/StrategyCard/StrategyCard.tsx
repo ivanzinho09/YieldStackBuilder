@@ -67,6 +67,8 @@ export function StrategyCard({ strategy, onSelect, theme }: StrategyCardProps) {
                                             src={meta.logo}
                                             alt=""
                                             crossOrigin="anonymous"
+                                            loading="lazy"
+                                            decoding="async"
                                             style={{ width: '20px', height: '20px', objectFit: 'contain' }}
                                             onError={(e) => { e.currentTarget.style.display = 'none'; }}
                                         />
