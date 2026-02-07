@@ -4,10 +4,11 @@ import './StrategyCard.css';
 
 interface StrategyCardProps {
     strategy: Strategy;
-    onClick: () => void;
+    onSelect: (event: React.PointerEvent<HTMLDivElement>) => void;
+    theme: 'light' | 'dark' | 'glass';
 }
 
-export function StrategyCard({ strategy, onClick }: StrategyCardProps) {
+export function StrategyCard({ strategy, onSelect, theme }: StrategyCardProps) {
     const { stack } = strategy;
 
     // Build active layers for display
@@ -32,7 +33,7 @@ export function StrategyCard({ strategy, onClick }: StrategyCardProps) {
     const isLeveraged = strategy.leverageLoops > 1;
 
     return (
-        <div className="yield-card theme-light canvas-card" onClick={onClick}>
+        <div className={`yield-card theme-${theme} canvas-card`} onPointerUp={onSelect} role="button" tabIndex={0}>
             <div className="card-content" style={{ padding: '24px' }}>
                 <div className="card-pattern"></div>
 
@@ -66,6 +67,8 @@ export function StrategyCard({ strategy, onClick }: StrategyCardProps) {
                                             src={meta.logo}
                                             alt=""
                                             crossOrigin="anonymous"
+                                            loading="lazy"
+                                            decoding="async"
                                             style={{ width: '20px', height: '20px', objectFit: 'contain' }}
                                             onError={(e) => { e.currentTarget.style.display = 'none'; }}
                                         />

@@ -8,12 +8,22 @@ import './StrategiesPage.css';
 export function StrategiesPage() {
     const canvasRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+    const offsetRef = useRef({ x: 0, y: 0 });
+    const dragStartRef = useRef({ x: 0, y: 0 });
+    const initialOffsetRef = useRef({ x: 0, y: 0 });
+    const pendingOffsetRef = useRef({ x: 0, y: 0 });
+    const animationFrameRef = useRef<number | null>(null);
+    const lastTapRef = useRef<{ id: string | null; time: number }>({ id: null, time: 0 });
+    const [tileConfig, setTileConfig] = useState({
+        columns: 5,
+        tileRadius: 2,
+        spacingX: 420,
+        spacingY: 460,
+    });
 
     // Canvas pan state
     const [offset, setOffset] = useState({ x: 0, y: 0 });
     const [isDragging, setIsDragging] = useState(false);
-    const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-    const [initialOffset, setInitialOffset] = useState({ x: 0, y: 0 });
 
     // Modal state
     const [selectedStrategy, setSelectedStrategy] = useState<Strategy | null>(null);
@@ -27,30 +37,82 @@ export function StrategiesPage() {
                 x: rect.width / 2 - 800,
                 y: rect.height / 2 - 500,
             });
+            offsetRef.current = {
+                x: rect.width / 2 - 800,
+                y: rect.height / 2 - 500,
+            };
+        }
+    }, []);
+
+    useEffect(() => {
+        const updateTileConfig = () => {
+            const width = window.innerWidth;
+            if (width <= 600) {
+                setTileConfig({
+                    columns: 2,
+                    tileRadius: 0,
+                    spacingX: 320,
+                    spacingY: 360,
+                });
+                return;
+            }
+
+            if (width <= 900) {
+                setTileConfig({
+                    columns: 4,
+                    tileRadius: 1,
+                    spacingX: 360,
+                    spacingY: 420,
+                });
+                return;
+            }
+
+            setTileConfig({
+                columns: 5,
+                tileRadius: 2,
+                spacingX: 420,
+                spacingY: 460,
+            });
+        };
+
+        updateTileConfig();
+        window.addEventListener('resize', updateTileConfig);
+        return () => window.removeEventListener('resize', updateTileConfig);
+    }, []);
+
+    const scheduleOffsetUpdate = useCallback((nextOffset: { x: number; y: number }) => {
+        pendingOffsetRef.current = nextOffset;
+        if (animationFrameRef.current === null) {
+            animationFrameRef.current = window.requestAnimationFrame(() => {
+                setOffset(pendingOffsetRef.current);
+                offsetRef.current = pendingOffsetRef.current;
+                animationFrameRef.current = null;
+            });
         }
     }, []);
 
     // Mouse handlers for panning
     const handleMouseDown = useCallback((e: React.MouseEvent) => {
         // Don't start drag if clicking on a card
-        if ((e.target as HTMLElement).closest('.strategy-card-flat')) return;
+        if ((e.target as HTMLElement).closest('.canvas-card')) return;
 
         setIsDragging(true);
-        setDragStart({ x: e.clientX, y: e.clientY });
-        setInitialOffset({ ...offset });
-    }, [offset]);
+        const start = { x: e.clientX, y: e.clientY };
+        dragStartRef.current = start;
+        initialOffsetRef.current = { ...offsetRef.current };
+    }, []);
 
     const handleMouseMove = useCallback((e: React.MouseEvent) => {
         if (!isDragging) return;
 
-        const deltaX = e.clientX - dragStart.x;
-        const deltaY = e.clientY - dragStart.y;
+        const deltaX = e.clientX - dragStartRef.current.x;
+        const deltaY = e.clientY - dragStartRef.current.y;
 
-        setOffset({
-            x: initialOffset.x + deltaX,
-            y: initialOffset.y + deltaY,
+        scheduleOffsetUpdate({
+            x: initialOffsetRef.current.x + deltaX,
+            y: initialOffsetRef.current.y + deltaY,
         });
-    }, [isDragging, dragStart, initialOffset]);
+    }, [isDragging, scheduleOffsetUpdate]);
 
     const handleMouseUp = useCallback(() => {
         setIsDragging(false);
@@ -62,33 +124,50 @@ export function StrategiesPage() {
 
     // Touch handlers for mobile
     const handleTouchStart = useCallback((e: React.TouchEvent) => {
-        if ((e.target as HTMLElement).closest('.strategy-card-flat')) return;
+        if ((e.target as HTMLElement).closest('.canvas-card')) return;
 
         const touch = e.touches[0];
         setIsDragging(true);
-        setDragStart({ x: touch.clientX, y: touch.clientY });
-        setInitialOffset({ ...offset });
-    }, [offset]);
+        const start = { x: touch.clientX, y: touch.clientY };
+        dragStartRef.current = start;
+        initialOffsetRef.current = { ...offsetRef.current };
+    }, []);
 
     const handleTouchMove = useCallback((e: React.TouchEvent) => {
         if (!isDragging) return;
 
+        e.preventDefault();
         const touch = e.touches[0];
-        const deltaX = touch.clientX - dragStart.x;
-        const deltaY = touch.clientY - dragStart.y;
+        const deltaX = touch.clientX - dragStartRef.current.x;
+        const deltaY = touch.clientY - dragStartRef.current.y;
 
-        setOffset({
-            x: initialOffset.x + deltaX,
-            y: initialOffset.y + deltaY,
+        scheduleOffsetUpdate({
+            x: initialOffsetRef.current.x + deltaX,
+            y: initialOffsetRef.current.y + deltaY,
         });
-    }, [isDragging, dragStart, initialOffset]);
+    }, [isDragging, scheduleOffsetUpdate]);
 
     const handleTouchEnd = useCallback(() => {
         setIsDragging(false);
     }, []);
 
     // Card selection
-    const handleCardClick = (strategy: Strategy) => {
+    const handleCardSelect = (strategy: Strategy, event: React.PointerEvent<HTMLDivElement>) => {
+        if (isDragging) return;
+
+        if (event.pointerType === 'touch') {
+            const now = Date.now();
+            const lastTap = lastTapRef.current;
+
+            if (lastTap.id === strategy.id && now - lastTap.time < 450) {
+                setSelectedStrategy(strategy);
+                lastTapRef.current = { id: null, time: 0 };
+            } else {
+                lastTapRef.current = { id: strategy.id, time: now };
+            }
+            return;
+        }
+
         setSelectedStrategy(strategy);
     };
 
@@ -186,6 +265,13 @@ export function StrategiesPage() {
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseLeave}
+                onWheel={(event) => {
+                    event.preventDefault();
+                    scheduleOffsetUpdate({
+                        x: offsetRef.current.x - event.deltaX,
+                        y: offsetRef.current.y - event.deltaY,
+                    });
+                }}
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
