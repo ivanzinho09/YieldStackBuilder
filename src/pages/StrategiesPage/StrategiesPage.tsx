@@ -6,6 +6,7 @@ import { StrategyModal } from '../../components/StrategyModal';
 import './StrategiesPage.css';
 
 export function StrategiesPage() {
+    const DRAG_THRESHOLD = 8;
     const canvasRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const offsetRef = useRef({ x: 0, y: 0 });
@@ -13,7 +14,8 @@ export function StrategiesPage() {
     const initialOffsetRef = useRef({ x: 0, y: 0 });
     const pendingOffsetRef = useRef({ x: 0, y: 0 });
     const animationFrameRef = useRef<number | null>(null);
-    const lastTapRef = useRef<{ id: string | null; time: number }>({ id: null, time: 0 });
+    const didDragRef = useRef(false);
+    const isTouchingRef = useRef(false);
     const [tileConfig, setTileConfig] = useState({
         columns: 5,
         tileRadius: 2,
@@ -128,52 +130,53 @@ export function StrategiesPage() {
         setIsDragging(false);
     }, []);
 
-    // Touch handlers for mobile
+    // Touch handlers for mobile - allow dragging from anywhere including cards
     const handleTouchStart = useCallback((e: React.TouchEvent) => {
-        if ((e.target as HTMLElement).closest('.canvas-card')) return;
-
         const touch = e.touches[0];
-        setIsDragging(true);
-        const start = { x: touch.clientX, y: touch.clientY };
-        dragStartRef.current = start;
+        isTouchingRef.current = true;
+        didDragRef.current = false;
+        dragStartRef.current = { x: touch.clientX, y: touch.clientY };
         initialOffsetRef.current = { ...offsetRef.current };
     }, []);
 
     const handleTouchMove = useCallback((e: React.TouchEvent) => {
-        if (!isDragging) return;
+        if (!isTouchingRef.current) return;
 
-        e.preventDefault();
         const touch = e.touches[0];
         const deltaX = touch.clientX - dragStartRef.current.x;
         const deltaY = touch.clientY - dragStartRef.current.y;
+        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
-        scheduleOffsetUpdate({
-            x: initialOffsetRef.current.x + deltaX,
-            y: initialOffsetRef.current.y + deltaY,
-        });
-    }, [isDragging, scheduleOffsetUpdate]);
+        if (!didDragRef.current && distance > DRAG_THRESHOLD) {
+            didDragRef.current = true;
+            setIsDragging(true);
+        }
+
+        if (didDragRef.current) {
+            e.preventDefault();
+            scheduleOffsetUpdate({
+                x: initialOffsetRef.current.x + deltaX,
+                y: initialOffsetRef.current.y + deltaY,
+            });
+        }
+    }, [scheduleOffsetUpdate]);
 
     const handleTouchEnd = useCallback(() => {
+        isTouchingRef.current = false;
         setIsDragging(false);
     }, []);
 
-    // Card selection
+    // Card selection - single tap on touch, click on desktop
     const handleCardSelect = (strategy: Strategy, event: React.PointerEvent<HTMLDivElement>) => {
-        if (isDragging) return;
-
         if (event.pointerType === 'touch') {
-            const now = Date.now();
-            const lastTap = lastTapRef.current;
-
-            if (lastTap.id === strategy.id && now - lastTap.time < 450) {
-                setSelectedStrategy(strategy);
-                lastTapRef.current = { id: null, time: 0 };
-            } else {
-                lastTapRef.current = { id: strategy.id, time: now };
-            }
+            // On touch devices, only select if user didn't drag
+            if (didDragRef.current) return;
+            setSelectedStrategy(strategy);
             return;
         }
 
+        // Desktop: click to select
+        if (isDragging) return;
         setSelectedStrategy(strategy);
     };
 
@@ -225,55 +228,6 @@ export function StrategiesPage() {
             )
         );
     }, [tileConfig]);
-    const tiledStrategies = useMemo(() => {
-        const bounds = strategies.reduce(
-            (acc, strategy) => {
-                acc.minX = Math.min(acc.minX, strategy.position.x);
-                acc.maxX = Math.max(acc.maxX, strategy.position.x);
-                acc.minY = Math.min(acc.minY, strategy.position.y);
-                acc.maxY = Math.max(acc.maxY, strategy.position.y);
-                return acc;
-            },
-            {
-                minX: Number.POSITIVE_INFINITY,
-                maxX: Number.NEGATIVE_INFINITY,
-                minY: Number.POSITIVE_INFINITY,
-                maxY: Number.NEGATIVE_INFINITY,
-            }
-        );
-
-        const tileWidth = bounds.maxX - bounds.minX + 500;
-        const tileHeight = bounds.maxY - bounds.minY + 420;
-        const tiles = [-2, -1, 0, 1, 2];
-
-        const randomFromSeed = (seed: number) => {
-            const x = Math.sin(seed) * 10000;
-            return x - Math.floor(x);
-        };
-
-        return tiles.flatMap((tileX) =>
-            tiles.flatMap((tileY) =>
-                strategies
-                    .filter((_, index) => {
-                        const seed = tileX * 31 + tileY * 17 + index * 13;
-                        return randomFromSeed(seed) > 0.14;
-                    })
-                    .map((strategy, index) => {
-                        const seed = tileX * 37 + tileY * 29 + index * 11;
-                        const jitterX = (randomFromSeed(seed) - 0.5) * 120;
-                        const jitterY = (randomFromSeed(seed + 5) - 0.5) * 120;
-                        return {
-                            key: `${strategy.id}-${tileX}-${tileY}`,
-                            strategy,
-                            position: {
-                                x: strategy.position.x + tileX * tileWidth + jitterX,
-                                y: strategy.position.y + tileY * tileHeight + jitterY,
-                            },
-                        };
-                    })
-            )
-        );
-    }, []);
 
     return (
         <div className="strategies-layout">
@@ -356,7 +310,6 @@ export function StrategiesPage() {
                                 strategy={entry.strategy}
                                 theme={entry.theme}
                                 onSelect={(event) => handleCardSelect(entry.strategy, event)}
-                                onClick={() => handleCardClick(entry.strategy)}
                             />
                         </div>
                     ))}
