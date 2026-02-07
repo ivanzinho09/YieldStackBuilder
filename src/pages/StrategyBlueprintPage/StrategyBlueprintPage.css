@@ -1,0 +1,647 @@
+/* Strategy Blueprint Page - Architectural Aesthetic */
+
+:root {
+    --paper: #f4f4f0;
+    --ink: #1a1a1a;
+    --ink-light: #555555;
+    --guide: #cccccc;
+    --border-width: 1px;
+    --bold-border: 2px;
+}
+
+.blueprint-page {
+    background-color: var(--paper);
+    color: var(--ink);
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1.5;
+    font-size: 14px;
+    min-height: 100vh;
+    background-image:
+        linear-gradient(var(--guide) 1px, transparent 1px),
+        linear-gradient(90deg, var(--guide) 1px, transparent 1px);
+    background-size: 100px 100px;
+    background-position: center top;
+}
+
+.blueprint-container {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 40px;
+    border-left: 1px dashed var(--ink);
+    border-right: 1px dashed var(--ink);
+    min-height: 100vh;
+    background: var(--paper);
+    position: relative;
+}
+
+/* Corner Marks */
+.corner {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    z-index: 100;
+}
+
+.corner.top-left {
+    top: 20px;
+    left: 20px;
+    border-top: 2px solid var(--ink);
+    border-left: 2px solid var(--ink);
+}
+
+.corner.bottom-right {
+    bottom: 20px;
+    right: 20px;
+    border-bottom: 2px solid var(--ink);
+    border-right: 2px solid var(--ink);
+}
+
+/* Header */
+.blueprint-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 0;
+    border-bottom: var(--bold-border) solid var(--ink);
+    position: relative;
+}
+
+.blueprint-header::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: var(--ink);
+}
+
+.blueprint-logo {
+    font-weight: 700;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: var(--ink);
+}
+
+.logo-mark {
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--ink);
+    position: relative;
+}
+
+.logo-mark::before {
+    content: '';
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 100%;
+    height: 100%;
+    border: 1px solid var(--ink);
+    background: repeating-linear-gradient(45deg, var(--ink) 0, var(--ink) 1px, transparent 0, transparent 4px);
+}
+
+.nav-breadcrumb {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: var(--ink-light);
+}
+
+.btn-main {
+    background: transparent;
+    color: var(--ink);
+    border: 2px solid var(--ink);
+    padding: 12px 24px;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 4px 4px 0 var(--ink);
+    transition: all 0.1s ease;
+}
+
+.btn-main:hover {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 var(--ink);
+}
+
+/* Strategy Header */
+.strategy-header-section {
+    padding: 60px 0;
+    border-bottom: 1px solid var(--ink);
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 40px;
+}
+
+.strategy-id-label {
+    font-size: 0.9rem;
+    color: var(--ink-light);
+    margin-bottom: 8px;
+}
+
+.strategy-title {
+    font-family: 'Space Grotesk', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    font-size: 3.5rem;
+    line-height: 0.9;
+    margin-bottom: 24px;
+}
+
+.tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.tag {
+    border: 1px solid var(--ink);
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+}
+
+/* Main Grid */
+.main-grid {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 0;
+    border-bottom: 1px solid var(--ink);
+}
+
+.main-panel {
+    padding: 40px 40px 40px 0;
+    border-right: 1px solid var(--ink);
+}
+
+.side-panel {
+    padding: 40px 0 40px 40px;
+}
+
+.panel-section {
+    margin-bottom: 60px;
+}
+
+.section-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--guide);
+}
+
+/* Protocol Composition Stack */
+.composition-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    position: relative;
+}
+
+.stack-item {
+    border: 1px solid var(--ink);
+    padding: 20px;
+    background: white;
+    display: grid;
+    grid-template-columns: 40px 1fr 120px;
+    align-items: center;
+    position: relative;
+}
+
+.stack-item::before {
+    content: '↓';
+    position: absolute;
+    bottom: -18px;
+    left: 54px;
+    color: var(--guide);
+}
+
+.stack-item:last-child::before {
+    display: none;
+}
+
+.stack-order {
+    font-size: 0.8rem;
+    font-weight: 700;
+    opacity: 0.3;
+}
+
+.stack-info h4 {
+    text-transform: uppercase;
+    font-size: 1rem;
+    margin: 0;
+}
+
+.stack-info p {
+    font-size: 0.75rem;
+    color: var(--ink-light);
+    margin: 0;
+}
+
+.stack-metric {
+    text-align: right;
+    font-weight: 700;
+}
+
+/* Chart */
+.chart-container {
+    width: 100%;
+    height: 240px;
+    border: 1px solid var(--ink);
+    position: relative;
+    background: white;
+    overflow: hidden;
+    background-image: repeating-linear-gradient(45deg, #f0f0f0 0, #f0f0f0 1px, transparent 0, transparent 10px);
+}
+
+.chart-svg {
+    width: 100%;
+    height: 100%;
+}
+
+.chart-label {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+}
+
+/* Stat Grid */
+.stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.stat-card {
+    border: 1px solid var(--ink);
+    padding: 16px;
+    background: white;
+}
+
+.stat-card .label {
+    font-size: 0.65rem;
+    color: var(--ink-light);
+    text-transform: uppercase;
+}
+
+.stat-card .value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+.apy-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: white;
+}
+
+.apy-card .value {
+    font-size: 3rem;
+    color: var(--ink);
+}
+
+.apy-card .delta {
+    font-size: 0.7rem;
+    color: #00a86b;
+}
+
+/* Risk Breakdown */
+.risk-row {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed var(--guide);
+}
+
+.risk-row:last-child {
+    border: none;
+}
+
+.risk-row .row-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+
+.risk-meter {
+    width: 100%;
+    height: 8px;
+    background: #eee;
+    border: 1px solid var(--ink);
+}
+
+.risk-fill {
+    height: 100%;
+    background: var(--ink);
+}
+
+.risk-meter.composite {
+    height: 12px;
+    background: repeating-linear-gradient(45deg, #ddd 0, #ddd 1px, transparent 0, transparent 4px);
+}
+
+/* Deploy Box */
+.deploy-box {
+    border: 2px solid var(--ink);
+    padding: 30px;
+    background: white;
+    box-shadow: 8px 8px 0 var(--ink);
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-label {
+    display: block;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.custom-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--ink);
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--paper);
+}
+
+.input-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 0.7rem;
+}
+
+.input-meta .max-btn {
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.routing-toggle {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.routing-btn {
+    flex: 1;
+    border: 1px solid var(--ink);
+    padding: 8px;
+    font-size: 0.7rem;
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    background: transparent;
+}
+
+.routing-btn.active {
+    background: var(--ink);
+    color: white;
+}
+
+.disclaimer {
+    margin-top: 20px;
+    font-size: 0.65rem;
+    color: var(--ink-light);
+    text-align: center;
+}
+
+/* Share Buttons */
+.share-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.share-btn {
+    flex: 1;
+    border: 1px dashed var(--ink);
+    padding: 10px;
+    font-size: 0.7rem;
+    background: transparent;
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+}
+
+/* Footer */
+.blueprint-footer {
+    padding: 40px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--ink-light);
+    font-size: 0.7rem;
+}
+
+.footer-stats {
+    display: flex;
+    gap: 40px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .strategy-header-section {
+        grid-template-columns: 1fr;
+    }
+
+    .main-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .main-panel {
+        border-right: none;
+        border-bottom: 1px solid var(--ink);
+        padding: 40px 0;
+    }
+
+    .side-panel {
+        padding: 40px 0;
+    }
+}
+
+@media (max-width: 600px) {
+    .blueprint-container {
+        padding: 0 20px;
+    }
+
+    .strategy-title {
+        font-size: 2rem;
+    }
+
+    .stat-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .blueprint-header {
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
+    }
+
+    .blueprint-footer {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .footer-stats {
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+}
+
+/* Clone CTA Section */
+.clone-cta-section {
+    padding: 40px 0;
+    border-bottom: 1px solid var(--ink);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.clone-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 32px;
+    font-size: 14px;
+}
+
+.clone-hint {
+    font-size: 0.75rem;
+    color: var(--ink-light);
+    margin: 0;
+}
+
+/* Under Construction Wrapper */
+.under-construction-wrapper {
+    position: relative;
+    min-height: 600px;
+}
+
+.blurred-content {
+    filter: blur(8px);
+    opacity: 0.5;
+    pointer-events: none;
+    user-select: none;
+}
+
+.under-construction-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, rgba(244, 244, 240, 0.3) 0%, rgba(244, 244, 240, 0.95) 50%, rgba(244, 244, 240, 1) 100%);
+    z-index: 10;
+}
+
+.construction-content {
+    max-width: 480px;
+    text-align: center;
+    padding: 48px;
+    background: white;
+    border: 2px solid var(--ink);
+    box-shadow: 8px 8px 0 var(--ink);
+}
+
+.construction-icon {
+    margin-bottom: 24px;
+    opacity: 0.6;
+}
+
+.construction-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+}
+
+.construction-desc {
+    font-size: 0.85rem;
+    color: var(--ink-light);
+    line-height: 1.6;
+    margin-bottom: 32px;
+}
+
+/* Email Notify Form */
+.notify-form {
+    display: flex;
+    gap: 8px;
+}
+
+.notify-input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 2px solid var(--ink);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    background: var(--paper);
+    outline: none;
+}
+
+.notify-input::placeholder {
+    color: var(--ink-light);
+}
+
+.notify-input:focus {
+    box-shadow: 2px 2px 0 var(--ink);
+}
+
+.notify-btn {
+    flex-shrink: 0;
+    padding: 12px 20px;
+    font-size: 0.8rem;
+}
+
+.notify-success {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 16px 24px;
+    background: rgba(0, 168, 107, 0.1);
+    border: 1px solid rgba(0, 168, 107, 0.3);
+    color: #00a86b;
+    font-size: 0.85rem;
+}
+
+@media (max-width: 600px) {
+    .construction-content {
+        margin: 0 20px;
+        padding: 32px 24px;
+    }
+
+    .notify-form {
+        flex-direction: column;
+    }
+
+    .notify-btn {
+        width: 100%;
+    }
+}

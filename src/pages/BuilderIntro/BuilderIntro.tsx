@@ -65,7 +65,11 @@ export function BuilderIntro() {
                         <div className="pathway-section">
                             <span className="pathway-label">CHOOSE YOUR PATH</span>
                             <div className="pathway-buttons">
-                                <button className="pathway-btn primary" onClick={handleWhitelabel}>
+                                <button className="pathway-btn primary" onClick={() => navigate('/builder/wizard')} style={{ background: 'var(--ink)', color: 'var(--paper)' }}>
+                                    <span className="pathway-btn-title">YIELD WIZARD</span>
+                                    <span className="pathway-btn-subtitle">I want a guided experience</span>
+                                </button>
+                                <button className="pathway-btn secondary" onClick={handleWhitelabel}>
                                     <span className="pathway-btn-title">DEPLOY MY OWN STABLECOIN</span>
                                     <span className="pathway-btn-subtitle">Whitelabel issuer partnerships</span>
                                 </button>

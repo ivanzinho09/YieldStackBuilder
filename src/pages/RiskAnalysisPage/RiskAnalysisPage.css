@@ -1,0 +1,406 @@
+/* Risk Analysis Page - Dashboard Aesthetic */
+
+.risk-page {
+    background-color: var(--paper);
+    color: var(--ink);
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1.5;
+    font-size: 14px;
+    min-height: 100vh;
+    background-image:
+        linear-gradient(var(--guide) 1px, transparent 1px),
+        linear-gradient(90deg, var(--guide) 1px, transparent 1px);
+    background-size: 100px 100px;
+    background-position: center top;
+}
+
+.risk-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 40px;
+    border-left: 1px dashed var(--ink);
+    border-right: 1px dashed var(--ink);
+    min-height: 100vh;
+    position: relative;
+    background: var(--paper);
+}
+
+/* Page Title Section */
+.risk-title-section {
+    padding: 40px 0 20px 0;
+}
+
+.risk-page-label {
+    font-size: 0.8rem;
+    color: var(--ink-light);
+}
+
+.risk-page-title {
+    font-family: 'Space Grotesk', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    font-size: 3rem;
+    margin-top: 8px;
+}
+
+/* Dashboard Grid */
+.risk-dashboard-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 0;
+    border-bottom: 1px solid var(--ink);
+}
+
+.dashboard-panel {
+    padding: 32px;
+    border-right: 1px solid var(--ink);
+    border-bottom: 1px solid var(--ink);
+}
+
+.dashboard-panel:nth-child(even) {
+    border-right: none;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+}
+
+.panel-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 4px;
+}
+
+.panel-subtitle {
+    font-size: 0.8rem;
+    color: var(--ink-light);
+    margin-top: 8px;
+}
+
+.panel-ref {
+    font-size: 0.7rem;
+    padding: 4px;
+    border: 1px solid var(--ink);
+}
+
+/* Topology Canvas */
+.topology-canvas {
+    height: 300px;
+    width: 100%;
+    border: 1px solid var(--guide);
+    background-image: radial-gradient(circle, var(--ink) 1px, transparent 1px);
+    background-size: 20px 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.topology-node {
+    position: absolute;
+    border: 1px solid var(--ink);
+    background: var(--paper);
+    padding: 8px;
+    font-size: 0.7rem;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.topology-node.primary {
+    border-width: 2px;
+}
+
+.topology-node.dashed {
+    border-style: dashed;
+}
+
+.topology-node strong {
+    font-weight: 700;
+}
+
+.topology-node .warning-text {
+    color: var(--warning);
+}
+
+/* Score Bars */
+.score-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.score-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.score-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+}
+
+.score-value {
+    font-weight: 700;
+}
+
+.vuln-score {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.score-bar {
+    width: 12px;
+    height: 20px;
+    background: var(--ink);
+    border: 1px solid var(--ink);
+}
+
+.score-bar.inactive {
+    background: transparent;
+    border: 1px dashed var(--guide);
+}
+
+.audit-log {
+    margin-top: 12px;
+    padding: 12px;
+    border: 1px solid var(--ink);
+    font-size: 0.7rem;
+    background: white;
+}
+
+.audit-log strong {
+    display: block;
+    margin-bottom: 4px;
+}
+
+/* Warning Cards */
+.warning-cards-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.warning-card {
+    border: 2px solid var(--warning);
+    padding: 16px;
+    background: white;
+    position: relative;
+}
+
+.warning-card.stable {
+    border-color: var(--ink);
+}
+
+.warning-tag {
+    background: var(--warning);
+    color: white;
+    padding: 2px 6px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    position: absolute;
+    top: -10px;
+    right: 10px;
+}
+
+.warning-tag.stable {
+    background: var(--ink);
+}
+
+.warning-card-label {
+    font-size: 0.7rem;
+    color: var(--ink-light);
+}
+
+.warning-card-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 8px 0;
+}
+
+.warning-card-meta {
+    font-size: 0.7rem;
+    background: #eee;
+    padding: 4px;
+}
+
+/* Correlation Matrix */
+.matrix {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    border-top: 1px solid var(--ink);
+    border-left: 1px solid var(--ink);
+}
+
+.matrix-cell {
+    aspect-ratio: 1;
+    border-right: 1px solid var(--ink);
+    border-bottom: 1px solid var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    position: relative;
+}
+
+.matrix-cell.header {
+    background: #eee;
+}
+
+.matrix-cell.vertical-text {
+    font-size: 0.6rem;
+    writing-mode: vertical-rl;
+}
+
+.hatch-01 {
+    background-image: repeating-linear-gradient(45deg, var(--guide) 0, var(--guide) 1px, transparent 0, transparent 10px);
+}
+
+.hatch-05 {
+    background-image: repeating-linear-gradient(45deg, var(--ink-light) 0, var(--ink-light) 1px, transparent 0, transparent 6px);
+}
+
+.hatch-09 {
+    background-image: repeating-linear-gradient(45deg, var(--ink) 0, var(--ink) 1px, transparent 0, transparent 3px);
+}
+
+.matrix-footnote {
+    margin-top: 12px;
+    font-size: 0.65rem;
+    color: var(--ink-light);
+}
+
+/* Summary Bar */
+.risk-summary-bar {
+    padding: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--ink);
+}
+
+.summary-stats {
+    display: flex;
+    gap: 40px;
+}
+
+.summary-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.summary-stat-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+}
+
+.summary-stat-value {
+    font-size: 1.5rem;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+}
+
+.btn-warning {
+    background: transparent;
+    color: var(--warning);
+    border: 2px solid var(--warning);
+    padding: 12px 24px;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 4px 4px 0 var(--warning);
+    transition: all 0.1s ease;
+}
+
+.btn-warning:hover {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 var(--warning);
+}
+
+/* Under Construction Overlay (reuse from blueprint) */
+.risk-under-construction-wrapper {
+    position: relative;
+    min-height: 500px;
+}
+
+.risk-blurred-content {
+    filter: blur(8px);
+    opacity: 0.5;
+    pointer-events: none;
+    user-select: none;
+}
+
+/* Clone CTA (place after title) */
+.risk-clone-cta {
+    padding: 24px 0;
+    border-bottom: 1px solid var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.risk-clone-cta .clone-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 24px;
+    font-size: 13px;
+}
+
+.back-link {
+    font-size: 0.8rem;
+    color: var(--ink-light);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.back-link:hover {
+    color: var(--ink);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .risk-dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-panel {
+        border-right: none;
+    }
+}
+
+@media (max-width: 600px) {
+    .risk-container {
+        padding: 0 20px;
+    }
+
+    .risk-page-title {
+        font-size: 2rem;
+    }
+
+    .warning-cards-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .risk-summary-bar {
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .summary-stats {
+        flex-wrap: wrap;
+        gap: 24px;
+    }
+}

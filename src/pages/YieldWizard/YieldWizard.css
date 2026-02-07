@@ -1,0 +1,140 @@
+.wizard-page {
+    min-height: calc(100vh - 80px);
+    background: var(--paper);
+    padding: 60px 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.wizard-container {
+    max-width: 800px;
+    width: 100%;
+}
+
+.wizard-header {
+    margin-bottom: 40px;
+}
+
+.step-indicator {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--ink-light);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.step-indicator .arrow {
+    color: var(--ink-light);
+}
+
+.step-indicator::before {
+    content: "STEP 0 OF 5";
+    background: var(--ink);
+    color: var(--paper);
+    padding: 2px 6px;
+}
+
+.wizard-title {
+    font-size: 3.5rem;
+    margin-bottom: 20px;
+}
+
+.title-underline {
+    height: 2px;
+    background: var(--ink);
+    width: 100%;
+}
+
+.wizard-options {
+    border: 2px solid var(--ink);
+    background: var(--paper);
+}
+
+.wizard-option {
+    padding: 24px;
+    border-bottom: 1px solid var(--ink);
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.wizard-option:last-child {
+    border-bottom: none;
+}
+
+.wizard-option:hover {
+    background: rgba(0, 0, 0, 0.03);
+}
+
+.wizard-option.highlighted {
+    background: var(--ink);
+    color: var(--paper);
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.wizard-option.highlighted:hover {
+    background: var(--ink);
+}
+
+.option-content {
+    width: 100%;
+}
+
+.option-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+}
+
+.option-icon {
+    font-size: 1.5rem;
+}
+
+.option-title {
+    font-size: 1.5rem;
+    font-weight: 500;
+    flex: 1;
+}
+
+.selected-badge {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    padding: 4px 8px;
+    text-transform: uppercase;
+}
+
+.dropdown-arrow {
+    margin-left: 12px;
+    font-size: 0.8rem;
+}
+
+.option-description {
+    margin-top: 24px;
+    font-size: 1.1rem;
+    line-height: 1.5;
+    opacity: 0.9;
+    max-width: 600px;
+}
+
+.option-stats {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.option-arrow {
+    font-size: 1.5rem;
+    font-weight: 300;
+}

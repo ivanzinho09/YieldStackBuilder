@@ -208,12 +208,21 @@ export function StrategyModal({ strategy, theme = 'light', onClose }: StrategyMo
                         </svg>
                         <span>Clone Strategy</span>
                     </button>
-                    <button className="strategy-modal-btn secondary">
+                    <button className="strategy-modal-btn secondary" onClick={() => navigate(`/strategy/${strategy.id}`)}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <circle cx="12" cy="12" r="10" />
-                            <path d="M12 16v-4M12 8h.01" />
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                            <path d="M9 3v18" />
+                            <path d="M15 3v18" />
+                            <path d="M3 9h18" />
+                            <path d="M3 15h18" />
                         </svg>
-                        <span>View Strategy</span>
+                        <span>Blueprint</span>
+                    </button>
+                    <button className="strategy-modal-btn secondary" onClick={() => navigate(`/strategy/${strategy.id}/risk`)}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        </svg>
+                        <span>Risk Profile</span>
                     </button>
                 </div>
             </div>

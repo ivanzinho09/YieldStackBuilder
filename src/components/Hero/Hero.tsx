@@ -19,7 +19,7 @@ export function Hero() {
 
                 <div className="hero-buttons">
                     <Link to="/builder/intro" className="btn-main">Start Building →</Link>
-                    <Link to="/builder/canvas" className="btn-secondary">Open Canvas →</Link>
+                    <Link to="/strategies" className="btn-secondary">Explore Strategies →</Link>
                 </div>
 
                 <div className="supported-networks">

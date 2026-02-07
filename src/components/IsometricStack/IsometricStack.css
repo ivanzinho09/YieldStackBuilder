@@ -1,7 +1,8 @@
 .iso-stack-container {
     position: relative;
     height: 500px;
-    display: flex;
+    display: none;
+    /* Hidden by default on mobile/tablet */
     justify-content: center;
     align-items: center;
     perspective: 1000px;
@@ -20,6 +21,23 @@
     justify-content: space-between;
     padding: 20px;
     box-shadow: 10px 10px 20px rgba(0, 0, 0, 0.05);
+}
+
+@media (min-width: 1024px) {
+    .iso-stack-container {
+        display: flex;
+        /* Show only on desktop */
+        height: 600px;
+        perspective: 1200px;
+        transform: scale(1.2);
+    }
+
+    .iso-plane {
+        width: 360px;
+        height: 240px;
+        padding: 24px;
+        box-shadow: 12px 12px 24px rgba(0, 0, 0, 0.05);
+    }
 }
 
 .iso-plane:hover {

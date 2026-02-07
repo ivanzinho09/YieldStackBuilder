@@ -2,6 +2,9 @@ import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
 import './index.css';
 import { LandingPage } from './pages/LandingPage';
 import { StrategiesPage } from './pages/StrategiesPage';
+import { StrategyBlueprintPage } from './pages/StrategyBlueprintPage';
+import { RiskAnalysisPage } from './pages/RiskAnalysisPage';
+import { YieldWizard } from './pages/YieldWizard';
 import { BuilderIntro } from './pages/BuilderIntro';
 import { BuilderStep1 } from './pages/BuilderStep1';
 import { BuilderStep2 } from './pages/BuilderStep2';
@@ -29,6 +32,9 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/strategies" element={<StrategiesPage />} />
+        <Route path="/strategy/:strategyId" element={<StrategyBlueprintPage />} />
+        <Route path="/strategy/:strategyId/risk" element={<RiskAnalysisPage />} />
+        <Route path="/builder/wizard" element={<YieldWizard />} />
 
         {/* Routes that need APY Data */}
         <Route element={<ApyDataLayout />}>
