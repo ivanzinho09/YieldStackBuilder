@@ -3,14 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { type Strategy } from '../../data/strategies';
 import { getProtocolMeta } from '../../data/protocolMeta';
 import { useBuilderStore } from '../../stores/builderStore';
+import '../StrategyCard/StrategyCard.css';
 import './StrategyModal.css';
 
 interface StrategyModalProps {
     strategy: Strategy;
+    theme?: 'light' | 'dark' | 'glass';
     onClose: () => void;
 }
 
-export function StrategyModal({ strategy, onClose }: StrategyModalProps) {
+export function StrategyModal({ strategy, theme = 'light', onClose }: StrategyModalProps) {
     const navigate = useNavigate();
     const { loadStack } = useBuilderStore();
     const containerRef = useRef<HTMLDivElement>(null);
@@ -101,7 +103,7 @@ export function StrategyModal({ strategy, onClose }: StrategyModalProps) {
                     onMouseLeave={handleMouseLeave}
                 >
                     <div
-                        className="yield-card theme-light"
+                        className={`yield-card theme-${theme}`}
                         ref={cardRef}
                         style={cardStyle}
                     >

@@ -228,6 +228,58 @@
     font-family: 'JetBrains Mono', monospace;
 }
 
+/* Dark Theme Override - must match specificity of .strategy-modal-stage .yield-card */
+.strategy-modal-stage .yield-card.theme-dark {
+    --card-bg: #0D0F11;
+    --card-content-bg: linear-gradient(180deg, #101317 0%, #090B0F 100%);
+    --card-text: #F5F5F5;
+    --card-dim: #A1A8B3;
+    --card-border: #3B404A;
+    --card-divider: rgba(245, 245, 245, 0.7);
+    --card-dotted: rgba(209, 213, 219, 0.45);
+    --card-connector: #D1D5DB;
+    --card-pill-bg: #F5F5F5;
+    --card-pill-text: #0D0F11;
+    --card-logo-bg: #161A20;
+    --card-logo-border: #4B5563;
+    --card-chip-border: #6B7280;
+    --card-chip-text: #F5F5F5;
+    --card-frame: #F5F5F5;
+    --card-bar: #F5F5F5;
+    --card-pattern: rgba(255, 255, 255, 0.14);
+    --card-shadow: 26px 24px 64px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+/* Glass Theme Override - frosted translucent with readable text */
+.strategy-modal-stage .yield-card.theme-glass {
+    /* Translucent white base - enough to read but still see through */
+    --card-bg: rgba(255, 255, 255, 0.75);
+    --card-content-bg: rgba(255, 255, 255, 0.55);
+    --card-text: #0B1324;
+    --card-dim: rgba(11, 19, 36, 0.7);
+    --card-border: rgba(200, 210, 225, 0.5);
+    --card-divider: rgba(11, 19, 36, 0.3);
+    --card-dotted: rgba(11, 19, 36, 0.25);
+    --card-connector: rgba(11, 19, 36, 0.3);
+    --card-pill-bg: rgba(255, 255, 255, 0.7);
+    --card-pill-text: #0B1324;
+    --card-logo-bg: rgba(255, 255, 255, 0.8);
+    --card-logo-border: rgba(180, 190, 210, 0.4);
+    --card-chip-border: rgba(11, 19, 36, 0.3);
+    --card-chip-text: #0B1324;
+    --card-frame: rgba(255, 255, 255, 0.4);
+    --card-bar: rgba(11, 19, 36, 0.65);
+    --card-pattern: rgba(11, 19, 36, 0.03);
+    --card-shadow:
+        0 25px 50px -12px rgba(0, 0, 0, 0.2),
+        0 0 0 1px rgba(255, 255, 255, 0.6) inset;
+
+    background: var(--card-bg);
+    /* Strong blur to create frosted effect */
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+}
+
 /* Responsive */
 @media (max-width: 600px) {
     .strategy-modal-close {

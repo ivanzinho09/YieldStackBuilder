@@ -1,9 +1,24 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { strategies, type Strategy } from '../../data/strategies';
+import { doesStrategyMatchFilter } from '../../data/searchIndex';
 import { StrategyCard } from '../../components/StrategyCard';
 import { StrategyModal } from '../../components/StrategyModal';
+import { SearchModal } from '../../components/SearchModal';
+import { SearchFilterBar } from '../../components/SearchFilterBar';
 import './StrategiesPage.css';
+
+// Configuration for momentum physics
+const FRICTION = 0.92; // Deceleration factor per frame
+const MIN_VELOCITY = 0.5; // Velocity threshold to stop animation
+const VELOCITY_SCALE = 0.8; // Scale factor for initial velocity
+
+type TiledEntry = {
+    key: string;
+    strategy: Strategy;
+    theme: 'light' | 'dark' | 'glass';
+    position: { x: number; y: number };
+};
 
 export function StrategiesPage() {
     const DRAG_THRESHOLD = 8;
@@ -12,22 +27,21 @@ export function StrategiesPage() {
     const offsetRef = useRef({ x: 0, y: 0 });
     const dragStartRef = useRef({ x: 0, y: 0 });
     const initialOffsetRef = useRef({ x: 0, y: 0 });
-    const pendingOffsetRef = useRef({ x: 0, y: 0 });
-    const animationFrameRef = useRef<number | null>(null);
     const didDragRef = useRef(false);
     const isTouchingRef = useRef(false);
+
+    // Momentum/inertia refs
+    const velocityRef = useRef({ x: 0, y: 0 });
+    const lastMoveRef = useRef({ x: 0, y: 0, time: 0 });
+    const momentumFrameRef = useRef<number | null>(null);
+
+    const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
     const [tileConfig, setTileConfig] = useState({
         columns: 5,
-        tileRadius: 2,
         spacingX: 420,
         spacingY: 460,
+        cardScale: 1,
     });
-    type TiledEntry = {
-        key: string;
-        strategy: Strategy;
-        theme: 'light' | 'dark' | 'glass';
-        position: { x: number; y: number };
-    };
 
     // Canvas pan state
     const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -35,52 +49,83 @@ export function StrategiesPage() {
 
     // Modal state
     const [selectedStrategy, setSelectedStrategy] = useState<Strategy | null>(null);
+    const [selectedTheme, setSelectedTheme] = useState<'light' | 'dark' | 'glass'>('light');
 
-    // Center canvas on mount
-    useEffect(() => {
-        if (containerRef.current) {
-            const rect = containerRef.current.getBoundingClientRect();
-            // Center on approximately middle of the strategy cluster
-            setOffset({
-                x: rect.width / 2 - 800,
-                y: rect.height / 2 - 500,
-            });
-            offsetRef.current = {
-                x: rect.width / 2 - 800,
-                y: rect.height / 2 - 500,
-            };
-        }
+    // Search and filter state
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [activeFilters, setActiveFilters] = useState<{ type: 'protocol' | 'tag' | 'type'; value: string }[]>([]);
+
+    // Check if any filters are active
+    const hasActiveFilters = activeFilters.length > 0;
+
+    // Filter handlers
+    const handleAddFilter = useCallback((type: 'protocol' | 'tag' | 'type', value: string) => {
+        setActiveFilters(prev => {
+            // Don't add duplicate filters
+            if (prev.some(f => f.type === type && f.value === value)) return prev;
+            return [...prev, { type, value }];
+        });
     }, []);
 
+    const handleRemoveFilter = useCallback((filter: { type: 'protocol' | 'tag' | 'type'; value: string }) => {
+        setActiveFilters(prev => prev.filter(f => !(f.type === filter.type && f.value === filter.value)));
+    }, []);
+
+    const handleClearFilters = useCallback(() => {
+        setActiveFilters([]);
+    }, []);
+
+    // Keyboard shortcut for search (Cmd+K / Ctrl+K)
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                setIsSearchOpen(true);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
+
+    // Update viewport size
+    useEffect(() => {
+        const updateViewport = () => {
+            if (containerRef.current) {
+                const rect = containerRef.current.getBoundingClientRect();
+                setViewportSize({ width: rect.width, height: rect.height });
+            }
+        };
+        updateViewport();
+        window.addEventListener('resize', updateViewport);
+        return () => window.removeEventListener('resize', updateViewport);
+    }, []);
+
+    // Update tile config based on screen size
     useEffect(() => {
         const updateTileConfig = () => {
             const width = window.innerWidth;
             if (width <= 600) {
                 setTileConfig({
                     columns: 2,
-                    tileRadius: 0,
-                    spacingX: 320,
-                    spacingY: 360,
+                    spacingX: 340,
+                    spacingY: 440,
+                    cardScale: 0.72,
                 });
-                return;
-            }
-
-            if (width <= 900) {
+            } else if (width <= 900) {
                 setTileConfig({
                     columns: 4,
-                    tileRadius: 1,
-                    spacingX: 360,
-                    spacingY: 420,
+                    spacingX: 380,
+                    spacingY: 480,
+                    cardScale: 0.78,
                 });
-                return;
+            } else {
+                setTileConfig({
+                    columns: 6,
+                    spacingX: 420,
+                    spacingY: 520,
+                    cardScale: 0.82,
+                });
             }
-
-            setTileConfig({
-                columns: 5,
-                tileRadius: 2,
-                spacingX: 420,
-                spacingY: 460,
-            });
         };
 
         updateTileConfig();
@@ -88,27 +133,137 @@ export function StrategiesPage() {
         return () => window.removeEventListener('resize', updateTileConfig);
     }, []);
 
-    const scheduleOffsetUpdate = useCallback((nextOffset: { x: number; y: number }) => {
-        pendingOffsetRef.current = nextOffset;
-        if (animationFrameRef.current === null) {
-            animationFrameRef.current = window.requestAnimationFrame(() => {
-                setOffset(pendingOffsetRef.current);
-                offsetRef.current = pendingOffsetRef.current;
-                animationFrameRef.current = null;
-            });
+    // Center canvas on mount
+    useEffect(() => {
+        if (containerRef.current) {
+            const rect = containerRef.current.getBoundingClientRect();
+            const initialOffset = {
+                x: rect.width / 2 - tileConfig.spacingX * 1.5,
+                y: rect.height / 2 - tileConfig.spacingY,
+            };
+            setOffset(initialOffset);
+            offsetRef.current = initialOffset;
         }
+    }, [tileConfig.spacingX, tileConfig.spacingY]);
+
+    // Calculate rows for tile height calculation
+    const rows = Math.ceil(strategies.length / tileConfig.columns);
+
+    // Virtual viewport culling - only render visible cards
+    const visibleStrategies = useMemo<TiledEntry[]>(() => {
+        if (viewportSize.width === 0 || viewportSize.height === 0) return [];
+
+        const buffer = 1; // Extra cards outside viewport
+        const { spacingX, spacingY, columns, cardScale } = tileConfig;
+        const scaledSpacingX = spacingX * cardScale;
+        const scaledSpacingY = spacingY * cardScale;
+        const scaledTileWidth = columns * scaledSpacingX;
+        const scaledTileHeight = rows * scaledSpacingY;
+
+        const themes = ['light', 'dark', 'glass'] as const;
+
+        const hashString = (value: string) => {
+            let hash = 0;
+            for (let i = 0; i < value.length; i++) {
+                hash = (hash * 31 + value.charCodeAt(i)) % 2147483647;
+            }
+            return hash;
+        };
+
+        // Calculate which cards are visible
+        const visibleMinX = -offset.x - scaledSpacingX * buffer;
+        const visibleMaxX = -offset.x + viewportSize.width + scaledSpacingX * buffer;
+        const visibleMinY = -offset.y - scaledSpacingY * buffer;
+        const visibleMaxY = -offset.y + viewportSize.height + scaledSpacingY * buffer;
+
+        // Calculate tile range needed
+        const tileMinX = Math.floor(visibleMinX / scaledTileWidth);
+        const tileMaxX = Math.ceil(visibleMaxX / scaledTileWidth);
+        const tileMinY = Math.floor(visibleMinY / scaledTileHeight);
+        const tileMaxY = Math.ceil(visibleMaxY / scaledTileHeight);
+
+        const entries: TiledEntry[] = [];
+
+        for (let tileY = tileMinY; tileY <= tileMaxY; tileY++) {
+            for (let tileX = tileMinX; tileX <= tileMaxX; tileX++) {
+                strategies.forEach((strategy, index) => {
+                    const col = index % columns;
+                    const row = Math.floor(index / columns);
+                    const x = tileX * scaledTileWidth + col * scaledSpacingX;
+                    const y = tileY * scaledTileHeight + row * scaledSpacingY;
+
+                    // Check if card is within visible bounds
+                    if (x >= visibleMinX && x <= visibleMaxX && y >= visibleMinY && y <= visibleMaxY) {
+                        entries.push({
+                            key: `${strategy.id}-${tileX}-${tileY}`,
+                            strategy,
+                            theme: themes[hashString(`${strategy.id}-${tileX}-${tileY}`) % themes.length],
+                            position: { x, y },
+                        });
+                    }
+                });
+            }
+        }
+
+        return entries;
+    }, [offset, viewportSize, tileConfig, rows]);
+
+    // Momentum animation loop
+    const runMomentum = useCallback(() => {
+        const velocity = velocityRef.current;
+
+        // Apply friction
+        velocity.x *= FRICTION;
+        velocity.y *= FRICTION;
+
+        // Check if velocity is negligible
+        if (Math.abs(velocity.x) < MIN_VELOCITY && Math.abs(velocity.y) < MIN_VELOCITY) {
+            velocity.x = 0;
+            velocity.y = 0;
+            momentumFrameRef.current = null;
+            return;
+        }
+
+        // Update offset
+        const newOffset = {
+            x: offsetRef.current.x + velocity.x,
+            y: offsetRef.current.y + velocity.y,
+        };
+        offsetRef.current = newOffset;
+        setOffset(newOffset);
+
+        // Continue animation
+        momentumFrameRef.current = requestAnimationFrame(runMomentum);
     }, []);
+
+    // Stop momentum
+    const stopMomentum = useCallback(() => {
+        if (momentumFrameRef.current !== null) {
+            cancelAnimationFrame(momentumFrameRef.current);
+            momentumFrameRef.current = null;
+        }
+        velocityRef.current = { x: 0, y: 0 };
+    }, []);
+
+    // Start momentum after release
+    const startMomentum = useCallback(() => {
+        if (momentumFrameRef.current === null && (Math.abs(velocityRef.current.x) > MIN_VELOCITY || Math.abs(velocityRef.current.y) > MIN_VELOCITY)) {
+            momentumFrameRef.current = requestAnimationFrame(runMomentum);
+        }
+    }, [runMomentum]);
 
     // Mouse handlers for panning
     const handleMouseDown = useCallback((e: React.MouseEvent) => {
-        // Don't start drag if clicking on a card
         if ((e.target as HTMLElement).closest('.canvas-card')) return;
 
+        stopMomentum();
         setIsDragging(true);
+        didDragRef.current = false;
         const start = { x: e.clientX, y: e.clientY };
         dragStartRef.current = start;
         initialOffsetRef.current = { ...offsetRef.current };
-    }, []);
+        lastMoveRef.current = { x: e.clientX, y: e.clientY, time: Date.now() };
+    }, [stopMomentum]);
 
     const handleMouseMove = useCallback((e: React.MouseEvent) => {
         if (!isDragging) return;
@@ -116,28 +271,53 @@ export function StrategiesPage() {
         const deltaX = e.clientX - dragStartRef.current.x;
         const deltaY = e.clientY - dragStartRef.current.y;
 
-        scheduleOffsetUpdate({
+        if (!didDragRef.current && Math.sqrt(deltaX * deltaX + deltaY * deltaY) > DRAG_THRESHOLD) {
+            didDragRef.current = true;
+        }
+
+        // Track velocity
+        const now = Date.now();
+        const dt = now - lastMoveRef.current.time;
+        if (dt > 0) {
+            velocityRef.current = {
+                x: (e.clientX - lastMoveRef.current.x) * VELOCITY_SCALE,
+                y: (e.clientY - lastMoveRef.current.y) * VELOCITY_SCALE,
+            };
+        }
+        lastMoveRef.current = { x: e.clientX, y: e.clientY, time: now };
+
+        const newOffset = {
             x: initialOffsetRef.current.x + deltaX,
             y: initialOffsetRef.current.y + deltaY,
-        });
-    }, [isDragging, scheduleOffsetUpdate]);
+        };
+        offsetRef.current = newOffset;
+        setOffset(newOffset);
+    }, [isDragging]);
 
     const handleMouseUp = useCallback(() => {
-        setIsDragging(false);
-    }, []);
+        if (isDragging) {
+            setIsDragging(false);
+            startMomentum();
+        }
+    }, [isDragging, startMomentum]);
 
     const handleMouseLeave = useCallback(() => {
-        setIsDragging(false);
-    }, []);
+        if (isDragging) {
+            setIsDragging(false);
+            startMomentum();
+        }
+    }, [isDragging, startMomentum]);
 
-    // Touch handlers for mobile - allow dragging from anywhere including cards
+    // Touch handlers for mobile
     const handleTouchStart = useCallback((e: React.TouchEvent) => {
         const touch = e.touches[0];
+        stopMomentum();
         isTouchingRef.current = true;
         didDragRef.current = false;
         dragStartRef.current = { x: touch.clientX, y: touch.clientY };
         initialOffsetRef.current = { ...offsetRef.current };
-    }, []);
+        lastMoveRef.current = { x: touch.clientX, y: touch.clientY, time: Date.now() };
+    }, [stopMomentum]);
 
     const handleTouchMove = useCallback((e: React.TouchEvent) => {
         if (!isTouchingRef.current) return;
@@ -154,80 +334,82 @@ export function StrategiesPage() {
 
         if (didDragRef.current) {
             e.preventDefault();
-            scheduleOffsetUpdate({
+
+            // Track velocity
+            const now = Date.now();
+            const dt = now - lastMoveRef.current.time;
+            if (dt > 0) {
+                velocityRef.current = {
+                    x: (touch.clientX - lastMoveRef.current.x) * VELOCITY_SCALE,
+                    y: (touch.clientY - lastMoveRef.current.y) * VELOCITY_SCALE,
+                };
+            }
+            lastMoveRef.current = { x: touch.clientX, y: touch.clientY, time: now };
+
+            const newOffset = {
                 x: initialOffsetRef.current.x + deltaX,
                 y: initialOffsetRef.current.y + deltaY,
-            });
+            };
+            offsetRef.current = newOffset;
+            setOffset(newOffset);
         }
-    }, [scheduleOffsetUpdate]);
+    }, []);
 
     const handleTouchEnd = useCallback(() => {
         isTouchingRef.current = false;
         setIsDragging(false);
-    }, []);
+        startMomentum();
+    }, [startMomentum]);
 
-    // Card selection - single tap on touch, click on desktop
-    const handleCardSelect = (strategy: Strategy, event: React.PointerEvent<HTMLDivElement>) => {
+    // Wheel handler with momentum
+    const handleWheel = useCallback((event: React.WheelEvent) => {
+        event.preventDefault();
+        stopMomentum();
+
+        const newOffset = {
+            x: offsetRef.current.x - event.deltaX,
+            y: offsetRef.current.y - event.deltaY,
+        };
+        offsetRef.current = newOffset;
+        setOffset(newOffset);
+
+        // Add wheel velocity for momentum
+        velocityRef.current = {
+            x: -event.deltaX * 0.3,
+            y: -event.deltaY * 0.3,
+        };
+        startMomentum();
+    }, [stopMomentum, startMomentum]);
+
+    // Card selection
+    const handleCardSelect = (strategy: Strategy, theme: 'light' | 'dark' | 'glass', event: React.PointerEvent<HTMLDivElement>) => {
         if (event.pointerType === 'touch') {
-            // On touch devices, only select if user didn't drag
             if (didDragRef.current) return;
             setSelectedStrategy(strategy);
+            setSelectedTheme(theme);
             return;
         }
-
-        // Desktop: click to select
-        if (isDragging) return;
+        if (didDragRef.current) return;
         setSelectedStrategy(strategy);
+        setSelectedTheme(theme);
     };
 
     const handleCloseModal = () => {
         setSelectedStrategy(null);
     };
 
-    // Strategy type counts for legend
-    const typeCounts = strategies.reduce((acc, s) => {
-        acc[s.type] = (acc[s.type] || 0) + 1;
-        return acc;
-    }, {} as Record<string, number>);
+    // Check if a strategy matches current filters
+    const checkStrategyMatch = useCallback((strategy: Strategy): boolean => {
+        if (!hasActiveFilters) return true;
 
-    const tiledStrategies = useMemo<TiledEntry[]>(() => {
-        const { columns, tileRadius, spacingX, spacingY } = tileConfig;
-        const rows = Math.ceil(strategies.length / columns);
-        const tileWidth = columns * spacingX;
-        const tileHeight = rows * spacingY;
-        const tiles = Array.from({ length: tileRadius * 2 + 1 }, (_, idx) => idx - tileRadius);
-        const themes = ['light', 'dark', 'glass'] as const;
-
-        const hashString = (value: string) => {
-            let hash = 0;
-            for (let i = 0; i < value.length; i += 1) {
-                hash = (hash * 31 + value.charCodeAt(i)) % 2147483647;
-            }
-            return hash;
+        const filters = {
+            protocols: activeFilters.filter(f => f.type === 'protocol').map(f => f.value),
+            tags: activeFilters.filter(f => f.type === 'tag').map(f => f.value),
+            types: activeFilters.filter(f => f.type === 'type').map(f => f.value),
         };
 
-        const basePositions = strategies.map((strategy, index) => ({
-            strategy,
-            position: {
-                x: (index % columns) * spacingX,
-                y: Math.floor(index / columns) * spacingY,
-            },
-        }));
-
-        return tiles.flatMap((tileX) =>
-            tiles.flatMap((tileY) =>
-                basePositions.map((entry) => ({
-                    key: `${entry.strategy.id}-${tileX}-${tileY}`,
-                    strategy: entry.strategy,
-                    theme: themes[hashString(`${entry.strategy.id}-${tileX}-${tileY}`) % themes.length],
-                    position: {
-                        x: entry.position.x + tileX * tileWidth,
-                        y: entry.position.y + tileY * tileHeight,
-                    },
-                }))
-            )
-        );
-    }, [tileConfig]);
+        return doesStrategyMatchFilter(strategy, filters);
+    }, [activeFilters, hasActiveFilters]);
 
     return (
         <div className="strategies-layout">
@@ -244,15 +426,12 @@ export function StrategiesPage() {
                     <div className="nav-link active">Strategies</div>
                 </div>
 
-                <div className="strategies-legend">
-                    {Object.entries(typeCounts).map(([type, count]) => (
-                        <div key={type} className="legend-item">
-                            <span className="legend-dot"></span>
-                            <span>{type}</span>
-                            <span className="legend-count">{count}</span>
-                        </div>
-                    ))}
-                </div>
+                <SearchFilterBar
+                    filters={activeFilters}
+                    onRemoveFilter={handleRemoveFilter}
+                    onClearAll={handleClearFilters}
+                    onOpenSearch={() => setIsSearchOpen(true)}
+                />
             </header>
 
             {/* Canvas Container */}
@@ -263,13 +442,7 @@ export function StrategiesPage() {
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseLeave}
-                onWheel={(event) => {
-                    event.preventDefault();
-                    scheduleOffsetUpdate({
-                        x: offsetRef.current.x - event.deltaX,
-                        y: offsetRef.current.y - event.deltaY,
-                    });
-                }}
+                onWheel={handleWheel}
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
@@ -286,10 +459,10 @@ export function StrategiesPage() {
                 <div className="canvas-count">
                     <span className="count-number">∞</span>
                     <span>STRATEGIES</span>
-                    <span className="count-subtitle">25 blueprints, endlessly remixed</span>
+                    <span className="count-subtitle">{strategies.length} blueprints, endlessly remixed</span>
                 </div>
 
-                {/* Infinite Canvas */}
+                {/* Infinite Canvas - virtual rendering */}
                 <div
                     className="strategies-canvas"
                     ref={canvasRef}
@@ -297,22 +470,26 @@ export function StrategiesPage() {
                         transform: `translate(${offset.x}px, ${offset.y}px)`,
                     }}
                 >
-                    {tiledStrategies.map((entry) => (
-                        <div
-                            key={entry.key}
-                            className="canvas-card-wrapper"
-                            style={{
-                                left: entry.position.x,
-                                top: entry.position.y,
-                            }}
-                        >
-                            <StrategyCard
-                                strategy={entry.strategy}
-                                theme={entry.theme}
-                                onSelect={(event) => handleCardSelect(entry.strategy, event)}
-                            />
-                        </div>
-                    ))}
+                    {visibleStrategies.map((entry) => {
+                        const isMatch = checkStrategyMatch(entry.strategy);
+                        return (
+                            <div
+                                key={entry.key}
+                                className={`canvas-card-wrapper ${hasActiveFilters ? (isMatch ? 'filter-match' : 'filtered-out') : ''}`}
+                                style={{
+                                    left: entry.position.x,
+                                    top: entry.position.y,
+                                    transform: `scale(${tileConfig.cardScale})`,
+                                }}
+                            >
+                                <StrategyCard
+                                    strategy={entry.strategy}
+                                    theme={entry.theme}
+                                    onSelect={(event) => handleCardSelect(entry.strategy, entry.theme, event)}
+                                />
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
 
@@ -335,10 +512,22 @@ export function StrategiesPage() {
                 </div>
             </footer>
 
-            {/* Modal */}
+            {/* Search Modal */}
+            <SearchModal
+                isOpen={isSearchOpen}
+                onClose={() => setIsSearchOpen(false)}
+                onSelectStrategy={(strategy) => {
+                    setSelectedStrategy(strategy);
+                    setSelectedTheme('light');
+                }}
+                onAddFilter={handleAddFilter}
+            />
+
+            {/* Strategy Modal */}
             {selectedStrategy && (
                 <StrategyModal
                     strategy={selectedStrategy}
+                    theme={selectedTheme}
                     onClose={handleCloseModal}
                 />
             )}

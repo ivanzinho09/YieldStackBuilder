@@ -1,0 +1,144 @@
+/* Search Filter Bar */
+.search-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* Search Trigger Button */
+.search-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: transparent;
+    border: 1px solid var(--ink, #1a1a1a);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    color: var(--ink-light, #666);
+}
+
+.search-trigger:hover {
+    background: var(--ink, #1a1a1a);
+    color: var(--paper, #f4f4f0);
+    box-shadow: 3px 3px 0 var(--ink, #1a1a1a);
+    transform: translate(-1px, -1px);
+}
+
+.trigger-text {
+    display: none;
+}
+
+.trigger-shortcut {
+    padding: 2px 6px;
+    background: rgba(0, 0, 0, 0.08);
+    font-size: 9px;
+    letter-spacing: 0.02em;
+}
+
+.search-trigger:hover .trigger-shortcut {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* Active Filters */
+.active-filters {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.filter-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 8px;
+    background: var(--ink, #1a1a1a);
+    color: var(--paper, #f4f4f0);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    animation: pillIn 0.2s ease;
+}
+
+@keyframes pillIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.pill-type {
+    opacity: 0.6;
+}
+
+.pill-value {
+    font-weight: 600;
+}
+
+.pill-remove {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    margin-left: 4px;
+    background: transparent;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    font-size: 14px;
+    opacity: 0.7;
+    transition: opacity 0.15s ease;
+}
+
+.pill-remove:hover {
+    opacity: 1;
+}
+
+.clear-all {
+    background: transparent;
+    border: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    color: var(--ink-light, #888);
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.clear-all:hover {
+    color: var(--ink, #1a1a1a);
+}
+
+/* Responsive */
+@media (min-width: 600px) {
+    .trigger-text {
+        display: inline;
+    }
+}
+
+@media (max-width: 600px) {
+    .search-filter-bar {
+        gap: 8px;
+    }
+
+    .filter-pill {
+        font-size: 8px;
+        padding: 4px 6px;
+    }
+
+    .trigger-shortcut {
+        display: none;
+    }
+}
