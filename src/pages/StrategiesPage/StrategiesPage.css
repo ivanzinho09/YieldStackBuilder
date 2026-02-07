@@ -164,6 +164,7 @@
 
 /* Canvas */
 .strategies-canvas {
+    --card-scale: 1;
     position: absolute;
     top: 0;
     left: 0;
@@ -180,6 +181,8 @@
 .canvas-card-wrapper {
     position: absolute;
     transition: transform 0.1s ease;
+    transform: scale(var(--card-scale));
+    transform-origin: top left;
 }
 
 .canvas-card-wrapper:hover {
@@ -311,5 +314,9 @@
     .canvas-count .count-subtitle {
         font-size: 8px;
         letter-spacing: 0.06em;
+    }
+
+    .strategies-canvas {
+        --card-scale: 0.78;
     }
 }

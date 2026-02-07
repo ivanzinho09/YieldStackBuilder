@@ -14,6 +14,12 @@ export function StrategiesPage() {
     const pendingOffsetRef = useRef({ x: 0, y: 0 });
     const animationFrameRef = useRef<number | null>(null);
     const lastTapRef = useRef<{ id: string | null; time: number }>({ id: null, time: 0 });
+    const [tileConfig, setTileConfig] = useState({
+        columns: 5,
+        tileRadius: 2,
+        spacingX: 420,
+        spacingY: 460,
+    });
 
     // Canvas pan state
     const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -36,6 +42,42 @@ export function StrategiesPage() {
                 y: rect.height / 2 - 500,
             };
         }
+    }, []);
+
+    useEffect(() => {
+        const updateTileConfig = () => {
+            const width = window.innerWidth;
+            if (width <= 600) {
+                setTileConfig({
+                    columns: 3,
+                    tileRadius: 1,
+                    spacingX: 300,
+                    spacingY: 360,
+                });
+                return;
+            }
+
+            if (width <= 900) {
+                setTileConfig({
+                    columns: 4,
+                    tileRadius: 1,
+                    spacingX: 360,
+                    spacingY: 420,
+                });
+                return;
+            }
+
+            setTileConfig({
+                columns: 5,
+                tileRadius: 2,
+                spacingX: 420,
+                spacingY: 460,
+            });
+        };
+
+        updateTileConfig();
+        window.addEventListener('resize', updateTileConfig);
+        return () => window.removeEventListener('resize', updateTileConfig);
     }, []);
 
     const scheduleOffsetUpdate = useCallback((nextOffset: { x: number; y: number }) => {
@@ -140,54 +182,33 @@ export function StrategiesPage() {
     }, {} as Record<string, number>);
 
     const tiledStrategies = useMemo(() => {
-        const bounds = strategies.reduce(
-            (acc, strategy) => {
-                acc.minX = Math.min(acc.minX, strategy.position.x);
-                acc.maxX = Math.max(acc.maxX, strategy.position.x);
-                acc.minY = Math.min(acc.minY, strategy.position.y);
-                acc.maxY = Math.max(acc.maxY, strategy.position.y);
-                return acc;
+        const { columns, tileRadius, spacingX, spacingY } = tileConfig;
+        const rows = Math.ceil(strategies.length / columns);
+        const tileWidth = columns * spacingX;
+        const tileHeight = rows * spacingY;
+        const tiles = Array.from({ length: tileRadius * 2 + 1 }, (_, idx) => idx - tileRadius);
+
+        const basePositions = strategies.map((strategy, index) => ({
+            strategy,
+            position: {
+                x: (index % columns) * spacingX,
+                y: Math.floor(index / columns) * spacingY,
             },
-            {
-                minX: Number.POSITIVE_INFINITY,
-                maxX: Number.NEGATIVE_INFINITY,
-                minY: Number.POSITIVE_INFINITY,
-                maxY: Number.NEGATIVE_INFINITY,
-            }
-        );
-
-        const tileWidth = bounds.maxX - bounds.minX + 500;
-        const tileHeight = bounds.maxY - bounds.minY + 420;
-        const tiles = [-2, -1, 0, 1, 2];
-
-        const randomFromSeed = (seed: number) => {
-            const x = Math.sin(seed) * 10000;
-            return x - Math.floor(x);
-        };
+        }));
 
         return tiles.flatMap((tileX) =>
             tiles.flatMap((tileY) =>
-                strategies
-                    .filter((_, index) => {
-                        const seed = tileX * 31 + tileY * 17 + index * 13;
-                        return randomFromSeed(seed) > 0.14;
-                    })
-                    .map((strategy, index) => {
-                        const seed = tileX * 37 + tileY * 29 + index * 11;
-                        const jitterX = (randomFromSeed(seed) - 0.5) * 120;
-                        const jitterY = (randomFromSeed(seed + 5) - 0.5) * 120;
-                        return {
-                            key: `${strategy.id}-${tileX}-${tileY}`,
-                            strategy,
-                            position: {
-                                x: strategy.position.x + tileX * tileWidth + jitterX,
-                                y: strategy.position.y + tileY * tileHeight + jitterY,
-                            },
-                        };
-                    })
+                basePositions.map((entry) => ({
+                    key: `${entry.strategy.id}-${tileX}-${tileY}`,
+                    strategy: entry.strategy,
+                    position: {
+                        x: entry.position.x + tileX * tileWidth,
+                        y: entry.position.y + tileY * tileHeight,
+                    },
+                }))
             )
         );
-    }, []);
+    }, [tileConfig]);
 
     return (
         <div className="strategies-layout">
