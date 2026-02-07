@@ -415,15 +415,15 @@ export function StrategiesPage() {
         <div className="strategies-layout">
             {/* Header */}
             <header className="strategies-header">
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                    <div className="label-mono" style={{ fontSize: '9px', letterSpacing: '0.1em' }}>YSB® EXPLORE</div>
-                    <div className="font-body" style={{ fontSize: '14px', fontWeight: 600, letterSpacing: '-0.02em' }}>STRATEGY GALLERY</div>
-                </div>
+                <Link to="/" className="strategies-brand">
+                    <div className="logo-mark"></div>
+                    <span className="text-display strategies-brand-text">YIELD_STACK_BUILDER</span>
+                </Link>
 
                 <div className="strategies-nav">
                     <Link to="/" className="nav-link">Home</Link>
-                    <Link to="/builder/intro" className="nav-link">Builder</Link>
                     <div className="nav-link active">Strategies</div>
+                    <Link to="/builder/intro" className="nav-link">Builder</Link>
                 </div>
 
                 <SearchFilterBar

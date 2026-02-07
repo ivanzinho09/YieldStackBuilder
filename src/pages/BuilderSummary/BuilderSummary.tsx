@@ -108,8 +108,12 @@ export function BuilderSummary() {
     return (
         <div className="builder-layout">
             <header className="summary-header-bar">
-                <div className="brand">YIELD STACK BUILDER</div>
-                <Link to="/" className="cancel-link">CANCEL BUILD</Link>
+                <Link to="/" className="brand" style={{ textDecoration: 'none', color: 'inherit' }}>YIELD STACK BUILDER</Link>
+                <div className="summary-header-actions">
+                    <Link to="/strategies" className="cancel-link">STRATEGIES</Link>
+                    <Link to="/builder/canvas" className="cancel-link">EDIT STACK</Link>
+                    <Link to="/" className="cancel-link">EXIT</Link>
+                </div>
             </header>
 
             <div className="workspace-summary">

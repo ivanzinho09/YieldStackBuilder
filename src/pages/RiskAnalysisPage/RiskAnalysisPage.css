@@ -387,7 +387,29 @@
     }
 
     .risk-page-title {
-        font-size: 2rem;
+        font-size: 1.8rem;
+    }
+
+    .risk-clone-cta {
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
+    }
+
+    .risk-clone-cta .clone-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 10px 16px;
+        font-size: 12px;
+    }
+
+    .topology-canvas {
+        height: 200px;
+    }
+
+    .topology-node {
+        font-size: 0.6rem;
+        padding: 6px;
     }
 
     .warning-cards-grid {
@@ -397,6 +419,7 @@
     .risk-summary-bar {
         flex-direction: column;
         gap: 24px;
+        padding: 24px;
     }
 
     .summary-stats {

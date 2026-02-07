@@ -1,5 +1,5 @@
 import './LandingPage.css';
-import { Header } from '../../components/Header';
+import { SiteHeader } from '../../components/SiteHeader';
 import { Hero } from '../../components/Hero';
 import { TrustStrip } from '../../components/TrustStrip';
 import { Features } from '../../components/Features';
@@ -15,7 +15,7 @@ export function LandingPage() {
             <div className="guide-line right"></div>
 
             <div className="container">
-                <Header />
+                <SiteHeader />
                 <Hero />
                 <TrustStrip />
                 <Features />

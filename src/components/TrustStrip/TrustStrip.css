@@ -32,6 +32,10 @@
         grid-template-columns: repeat(2, 1fr);
     }
 
+    .trust-item {
+        padding: 16px 12px;
+    }
+
     .trust-item:nth-child(2) {
         border-right: none;
     }
@@ -39,5 +43,19 @@
     .trust-item:nth-child(1),
     .trust-item:nth-child(2) {
         border-bottom: 1px solid var(--ink);
+    }
+}
+
+@media (max-width: 480px) {
+    .trust-strip {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .trust-value {
+        font-size: 1.2rem;
+    }
+
+    .trust-label {
+        font-size: 0.65rem;
     }
 }

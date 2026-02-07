@@ -18,15 +18,20 @@ export function BuilderHeader({ onExit, showRestart = true }: BuilderHeaderProps
 
     return (
         <header className="builder-header">
-            <div className="builder-brand">YIELD STACK BUILDER</div>
+            <Link to="/" className="builder-brand-link">
+                <div className="builder-brand">YIELD STACK BUILDER</div>
+            </Link>
             <div className="header-actions">
+                <Link to="/strategies" className="builder-nav-link">
+                    STRATEGIES
+                </Link>
                 {showRestart && (
                     <button className="restart-btn" onClick={handleRestart}>
                         RESTART
                     </button>
                 )}
                 <Link to="/" className="exit-builder" onClick={onExit}>
-                    EXIT BUILDER
+                    EXIT
                 </Link>
             </div>
         </header>

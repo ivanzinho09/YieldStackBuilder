@@ -482,11 +482,15 @@
 
 @media (max-width: 600px) {
     .blueprint-container {
-        padding: 0 20px;
+        padding: 0 16px;
     }
 
     .strategy-title {
-        font-size: 2rem;
+        font-size: 1.8rem;
+    }
+
+    .strategy-header-section {
+        padding: 30px 0;
     }
 
     .stat-grid {
@@ -507,6 +511,39 @@
     .footer-stats {
         flex-wrap: wrap;
         gap: 16px;
+    }
+
+    .stack-item {
+        grid-template-columns: 30px 1fr 80px;
+        padding: 14px;
+    }
+
+    .stack-info h4 {
+        font-size: 0.85rem;
+    }
+
+    .stack-metric {
+        font-size: 0.85rem;
+    }
+
+    .apy-card .value {
+        font-size: 2rem;
+    }
+
+    .share-buttons {
+        flex-direction: column;
+    }
+
+    .clone-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 12px 16px;
+        font-size: 12px;
+    }
+
+    .deploy-box {
+        padding: 20px;
+        box-shadow: 4px 4px 0 var(--ink);
     }
 }
 

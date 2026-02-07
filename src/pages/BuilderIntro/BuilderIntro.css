@@ -152,4 +152,16 @@
     .intro-body {
         font-size: 14px;
     }
+
+    .pathway-btn {
+        padding: 16px;
+    }
+
+    .pathway-btn-title {
+        font-size: 11px;
+    }
+
+    .pathway-btn-subtitle {
+        font-size: 11px;
+    }
 }
