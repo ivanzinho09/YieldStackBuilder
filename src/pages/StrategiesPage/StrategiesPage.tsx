@@ -20,6 +20,12 @@ export function StrategiesPage() {
         spacingX: 420,
         spacingY: 460,
     });
+    type TiledEntry = {
+        key: string;
+        strategy: Strategy;
+        theme: 'light' | 'dark' | 'glass';
+        position: { x: number; y: number };
+    };
 
     // Canvas pan state
     const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -181,6 +187,44 @@ export function StrategiesPage() {
         return acc;
     }, {} as Record<string, number>);
 
+    const tiledStrategies = useMemo<TiledEntry[]>(() => {
+        const { columns, tileRadius, spacingX, spacingY } = tileConfig;
+        const rows = Math.ceil(strategies.length / columns);
+        const tileWidth = columns * spacingX;
+        const tileHeight = rows * spacingY;
+        const tiles = Array.from({ length: tileRadius * 2 + 1 }, (_, idx) => idx - tileRadius);
+        const themes = ['light', 'dark', 'glass'] as const;
+
+        const hashString = (value: string) => {
+            let hash = 0;
+            for (let i = 0; i < value.length; i += 1) {
+                hash = (hash * 31 + value.charCodeAt(i)) % 2147483647;
+            }
+            return hash;
+        };
+
+        const basePositions = strategies.map((strategy, index) => ({
+            strategy,
+            position: {
+                x: (index % columns) * spacingX,
+                y: Math.floor(index / columns) * spacingY,
+            },
+        }));
+
+        return tiles.flatMap((tileX) =>
+            tiles.flatMap((tileY) =>
+                basePositions.map((entry) => ({
+                    key: `${entry.strategy.id}-${tileX}-${tileY}`,
+                    strategy: entry.strategy,
+                    theme: themes[hashString(`${entry.strategy.id}-${tileX}-${tileY}`) % themes.length],
+                    position: {
+                        x: entry.position.x + tileX * tileWidth,
+                        y: entry.position.y + tileY * tileHeight,
+                    },
+                }))
+            )
+        );
+    }, [tileConfig]);
     const tiledStrategies = useMemo(() => {
         const bounds = strategies.reduce(
             (acc, strategy) => {
@@ -310,6 +354,8 @@ export function StrategiesPage() {
                         >
                             <StrategyCard
                                 strategy={entry.strategy}
+                                theme={entry.theme}
+                                onSelect={(event) => handleCardSelect(entry.strategy, event)}
                                 onClick={() => handleCardClick(entry.strategy)}
                             />
                         </div>
