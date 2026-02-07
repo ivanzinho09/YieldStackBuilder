@@ -55,10 +55,26 @@
 @media (max-width: 768px) {
     .footer {
         grid-template-columns: 1fr 1fr;
+        padding: 40px 0;
     }
 
     .footer-brand {
         grid-column: span 2;
         margin-bottom: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .footer {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .footer-brand {
+        grid-column: span 1;
+    }
+
+    .footer-col h4 {
+        margin-bottom: 12px;
     }
 }

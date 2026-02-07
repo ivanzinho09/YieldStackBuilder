@@ -363,19 +363,19 @@ export function DeployPage() {
     return (
         <div className="deploy-layout">
             <header className="deploy-header">
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                    <div className="label-mono" style={{ fontSize: '9px', letterSpacing: '0.1em' }}>YSB® DEPLOY</div>
-                    <div className="font-body" style={{ fontSize: '14px', fontWeight: 600, letterSpacing: '-0.02em' }}>YIELD STACK BUILDER</div>
-                </div>
+                <Link to="/" className="deploy-brand">
+                    <div className="deploy-brand-text font-body">YIELD STACK BUILDER</div>
+                </Link>
 
-                <div className="deploy-nav" style={{ display: 'flex', gap: '32px' }}>
+                <div className="deploy-nav">
+                    <Link to="/" className="nav-link inactive">Home</Link>
                     <Link to="/builder/step-1" className="nav-link inactive">Design</Link>
                     <Link to="/builder/canvas" className="nav-link inactive">Simulate</Link>
-                    <div className="nav-link active">Deploy & Export</div>
+                    <div className="nav-link active">Deploy</div>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
-                    <div className="label-mono" style={{ fontSize: '9px' }}>WALLET CONNECTED</div>
+                <div className="deploy-wallet-info">
+                    <div className="label-mono" style={{ fontSize: '9px' }}>WALLET</div>
                     <div className="font-mono" style={{ fontSize: '12px' }}>0x84...92A1</div>
                 </div>
             </header>
@@ -787,39 +787,39 @@ export function DeployPage() {
 
                 {/* Footer */}
                 <footer className="deploy-footer">
-                    <div style={{ display: 'flex', gap: '24px' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', cursor: 'pointer' }} className="group">
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <div style={{ width: '12px', height: '12px', border: '1px solid #9ca3af', borderRadius: '2px', transition: 'background 0.2s' }} className="hover-bg-black"></div>
+                    <div className="deploy-footer-actions">
+                        <div className="deploy-footer-item group">
+                            <div className="deploy-footer-item-header">
+                                <div className="deploy-footer-checkbox"></div>
                                 <span className="label-mono" style={{ fontSize: '11px', fontWeight: 700 }}>PDF REPORT</span>
                             </div>
-                            <span className="font-mono text-dim" style={{ fontSize: '9px', paddingLeft: '20px' }}>Full Strategy Analysis</span>
+                            <span className="font-mono text-dim deploy-footer-desc">Full Strategy Analysis</span>
                         </div>
 
-                        <div style={{ width: '1px', height: '32px', background: '#d1d5db' }}></div>
+                        <div className="deploy-footer-divider"></div>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', cursor: 'pointer' }} className="group">
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <div style={{ width: '12px', height: '12px', border: '1px solid #9ca3af', borderRadius: '2px' }}></div>
+                        <div className="deploy-footer-item group">
+                            <div className="deploy-footer-item-header">
+                                <div className="deploy-footer-checkbox"></div>
                                 <span className="label-mono" style={{ fontSize: '11px', fontWeight: 700 }}>JSON EXPORT</span>
                             </div>
-                            <span className="font-mono text-dim" style={{ fontSize: '9px', paddingLeft: '20px' }}>Raw Parameter Data</span>
+                            <span className="font-mono text-dim deploy-footer-desc">Raw Parameter Data</span>
                         </div>
 
-                        <div style={{ width: '1px', height: '32px', background: '#d1d5db' }}></div>
+                        <div className="deploy-footer-divider"></div>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', cursor: 'pointer' }} className="group">
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <div style={{ width: '12px', height: '12px', border: '1px solid #9ca3af', borderRadius: '2px' }}></div>
-                                <span className="label-mono" style={{ fontSize: '11px', fontWeight: 700 }}>ADD TO PORTFOLIO</span>
+                        <div className="deploy-footer-item group">
+                            <div className="deploy-footer-item-header">
+                                <div className="deploy-footer-checkbox"></div>
+                                <span className="label-mono" style={{ fontSize: '11px', fontWeight: 700 }}>PORTFOLIO</span>
                             </div>
-                            <span className="font-mono text-dim" style={{ fontSize: '9px', paddingLeft: '20px' }}>Track in Dashboard</span>
+                            <span className="font-mono text-dim deploy-footer-desc">Track in Dashboard</span>
                         </div>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div className="deploy-footer-brand">
                         <span className="label-mono text-dim" style={{ fontSize: '9px' }}>POWERED BY</span>
-                        <span className="font-display" style={{ fontWeight: 700, fontSize: '14px' }}>YSB®</span>
+                        <span className="font-display" style={{ fontWeight: 700, fontSize: '14px' }}>YSB&reg;</span>
                     </div>
                 </footer>
 

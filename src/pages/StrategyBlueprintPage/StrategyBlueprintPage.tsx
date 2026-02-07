@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { getStrategyById } from '../../data/strategies';
 import { useBuilderStore } from '../../stores/builderStore';
+import { SiteHeader } from '../../components/SiteHeader';
 import './StrategyBlueprintPage.css';
 
 export function StrategyBlueprintPage() {
@@ -51,18 +52,17 @@ export function StrategyBlueprintPage() {
                 <div className="corner bottom-right" />
 
                 {/* Header */}
-                <header className="blueprint-header">
-                    <Link to="/" className="blueprint-logo">
-                        <div className="logo-mark" />
-                        <span className="text-display">YIELD_STACK_BUILDER</span>
-                    </Link>
-                    <div className="nav-breadcrumb">
-                        <Link to="/strategies" style={{ color: 'inherit', textDecoration: 'none' }}>STRATEGIES</Link>
-                        {' / '}
-                        <span style={{ color: 'var(--ink)' }}>#{strategy.id}_{strategy.type.toUpperCase().replace(' ', '_')}</span>
-                    </div>
-                    <button className="btn-main">Connect Wallet</button>
-                </header>
+                <SiteHeader
+                    ctaLabel="Connect Wallet"
+                    ctaTo="/builder/intro"
+                    breadcrumb={
+                        <>
+                            <Link to="/strategies">STRATEGIES</Link>
+                            {' / '}
+                            <span style={{ color: 'var(--ink)' }}>#{strategy.id}_{strategy.type.toUpperCase().replace(' ', '_')}</span>
+                        </>
+                    }
+                />
 
                 {/* Strategy Header - Always visible */}
                 <section className="strategy-header-section">

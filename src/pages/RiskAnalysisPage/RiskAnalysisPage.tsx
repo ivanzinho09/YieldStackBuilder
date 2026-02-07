@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { getStrategyById } from '../../data/strategies';
 import { useBuilderStore } from '../../stores/builderStore';
+import { SiteHeader } from '../../components/SiteHeader';
 import '../StrategyBlueprintPage/StrategyBlueprintPage.css';
 import './RiskAnalysisPage.css';
 
@@ -49,17 +50,19 @@ export function RiskAnalysisPage() {
                 <div className="corner bottom-right" />
 
                 {/* Header */}
-                <header className="blueprint-header">
-                    <Link to="/" className="blueprint-logo">
-                        <div className="logo-mark" />
-                        <span className="text-display">YIELD_STACK_BUILDER</span>
-                    </Link>
-                    <nav style={{ display: 'flex', gap: '32px' }}>
-                        <Link to="/strategies" style={{ textDecoration: 'none', color: 'var(--ink)', fontSize: '0.8rem', textTransform: 'uppercase' }}>Strategies</Link>
-                        <span style={{ fontWeight: 700, textDecoration: 'underline', fontSize: '0.8rem', textTransform: 'uppercase' }}>Risk Analysis</span>
-                    </nav>
-                    <button className="btn-main">Connect Wallet</button>
-                </header>
+                <SiteHeader
+                    ctaLabel="Connect Wallet"
+                    ctaTo="/builder/intro"
+                    breadcrumb={
+                        <>
+                            <Link to="/strategies">STRATEGIES</Link>
+                            {' / '}
+                            <Link to={`/strategy/${strategy.id}`}>#{strategy.id}</Link>
+                            {' / '}
+                            <span style={{ color: 'var(--ink)' }}>RISK ANALYSIS</span>
+                        </>
+                    }
+                />
 
                 {/* Title Section */}
                 <div className="risk-title-section">

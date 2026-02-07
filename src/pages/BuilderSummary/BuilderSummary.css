@@ -30,6 +30,12 @@
     color: var(--ink);
 }
 
+.summary-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
 /* Workspace Layout */
 .workspace-summary {
     display: grid;
@@ -530,7 +536,7 @@
     }
 
     .journey-col {
-        padding: 40px;
+        padding: 40px 24px;
     }
 
     .hero-title-summary {
@@ -549,6 +555,31 @@
 }
 
 @media (max-width: 600px) {
+    .summary-header-bar {
+        padding: 0 16px;
+        height: 50px;
+    }
+
+    .brand {
+        font-size: 10px;
+    }
+
+    .summary-header-actions {
+        gap: 12px;
+    }
+
+    .cancel-link {
+        font-size: 9px;
+    }
+
+    .journey-col {
+        padding: 24px 16px;
+    }
+
+    .hero-title-summary {
+        font-size: 24px;
+    }
+
     .summary-table-header {
         display: none;
     }

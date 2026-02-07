@@ -9,6 +9,11 @@
     background: var(--paper);
 }
 
+.builder-brand-link {
+    text-decoration: none;
+    color: inherit;
+}
+
 .builder-brand {
     font-family: 'JetBrains Mono', monospace;
     font-weight: 700;
@@ -19,6 +24,21 @@
     display: flex;
     align-items: center;
     gap: 24px;
+}
+
+.builder-nav-link {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-light);
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.builder-nav-link:hover {
+    color: var(--ink);
 }
 
 .restart-btn {
@@ -58,15 +78,38 @@
 /* Mobile adjustments for BuilderHeader */
 @media (max-width: 600px) {
     .builder-header {
-        padding: 0 20px;
+        padding: 0 16px;
+        height: 50px;
     }
 
     .builder-brand {
-        font-size: 12px;
+        font-size: 10px;
     }
 
     .header-actions {
-        gap: 16px;
+        gap: 12px;
+    }
+
+    .restart-btn {
+        font-size: 9px;
+    }
+
+    .builder-nav-link {
+        font-size: 9px;
+    }
+
+    .exit-builder {
+        font-size: 9px;
+    }
+}
+
+@media (max-width: 400px) {
+    .builder-brand {
+        font-size: 9px;
+    }
+
+    .header-actions {
+        gap: 8px;
     }
 
     .restart-btn {

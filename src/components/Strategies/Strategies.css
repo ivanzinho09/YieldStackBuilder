@@ -2,6 +2,14 @@
     padding: 80px 0;
 }
 
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
 .strategy-table {
     width: 100%;
     border-collapse: collapse;
@@ -82,17 +90,94 @@
     padding: 0 2px;
 }
 
+/* Mobile Cards - hidden on desktop */
+.strategy-cards-mobile {
+    display: none;
+}
+
+/* Mobile Responsive */
 @media (max-width: 768px) {
-    .strategy-table {
-        font-size: 0.75rem;
+    .strategies-section {
+        padding: 40px 0;
     }
 
-    .strategy-table th,
-    .strategy-table td {
-        padding: 12px 8px;
+    /* Hide table on mobile */
+    .strategy-table-desktop {
+        display: none;
     }
 
-    .risk-meter {
-        width: 60px;
+    /* Show cards on mobile */
+    .strategy-cards-mobile {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin-top: 24px;
+    }
+
+    .strategy-card-mobile {
+        border: 1px solid var(--ink);
+        padding: 20px;
+        background: white;
+        font-family: 'JetBrains Mono', monospace;
+    }
+
+    .strategy-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px dashed var(--guide);
+    }
+
+    .strategy-card-header .strategy-type {
+        display: block;
+        margin-top: 4px;
+    }
+
+    .strategy-card-protocols {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 16px;
+    }
+
+    .protocol-tag-mobile {
+        display: inline-block;
+        border: 1px solid var(--ink);
+        padding: 2px 8px;
+        font-size: 0.7rem;
+        background: white;
+    }
+
+    .strategy-card-risk {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px dashed var(--guide);
+    }
+
+    .strategy-card-risk-label {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        color: var(--ink-light);
+        flex-shrink: 0;
+    }
+
+    .strategy-card-risk .risk-meter {
+        width: 80px;
+    }
+
+    .strategy-card-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .strategy-card-actions .btn-clone {
+        flex: 1;
+        padding: 8px 12px;
+        text-align: center;
     }
 }

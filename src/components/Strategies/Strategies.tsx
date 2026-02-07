@@ -43,7 +43,8 @@ export function Strategies() {
                 <Link to="/strategies" className="btn-main btn-small">View All</Link>
             </div>
 
-            <table className="strategy-table">
+            {/* Desktop Table */}
+            <table className="strategy-table strategy-table-desktop">
                 <thead>
                     <tr>
                         <th>Strategy ID</th>
@@ -92,6 +93,49 @@ export function Strategies() {
                     ))}
                 </tbody>
             </table>
+
+            {/* Mobile Cards */}
+            <div className="strategy-cards-mobile">
+                {displayedStrategies.map((strategy) => (
+                    <div key={strategy.id} className="strategy-card-mobile">
+                        <div className="strategy-card-header">
+                            <div>
+                                <strong>{strategy.id}</strong>
+                                <span className="strategy-type">{strategy.type}</span>
+                            </div>
+                            <div className="apy-value" style={{ color: strategy.totalApy < 0 ? '#ef4444' : 'inherit', fontSize: '1.2rem' }}>
+                                {strategy.totalApy.toFixed(1)}%
+                            </div>
+                        </div>
+
+                        <div className="strategy-card-protocols">
+                            {[
+                                strategy.stack.base?.name,
+                                strategy.stack.engine?.name,
+                                strategy.stack.credit?.name,
+                                strategy.stack.income?.name
+                            ].filter(Boolean).slice(0, 3).map((name) => (
+                                <span key={name} className="protocol-tag-mobile">{name}</span>
+                            ))}
+                        </div>
+
+                        <div className="strategy-card-risk">
+                            <span className="strategy-card-risk-label">RISK</span>
+                            <RiskMeter
+                                score={strategy.totalRisk}
+                                highRisk={strategy.totalRisk >= 8}
+                            />
+                        </div>
+
+                        <div className="strategy-card-actions">
+                            <button className="btn-clone" onClick={() => handleClone(strategy)}>CLONE</button>
+                            <Link to={`/strategy/${strategy.id}`} className="btn-clone" style={{ textDecoration: 'none', textAlign: 'center' }}>
+                                BLUEPRINT
+                            </Link>
+                        </div>
+                    </div>
+                ))}
+            </div>
         </section>
     );
 }

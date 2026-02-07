@@ -66,11 +66,30 @@
 }
 
 @media (max-width: 768px) {
+    .section-header {
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
+        padding: 40px 0 20px 0;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+    }
+
     .features-grid {
         grid-template-columns: 1fr;
     }
 
     .feature-card {
         border-right: none;
+        padding: 24px;
+    }
+
+    .feature-icon {
+        width: 48px;
+        height: 48px;
+        margin-bottom: 16px;
+        font-size: 1.2rem;
     }
 }

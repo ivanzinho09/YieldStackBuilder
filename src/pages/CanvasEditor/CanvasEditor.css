@@ -581,6 +581,12 @@
     }
 }
 
+@media (max-width: 480px) {
+    .hero-value {
+        font-size: 36px;
+    }
+}
+
 /* Mobile Drawer */
 .mobile-drawer-overlay {
     position: fixed;
