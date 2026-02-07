@@ -68,7 +68,6 @@ body {
   border-right: 1px dashed var(--ink);
   min-height: 100vh;
   position: relative;
-  background: var(--paper);
 }
 
 @media (max-width: 768px) {
