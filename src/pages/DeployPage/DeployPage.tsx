@@ -655,6 +655,11 @@ export function DeployPage() {
                                     <div className="font-display" style={{ fontSize: '64px', lineHeight: 0.85, letterSpacing: '-0.02em', color: totalApy < 0 ? '#ef4444' : 'var(--card-text)' }}>
                                         {totalApy?.toFixed(1) || '0.0'}%
                                     </div>
+                                    {totalApy < 0 && isLeveraged && (
+                                        <div className="font-mono" style={{ fontSize: '9px', color: '#ef4444', marginTop: '6px' }}>
+                                            BORROW COSTS EXCEED YIELD AT THIS LEVERAGE
+                                        </div>
+                                    )}
                                     <div style={{ display: 'flex', gap: '8px', marginTop: '8px', flexWrap: 'wrap' }}>
                                         <span style={{ padding: '2px 6px', border: '1px solid var(--card-chip-border)', color: 'var(--card-chip-text)', fontSize: '9px', textTransform: 'uppercase' }} className="font-mono">Delta Neutral</span>
                                         {isLeveraged ? (

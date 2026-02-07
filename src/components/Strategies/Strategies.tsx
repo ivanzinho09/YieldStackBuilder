@@ -74,6 +74,9 @@ export function Strategies() {
                             </td>
                             <td className="apy-value" style={{ color: strategy.totalApy < 0 ? '#ef4444' : 'inherit' }}>
                                 {strategy.totalApy.toFixed(1)}%
+                                {strategy.totalApy < 0 && strategy.leverageLoops > 1 && (
+                                    <div style={{ fontSize: '8px', fontWeight: 400, marginTop: '2px', color: '#ef4444' }}>borrow &gt; yield</div>
+                                )}
                             </td>
                             <td>
                                 <RiskMeter
@@ -105,6 +108,9 @@ export function Strategies() {
                             </div>
                             <div className="apy-value" style={{ color: strategy.totalApy < 0 ? '#ef4444' : 'inherit', fontSize: '1.2rem' }}>
                                 {strategy.totalApy.toFixed(1)}%
+                                {strategy.totalApy < 0 && strategy.leverageLoops > 1 && (
+                                    <div style={{ fontSize: '8px', fontWeight: 400 }}>borrow &gt; yield</div>
+                                )}
                             </div>
                         </div>
 

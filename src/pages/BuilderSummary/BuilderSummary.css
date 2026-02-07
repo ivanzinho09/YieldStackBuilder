@@ -313,6 +313,22 @@
     .breakdown-grid {
         grid-template-columns: repeat(2, 1fr);
     }
+
+    .loop-visual-step {
+        flex-wrap: wrap;
+    }
+
+    .loop-visual-bar {
+        min-width: 30px;
+    }
+
+    .loop-visual-arrow {
+        font-size: 8px;
+    }
+
+    .leverage-breakdown {
+        padding: 16px;
+    }
 }
 
 .info-block {

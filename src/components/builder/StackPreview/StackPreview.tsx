@@ -124,6 +124,11 @@ export function StackPreview({
                     </div>
                     <span className={`apy-value ${displayTotalApy < 0 ? 'negative' : ''}`}>{displayTotalApy.toFixed(2)}%</span>
                 </div>
+                {displayTotalApy < 0 && (
+                    <div className="apy-warning-note">
+                        Borrow costs exceed yield at current leverage
+                    </div>
+                )}
 
                 {/* Data Source Attribution */}
                 <div className="data-source-row">

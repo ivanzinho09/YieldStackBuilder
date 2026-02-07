@@ -15,6 +15,7 @@ import {
     creditToOptimizeRules,
 } from '../../data/protocols';
 import { type Protocol } from '../../components/builder/ProtocolCard';
+import { LeverageSlider } from '../../components/builder/LeverageSlider/LeverageSlider';
 import { ApyInfoIcon } from '../../components/ui/ApyTooltip/ApyTooltip';
 import './CanvasEditor.css';
 
@@ -31,7 +32,7 @@ const protocolCategories = [
 
 function getProtocolMeta(protocol: Protocol): string {
     if (protocol.baseApy === 0) return 'STABLE';
-    if (protocol.baseApy < 0) return `${protocol.baseApy}%`;
+    if (protocol.baseApy < 0) return `${Math.abs(protocol.baseApy)}% cost`;
     return `${protocol.baseApy}%`;
 }
 
@@ -46,7 +47,7 @@ function getCategoryLabel(step: number): string {
 }
 
 export function CanvasEditor() {
-    const { stack, setBase, setEngine, setIncome, setCredit, setOptimize, getTotalApy, getTotalRisk, getLeveragedApy, leverageLoops, resetStack } = useBuilderStore();
+    const { stack, setBase, setEngine, setIncome, setCredit, setOptimize, getTotalApy, getTotalRisk, getLeveragedApy, leverageLoops, setLeverageLoops, resetStack } = useBuilderStore();
     const { apyData, lastUpdated, getApyForProtocol } = useApyStore();
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
@@ -94,7 +95,8 @@ export function CanvasEditor() {
 
     // Leverage info
     const leverageInfo = getLeveragedApy();
-    const isLeveraged = leverageLoops > 1 && stack.credit && stack.credit.id !== 'skip-credit';
+    const hasCreditSelected = stack.credit != null && stack.credit.id !== 'skip-credit';
+    const isLeveraged = leverageLoops > 1 && hasCreditSelected;
 
     // Parse capital for calculations
     const capital = parseFloat(capitalInput.replace(/,/g, '')) || 0;
@@ -444,8 +446,17 @@ export function CanvasEditor() {
 
                     {/* Leverage Analysis */}
                     {isLeveraged && (
-                        <div className="metric-section leverage-section">
+                        <div className="metric-section canvas-leverage-section">
                             <span className="metric-label leverage-title">LEVERAGE ANALYSIS</span>
+                            <div className="canvas-leverage-control">
+                                <LeverageSlider
+                                    loops={leverageLoops}
+                                    onLoopsChange={setLeverageLoops}
+                                    borrowCost={Math.abs(stack.credit?.baseApy || 0)}
+                                    leverageInfo={leverageInfo}
+                                    compact={true}
+                                />
+                            </div>
                             <div className="leverage-detail-grid">
                                 <div className="leverage-detail-item">
                                     <span className="leverage-detail-label">LOOPS</span>
@@ -495,6 +506,26 @@ export function CanvasEditor() {
                                     minus {Math.abs(stack.credit?.baseApy ?? 0).toFixed(1)}% borrow cost
                                     on {(leverageInfo.totalExposure - 1).toFixed(2)}x borrowed capital.
                                 </p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Leverage Prompt when credit is selected but no loops set */}
+                    {hasCreditSelected && !isLeveraged && (
+                        <div className="metric-section canvas-leverage-prompt">
+                            <span className="metric-label leverage-title">CREDIT MARKET ACTIVE</span>
+                            <p className="leverage-prompt-text">
+                                {stack.credit?.name} is selected as your borrowing protocol.
+                                Set leverage loops to amplify your yield through recursive borrowing.
+                            </p>
+                            <div className="canvas-leverage-control">
+                                <LeverageSlider
+                                    loops={leverageLoops}
+                                    onLoopsChange={setLeverageLoops}
+                                    borrowCost={Math.abs(stack.credit?.baseApy || 0)}
+                                    leverageInfo={leverageInfo}
+                                    compact={true}
+                                />
                             </div>
                         </div>
                     )}

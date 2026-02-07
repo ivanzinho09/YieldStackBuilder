@@ -124,7 +124,7 @@ export function BuilderStep4() {
                         stepLabel="CREDIT MARKET"
                     />
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
+                    <div className="step4-header-row">
                         <div>
                             <h1 className="hero-title" style={{ marginBottom: '8px' }}>Add Leverage to Your Stack</h1>
 
@@ -136,9 +136,9 @@ export function BuilderStep4() {
                             )}
                         </div>
 
-                        {/* Leverage Slider - moved to header */}
+                        {/* Leverage Slider - compact inline */}
                         {isLeveraged && (
-                            <div style={{ marginTop: '8px' }}>
+                            <div className="step4-slider-wrap">
                                 <LeverageSlider
                                     loops={leverageLoops}
                                     onLoopsChange={setLeverageLoops}

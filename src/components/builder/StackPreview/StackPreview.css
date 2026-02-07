@@ -169,6 +169,16 @@
     color: #ef4444;
 }
 
+.apy-warning-note {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: #ef4444;
+    margin-top: -8px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
 /* Data Source Attribution */
 .data-source-row {
     display: flex;
