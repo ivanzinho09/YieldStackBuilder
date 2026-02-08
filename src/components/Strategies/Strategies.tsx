@@ -64,13 +64,17 @@ export function Strategies() {
                             </td>
                             <td className="protocol-tags">
                                 {[
-                                    strategy.stack.base?.name,
-                                    strategy.stack.engine?.name,
-                                    strategy.stack.credit?.name,
-                                    strategy.stack.income?.name
-                                ].filter(Boolean).slice(0, 3).map((name) => (
-                                    <span key={name}>{name}</span>
-                                ))}
+                                    strategy.stack.base,
+                                    strategy.stack.engine,
+                                    strategy.stack.income,
+                                    strategy.stack.credit,
+                                    strategy.stack.optimize
+                                ]
+                                    .filter(p => p && !['already-staked', 'skip-income', 'skip-credit', 'none'].includes(p.id))
+                                    .slice(0, 3)
+                                    .map((p) => (
+                                        <span key={p!.name}>{p!.name}</span>
+                                    ))}
                             </td>
                             <td className="apy-value" style={{ color: strategy.totalApy < 0 ? '#ef4444' : 'inherit' }}>
                                 {strategy.totalApy.toFixed(1)}%
@@ -116,13 +120,17 @@ export function Strategies() {
 
                         <div className="strategy-card-protocols">
                             {[
-                                strategy.stack.base?.name,
-                                strategy.stack.engine?.name,
-                                strategy.stack.credit?.name,
-                                strategy.stack.income?.name
-                            ].filter(Boolean).slice(0, 3).map((name) => (
-                                <span key={name} className="protocol-tag-mobile">{name}</span>
-                            ))}
+                                strategy.stack.base,
+                                strategy.stack.engine,
+                                strategy.stack.income,
+                                strategy.stack.credit,
+                                strategy.stack.optimize
+                            ]
+                                .filter(p => p && !['already-staked', 'skip-income', 'skip-credit', 'none'].includes(p.id))
+                                .slice(0, 3)
+                                .map((p) => (
+                                    <span key={p!.name} className="protocol-tag-mobile">{p!.name}</span>
+                                ))}
                         </div>
 
                         <div className="strategy-card-risk">
