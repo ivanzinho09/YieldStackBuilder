@@ -92,6 +92,10 @@
     color: #ef4444;
 }
 
+.slot-apy.borrow-cost {
+    color: #f59e0b;
+}
+
 .slot-live-badge {
     font-size: 8px;
     font-weight: 700;
@@ -163,6 +167,16 @@
 
 .apy-value.negative {
     color: #ef4444;
+}
+
+.apy-warning-note {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: #ef4444;
+    margin-top: -8px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
 }
 
 /* Data Source Attribution */

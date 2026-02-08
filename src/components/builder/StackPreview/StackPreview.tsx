@@ -46,6 +46,8 @@ function StackSlot({ slot, currentStep, onNavigate }: StackSlotProps) {
         }
     };
 
+    const isCreditCost = slot.step === 4 && displayApy !== undefined && displayApy < 0;
+
     return (
         <div
             className={`stack-slot ${isFilled ? 'filled' : ''} ${isClickable ? 'clickable' : ''} ${slot.step === currentStep ? 'current' : ''}`}
@@ -58,9 +60,15 @@ function StackSlot({ slot, currentStep, onNavigate }: StackSlotProps) {
                 <>
                     <div className="slot-name">{slot.name}</div>
                     <div className="slot-meta">
-                        <span className={`slot-apy ${displayApy && displayApy < 0 ? 'negative' : ''}`}>
-                            {displayApy?.toFixed(0)}% APY
-                        </span>
+                        {isCreditCost ? (
+                            <span className="slot-apy borrow-cost">
+                                {Math.abs(displayApy).toFixed(0)}% borrow cost
+                            </span>
+                        ) : (
+                            <span className={`slot-apy ${displayApy && displayApy < 0 ? 'negative' : ''}`}>
+                                {displayApy?.toFixed(0)}% APY
+                            </span>
+                        )}
                         {isLive && <span className="slot-live-badge">LIVE</span>}
                         <span className="slot-divider">|</span>
                         <span>{slot.riskLevel} RISK</span>
@@ -116,6 +124,11 @@ export function StackPreview({
                     </div>
                     <span className={`apy-value ${displayTotalApy < 0 ? 'negative' : ''}`}>{displayTotalApy.toFixed(2)}%</span>
                 </div>
+                {displayTotalApy < 0 && (
+                    <div className="apy-warning-note">
+                        Borrow costs exceed yield at current leverage
+                    </div>
+                )}
 
                 {/* Data Source Attribution */}
                 <div className="data-source-row">
