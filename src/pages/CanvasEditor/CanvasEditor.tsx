@@ -106,6 +106,8 @@ export function CanvasEditor() {
     // Yield breakdown - only show filled layers with live APY data
     const yieldBreakdown = stackLayers.filter(l => {
         if (!l.protocol) return false;
+        // At 1x, credit is configured but not active (no borrowed capital).
+        if (l.step === 3 && !isLeveraged) return false;
         const effectiveApy = getLiveApy(l.protocol.id);
         return effectiveApy.current !== 0;
     });

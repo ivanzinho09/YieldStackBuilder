@@ -1,3 +1,4 @@
+import { getFilterVisual } from '../../data/searchIndex';
 import './SearchFilterBar.css';
 
 interface Filter {
@@ -12,13 +13,16 @@ interface SearchFilterBarProps {
     onOpenSearch: () => void;
 }
 
+const isImageIcon = (icon: string) =>
+    icon.startsWith('http://') || icon.startsWith('https://') || icon.startsWith('data:image/');
+
 export function SearchFilterBar({ filters, onRemoveFilter, onClearAll, onOpenSearch }: SearchFilterBarProps) {
     const hasFilters = filters.length > 0;
 
     return (
         <div className="search-filter-bar">
             {/* Search Trigger */}
-            <button className="search-trigger" onClick={onOpenSearch}>
+            <button type="button" className="search-trigger" onClick={onOpenSearch}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="11" cy="11" r="8" />
                     <path d="M21 21l-4.35-4.35" />
@@ -30,21 +34,40 @@ export function SearchFilterBar({ filters, onRemoveFilter, onClearAll, onOpenSea
             {/* Active Filters */}
             {hasFilters && (
                 <div className="active-filters">
-                    {filters.map((filter, i) => (
-                        <div key={`${filter.type}-${filter.value}-${i}`} className="filter-pill">
-                            <span className="pill-type">{filter.type}:</span>
-                            <span className="pill-value">{filter.value}</span>
-                            <button
-                                className="pill-remove"
-                                onClick={() => onRemoveFilter(filter)}
-                                aria-label={`Remove ${filter.value} filter`}
-                            >
-                                ×
-                            </button>
-                        </div>
-                    ))}
+                    {filters.map((filter, i) => {
+                        const visual = getFilterVisual(filter.type, filter.value);
+                        const showImage = isImageIcon(visual.icon);
+
+                        return (
+                            <div key={`${filter.type}-${filter.value}-${i}`} className="filter-pill">
+                                <span
+                                    className="pill-icon"
+                                    style={{
+                                        backgroundColor: `${visual.color}22`,
+                                        color: visual.color,
+                                    }}
+                                >
+                                    {showImage ? (
+                                        <img src={visual.icon} alt="" loading="lazy" />
+                                    ) : (
+                                        <span>{visual.icon}</span>
+                                    )}
+                                </span>
+                                <span className="pill-type">{filter.type}:</span>
+                                <span className="pill-value">{filter.value}</span>
+                                <button
+                                    type="button"
+                                    className="pill-remove"
+                                    onClick={() => onRemoveFilter(filter)}
+                                    aria-label={`Remove ${filter.value} filter`}
+                                >
+                                    ×
+                                </button>
+                            </div>
+                        );
+                    })}
                     {filters.length > 1 && (
-                        <button className="clear-all" onClick={onClearAll}>
+                        <button type="button" className="clear-all" onClick={onClearAll}>
                             Clear all
                         </button>
                     )}

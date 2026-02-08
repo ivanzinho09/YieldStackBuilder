@@ -140,22 +140,20 @@ export const useBuilderStore = create<BuilderStore>()(
 
                 // Optimizer is additive and separate from leverage
                 const optimizerYield = stack.optimize ? stack.optimize.baseApy : 0;
+                const activeCredit = stack.credit && stack.credit.id !== 'skip-credit' && leverageLoops > 1
+                    ? stack.credit
+                    : null;
 
                 // If credit is selected and leverage > 1, calculate leveraged APY
                 // Leverage only applies to core yield, not optimizer
-                if (stack.credit && stack.credit.id !== 'skip-credit' && leverageLoops > 1) {
-                    const borrowCost = Math.abs(stack.credit.baseApy);
+                if (activeCredit) {
+                    const borrowCost = Math.abs(activeCredit.baseApy);
                     const { effectiveApy } = calculateLeveragedApy(coreYield, borrowCost, DEFAULT_LTV, leverageLoops);
                     return effectiveApy + optimizerYield;
                 }
 
-                // Without leverage, add credit cost and optimizer
-                let total = coreYield + optimizerYield;
-                if (stack.credit) {
-                    total += stack.credit.baseApy;
-                }
-
-                return total;
+                // At 1x, credit selection is configuration-only (no borrowed capital yet).
+                return coreYield + optimizerYield;
             },
 
             getLeveragedApy: () => {
@@ -172,7 +170,16 @@ export const useBuilderStore = create<BuilderStore>()(
                 const { stack, leverageLoops } = get();
                 let maxRisk = 0;
                 let count = 0;
-                const protocols = [stack.base, stack.engine, stack.income, stack.credit, stack.optimize];
+                const activeCredit = stack.credit && stack.credit.id !== 'skip-credit' && leverageLoops > 1
+                    ? stack.credit
+                    : null;
+                const protocols = [
+                    stack.base,
+                    stack.engine,
+                    stack.income,
+                    stack.optimize,
+                    activeCredit,
+                ];
 
                 protocols.forEach(p => {
                     if (p && p.riskScore > 0) {
@@ -185,7 +192,7 @@ export const useBuilderStore = create<BuilderStore>()(
                 const baseRisk = maxRisk;
 
                 // Apply leverage risk multiplier
-                if (leverageLoops > 1) {
+                if (activeCredit) {
                     const riskMultiplier = Math.min(leverageLoops * 0.8 + 0.2, 3);
                     return Math.min(10, baseRisk * riskMultiplier);
                 }

@@ -59,26 +59,27 @@ function calculateStrategyApy(
 
     // Optimizer is additive
     const optimizerYield = stack.optimize?.baseApy || 0;
+    const activeCredit = stack.credit && stack.credit.id !== 'skip-credit' && leverageLoops > 1
+        ? stack.credit
+        : null;
 
     // Leverage calculation
-    if (stack.credit && stack.credit.id !== 'skip-credit' && leverageLoops > 1) {
-        const borrowCost = Math.abs(stack.credit.baseApy);
+    if (activeCredit) {
+        const borrowCost = Math.abs(activeCredit.baseApy);
         const { effectiveApy } = calculateLeveragedApy(coreYield, borrowCost, 0.75, leverageLoops);
         return effectiveApy + optimizerYield;
     }
 
-    // Without leverage
-    let total = coreYield + optimizerYield;
-    if (stack.credit && stack.credit.id !== 'skip-credit') {
-        total += stack.credit.baseApy;
-    }
-
-    return total;
+    // At 1x, credit selection is config-only (no borrowed capital).
+    return coreYield + optimizerYield;
 }
 
 // Calculate max risk from stack
 function calculateStrategyRisk(stack: Strategy['stack'], leverageLoops: number): number {
-    const protocols = [stack.base, stack.engine, stack.income, stack.credit, stack.optimize];
+    const activeCredit = stack.credit && stack.credit.id !== 'skip-credit' && leverageLoops > 1
+        ? stack.credit
+        : null;
+    const protocols = [stack.base, stack.engine, stack.income, stack.optimize, activeCredit];
     let maxRisk = 0;
     let count = 0;
 
@@ -89,7 +90,7 @@ function calculateStrategyRisk(stack: Strategy['stack'], leverageLoops: number):
         }
     });
 
-    if (leverageLoops > 1) {
+    if (activeCredit) {
         const riskMultiplier = Math.min(leverageLoops * 0.8 + 0.2, 3);
         return Math.min(10, maxRisk * riskMultiplier);
     }
@@ -599,14 +600,11 @@ export const strategies: Strategy[] = [
     },
 ];
 
-// Calculate APY and risk for leveraged strategies
+// Always compute APY/risk from the current stack math so template cards stay
+// aligned with the latest yield + credit-looping formulas.
 strategies.forEach(strategy => {
-    if (strategy.totalApy === 0) {
-        strategy.totalApy = calculateStrategyApy(strategy.stack, strategy.leverageLoops);
-    }
-    if (strategy.totalRisk === 0) {
-        strategy.totalRisk = calculateStrategyRisk(strategy.stack, strategy.leverageLoops);
-    }
+    strategy.totalApy = calculateStrategyApy(strategy.stack, strategy.leverageLoops);
+    strategy.totalRisk = calculateStrategyRisk(strategy.stack, strategy.leverageLoops);
 });
 
 // Export strategy by ID

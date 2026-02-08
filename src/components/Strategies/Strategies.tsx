@@ -26,9 +26,9 @@ export function Strategies() {
 
     // Select specific strategies for display
     const displayedStrategies = [
-        strategies.find(s => s.id === 'STK-001'),
-        strategies.find(s => s.id === 'STK-006'),
-        strategies.find(s => s.id === 'STK-022'),
+        strategies.find(s => s.id === 'STK-007'), // sUSDe PT Lock (10%)
+        strategies.find(s => s.id === 'STK-016'), // PT + Beefy Combo (12%)
+        strategies.find(s => s.id === 'STK-014'), // Yearn sUSDe (8%)
     ].filter(Boolean) as typeof strategies;
 
     const handleClone = (strategy: typeof strategies[0]) => {

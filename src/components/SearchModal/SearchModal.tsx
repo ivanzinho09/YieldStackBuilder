@@ -21,12 +21,23 @@ const categoryLabels: Record<CategoryFilter, string> = {
     type: 'Types',
 };
 
-const categoryIcons: Record<SearchItemType, string> = {
+const fallbackIcons: Record<SearchItemType, string> = {
     strategy: '📊',
     protocol: '⚡',
     tag: '#',
     type: '◆',
 };
+
+const categoryTabIcons: Record<CategoryFilter, string> = {
+    all: '◉',
+    strategy: '▣',
+    protocol: '⚡',
+    tag: '#',
+    type: '◆',
+};
+
+const isImageIcon = (icon?: string) =>
+    !!icon && (icon.startsWith('http://') || icon.startsWith('https://') || icon.startsWith('data:image/'));
 
 export function SearchModal({ isOpen, onClose, onSelectStrategy, onAddFilter }: SearchModalProps) {
     const [query, setQuery] = useState('');
@@ -120,6 +131,11 @@ export function SearchModal({ isOpen, onClose, onSelectStrategy, onAddFilter }: 
         selectedEl?.scrollIntoView({ block: 'nearest' });
     }, [selectedIndex]);
 
+    // Keep selection valid if result count changes after filtering
+    useEffect(() => {
+        setSelectedIndex(prev => Math.min(prev, Math.max(0, results.length - 1)));
+    }, [results.length]);
+
     if (!isOpen) return null;
 
     return (
@@ -150,12 +166,14 @@ export function SearchModal({ isOpen, onClose, onSelectStrategy, onAddFilter }: 
                     {(Object.keys(categoryLabels) as CategoryFilter[]).map(cat => (
                         <button
                             key={cat}
+                            type="button"
                             className={`category-tab ${category === cat ? 'active' : ''}`}
                             onClick={() => {
                                 setCategory(cat);
                                 setSelectedIndex(0);
                             }}
                         >
+                            <span className="category-tab-icon">{categoryTabIcons[cat]}</span>
                             {categoryLabels[cat]}
                         </button>
                     ))}
@@ -232,6 +250,11 @@ function SearchResultItem({
     onHover: () => void;
 }) {
     const isFilterable = item.type !== 'strategy';
+    const [iconLoadFailed, setIconLoadFailed] = useState(false);
+    const showImageIcon = isImageIcon(item.icon) && !iconLoadFailed;
+    const iconGlyph = !showImageIcon && item.icon && !isImageIcon(item.icon)
+        ? item.icon
+        : fallbackIcons[item.type];
 
     return (
         <div
@@ -247,7 +270,17 @@ function SearchResultItem({
                     color: item.color
                 }}
             >
-                {categoryIcons[item.type]}
+                {showImageIcon ? (
+                    <img
+                        src={item.icon}
+                        alt=""
+                        className="result-icon-image"
+                        loading="lazy"
+                        onError={() => setIconLoadFailed(true)}
+                    />
+                ) : (
+                    <span className="result-icon-glyph">{iconGlyph}</span>
+                )}
             </div>
             <div className="result-content">
                 <div className="result-name">{item.name}</div>

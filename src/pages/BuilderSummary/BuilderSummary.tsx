@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useBuilderStore } from '../../stores/builderStore';
-import { useApyStore, getEffectiveApy } from '../../stores/apyStore';
+import { useApyStore } from '../../stores/apyStore';
 import { getRiskLevel } from '../../data/protocols';
 
 const DEFAULT_LTV = 0.75;
@@ -67,7 +67,7 @@ function getProtocolAction(id: string): string {
 export function BuilderSummary() {
     const navigate = useNavigate();
     const { stack, getTotalApy, getTotalRisk, getLeveragedApy, leverageLoops, resetStack } = useBuilderStore();
-    const { isLoading, lastUpdated, getApyForProtocol } = useApyStore();
+    const { isLoading, lastUpdated } = useApyStore();
     const capitalInput = 100000;
 
     // Redirect if no base selected
@@ -79,7 +79,9 @@ export function BuilderSummary() {
 
     // Get leverage info
     const leverageInfo = getLeveragedApy();
-    const isLeveraged = leverageLoops > 1 && stack.credit && stack.credit.id !== 'skip-credit';
+    const hasActiveIncome = !!(stack.income && stack.income.id !== 'skip-income' && stack.income.baseApy !== 0);
+    const hasActiveCredit = !!(stack.credit && stack.credit.id !== 'skip-credit' && leverageLoops > 1);
+    const isLeveraged = hasActiveCredit;
 
     // Use the store's getTotalApy() which correctly handles income-replaces-engine
     // logic, leverage calculations, and optimizer separation
@@ -95,11 +97,26 @@ export function BuilderSummary() {
         { step: 5, label: 'OPTIMIZE', protocol: stack.optimize },
     ];
 
-    // Get live APY for a protocol
-    const getLiveApy = (protocolId: string | undefined) => {
-        if (!protocolId) return null;
-        const liveData = getApyForProtocol(protocolId);
-        return liveData ? getEffectiveApy(protocolId, liveData) : null;
+    const getAppliedLayerApy = (layerLabel: string, protocolId: string | undefined, baseApy: number | undefined): number => {
+        const apy = baseApy ?? 0;
+        if (!protocolId) return 0;
+
+        // Income layer replaces engine yield.
+        if (layerLabel === 'ENGINE' && hasActiveIncome) return 0;
+
+        // At 1x, credit selection is config-only (no borrowed capital yet).
+        if (layerLabel === 'CREDIT' && !hasActiveCredit) return 0;
+
+        return apy;
+    };
+
+    const getAppliedLayerRisk = (layerLabel: string, protocolId: string | undefined, riskScore: number | undefined): number => {
+        if (!protocolId) return 0;
+
+        // At 1x, credit selection is config-only (excluded from active risk).
+        if (layerLabel === 'CREDIT' && !hasActiveCredit) return 0;
+
+        return riskScore ?? 0;
     };
 
     const handleStartOver = () => {
@@ -129,6 +146,7 @@ export function BuilderSummary() {
                     </h1>
 
                     <div className="summary-table-header">
+                        <span className="table-label table-label-icon" aria-hidden="true"></span>
                         <span className="table-label">LAYER</span>
                         <span className="table-label">STRATEGY</span>
                         <span className="table-label align-right">RISK</span>
@@ -137,9 +155,8 @@ export function BuilderSummary() {
 
                     <div className="summary-table">
                         {layers.map((layer) => {
-                            const liveApy = getLiveApy(layer.protocol?.id);
-                            const displayApy = liveApy ? liveApy.current : (layer.protocol?.baseApy ?? 0);
-                            const isLive = liveApy?.isLive ?? false;
+                            const displayApy = getAppliedLayerApy(layer.label, layer.protocol?.id, layer.protocol?.baseApy);
+                            const displayRisk = getAppliedLayerRisk(layer.label, layer.protocol?.id, layer.protocol?.riskScore);
                             const meta = layer.protocol ? getProtocolMeta(layer.protocol.id) : null;
                             const isCreditCost = layer.label === 'CREDIT' && displayApy < 0;
 
@@ -152,33 +169,36 @@ export function BuilderSummary() {
                                         background: `linear-gradient(90deg, ${meta.color}15 0%, transparent 40%), white`
                                     } : undefined}
                                 >
-                                    {meta && (
-                                        <img
-                                            src={meta.logo}
-                                            alt=""
-                                            className="row-logo"
-                                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                                        />
-                                    )}
+                                    <div className="row-logo-slot">
+                                        {meta && (
+                                            <img
+                                                src={meta.logo}
+                                                alt=""
+                                                className="row-logo"
+                                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                            />
+                                        )}
+                                    </div>
                                     <span className="row-step">{layer.step.toString().padStart(2, '0')} {layer.label}</span>
                                     <div className="row-strategy">
                                         <span className="strategy-name">{layer.protocol?.name || 'Not selected'}</span>
                                         <span className="strategy-action">
                                             / {isCreditCost
-                                                ? `Borrow${isLeveraged ? ` (${leverageLoops}x loop)` : ''}`
+                                                ? `Borrow (${leverageLoops}x loop)`
+                                                : (layer.label === 'CREDIT' && layer.protocol?.id !== 'skip-credit' && !hasActiveCredit)
+                                                    ? 'Borrow (inactive at 1x)'
                                                 : (layer.protocol ? getProtocolAction(layer.protocol.id) : '')
                                             }
                                         </span>
                                     </div>
-                                    <div className="row-value">
-                                        {layer.protocol?.riskScore.toFixed(1) || '0.0'}/10
+                                    <div className="row-value row-risk">
+                                        {displayRisk.toFixed(1)}/10
                                     </div>
-                                    <div className={`row-value ${isCreditCost ? 'borrow-cost' : displayApy < 0 ? 'negative' : ''}`}>
+                                    <div className={`row-value row-apy ${isCreditCost ? 'borrow-cost' : displayApy < 0 ? 'negative' : ''}`}>
                                         {isCreditCost
                                             ? `${Math.abs(displayApy).toFixed(2)}% cost`
                                             : `${displayApy.toFixed(2)}%`
                                         }
-                                        {isLive && <span className="live-badge-inline">LIVE</span>}
                                     </div>
                                 </div>
                             );

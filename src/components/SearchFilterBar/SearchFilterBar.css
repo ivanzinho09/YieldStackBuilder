@@ -8,6 +8,7 @@
 
 /* Search Trigger Button */
 .search-trigger {
+    appearance: none;
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -20,6 +21,15 @@
     cursor: pointer;
     transition: all 0.15s ease;
     color: var(--ink-light, #666);
+}
+
+.search-trigger:focus {
+    outline: none;
+}
+
+.search-trigger:focus-visible {
+    outline: 2px solid var(--ink, #1a1a1a);
+    outline-offset: 1px;
 }
 
 .search-trigger:hover {
@@ -63,6 +73,30 @@
     font-size: 9px;
     text-transform: uppercase;
     animation: pillIn 0.2s ease;
+}
+
+.pill-icon {
+    width: 16px;
+    height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    overflow: hidden;
+    flex-shrink: 0;
+    margin-right: 2px;
+}
+
+.pill-icon img {
+    width: 11px;
+    height: 11px;
+    object-fit: contain;
+}
+
+.pill-icon span {
+    font-size: 9px;
+    font-weight: 700;
+    line-height: 1;
 }
 
 @keyframes pillIn {

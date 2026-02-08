@@ -100,6 +100,10 @@
     text-align: right;
 }
 
+.table-label-icon {
+    visibility: hidden;
+}
+
 .summary-table {
     display: flex;
     flex-direction: column;
@@ -120,6 +124,14 @@
 
 .summary-row:hover {
     transform: translateX(4px);
+}
+
+.row-logo-slot {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Protocol Logo in Row */
@@ -161,6 +173,12 @@
     font-family: 'JetBrains Mono', monospace;
     font-weight: 700;
     text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.row-risk,
+.row-apy {
+    justify-self: end;
 }
 
 /* Info Grid */
@@ -634,7 +652,7 @@
 
     .summary-table-header,
     .summary-row {
-        grid-template-columns: 80px 1fr 80px 80px;
+        grid-template-columns: 40px 80px 1fr 80px 80px;
         padding: 16px 20px;
     }
 }
@@ -675,6 +693,10 @@
         position: relative;
     }
 
+    .row-logo-slot {
+        display: none;
+    }
+
     .row-step {
         font-size: 8px;
         opacity: 0.7;
@@ -695,11 +717,11 @@
         background: var(--paper);
         padding: 8px;
         font-size: 12px;
+        min-width: 0;
     }
 
     .row-value::before {
-        content: 'VALUE';
-        /* Placeholder, should be specific */
+        content: '';
         font-size: 9px;
         color: var(--ink-light);
     }
@@ -725,22 +747,26 @@
         margin-bottom: 12px;
     }
 
-    .row-value:nth-child(3) {
+    .row-risk {
         grid-area: risk;
         text-align: left;
+        justify-self: stretch;
+        min-width: 0;
     }
 
-    .row-value:nth-child(4) {
+    .row-apy {
         grid-area: apy;
         text-align: right;
+        justify-self: stretch;
+        min-width: 0;
     }
 
-    .row-value:nth-child(3)::before {
+    .row-risk::before {
         content: 'RISK: ';
         margin-right: 4px;
     }
 
-    .row-value:nth-child(4)::before {
+    .row-apy::before {
         content: 'APY: ';
         margin-right: 4px;
     }
