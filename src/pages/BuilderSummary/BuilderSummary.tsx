@@ -157,7 +157,12 @@ export function BuilderSummary() {
                                             src={meta.logo}
                                             alt=""
                                             className="row-logo"
-                                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                            onError={(e) => {
+                                                const target = e.currentTarget;
+                                                if (target.src !== meta.fallbackLogo) {
+                                                    target.src = meta.fallbackLogo;
+                                                }
+                                            }}
                                         />
                                     )}
                                     <span className="row-step">{layer.step.toString().padStart(2, '0')} {layer.label}</span>

@@ -141,7 +141,12 @@ export function StrategyModal({ strategy, theme = 'light', onClose }: StrategyMo
                                                         alt=""
                                                         crossOrigin="anonymous"
                                                         style={{ width: '20px', height: '20px', objectFit: 'contain' }}
-                                                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                                        onError={(e) => {
+                                                            const target = e.currentTarget;
+                                                            if (target.src !== meta.fallbackLogo) {
+                                                                target.src = meta.fallbackLogo;
+                                                            }
+                                                        }}
                                                     />
                                                 </div>
                                                 <div style={{ flex: 1, borderBottom: '1px dotted var(--card-dotted)', paddingBottom: '4px', marginBottom: '4px' }}>
