@@ -26,9 +26,12 @@ function NotFound() {
   );
 }
 
+import { ScrollToTop } from './components/ScrollToTop';
+
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/strategies" element={<StrategiesPage />} />

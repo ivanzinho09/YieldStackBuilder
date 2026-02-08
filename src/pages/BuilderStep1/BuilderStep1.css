@@ -32,7 +32,7 @@
     font-weight: 600;
     letter-spacing: -0.03em;
     line-height: 1.1;
-    margin-bottom: 48px;
+    margin-bottom: 16px;
     max-width: 600px;
 }
 
@@ -47,7 +47,7 @@
     font-size: 14px;
     color: var(--ink-light);
     max-width: 540px;
-    margin: -32px 0 48px 0;
+    margin: 0 0 32px 0;
     line-height: 1.6;
 }
 
@@ -58,7 +58,7 @@
     padding: 16px 20px;
     background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%);
     border: 2px solid #f59e0b;
-    margin: -24px 0 48px 0;
+    margin: 0 0 32px 0;
     max-width: 600px;
 }
 
@@ -147,5 +147,52 @@
 
     .protocol-grid {
         grid-template-columns: 1fr;
+    }
+
+    /* Sticky Footer for Mobile */
+    .builder-mobile-footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: var(--paper);
+        border-top: 1px solid var(--ink);
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        z-index: 100;
+        box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .builder-mobile-footer .total-apy {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .builder-mobile-footer .apy-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 10px;
+        color: var(--ink-light);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .builder-mobile-footer .apy-value {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--ink);
+    }
+
+    .builder-mobile-footer .next-step-btn {
+        padding: 10px 24px;
+        font-size: 12px;
+        letter-spacing: 0.05em;
+    }
+
+    /* Add padding to bottom of content to prevent footer overlap */
+    .journey-col {
+        padding-bottom: 100px;
     }
 }

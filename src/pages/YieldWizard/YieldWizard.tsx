@@ -206,6 +206,9 @@ export function YieldWizard() {
                         <button type="button" className="wizard-secondary-btn" onClick={() => navigate('/builder/canvas')}>
                             Open Expert Canvas
                         </button>
+                        <button type="button" className="wizard-secondary-btn" onClick={() => navigate('/builder/step-1')}>
+                            Step-by-Step Builder
+                        </button>
                     </div>
                 </main>
 

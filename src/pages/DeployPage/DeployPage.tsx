@@ -3,12 +3,12 @@ import { Link } from 'react-router-dom';
 import { toPng } from 'html-to-image';
 import { useBuilderStore } from '../../stores/builderStore';
 import { useApyStore } from '../../stores/apyStore';
-import { getProtocolMeta } from '../../data/protocolMeta';
+import { StrategyCard } from '../../components/StrategyCard/StrategyCard';
 import './DeployPage.css';
 
 export function DeployPage() {
 
-    const { stack, getTotalApy, getTotalRisk, leverageLoops, getLeveragedApy } = useBuilderStore();
+    const { stack, getTotalApy, getTotalRisk, leverageLoops } = useBuilderStore();
     const { apyData, isLoading, lastUpdated } = useApyStore();
     const cardRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -34,7 +34,7 @@ export function DeployPage() {
     const stageRef = useRef<HTMLDivElement>(null); // Add stage ref for 3D capture
 
     const handleDownloadCard = useCallback(async () => {
-        if (cardRef.current === null) return;
+        if (!cardRef.current) return;
 
         const EXPORT_WIDTH = 1200;
         const EXPORT_HEIGHT = 675; // 16:9, Twitter/X-friendly
@@ -44,29 +44,32 @@ export function DeployPage() {
             const slug = strategyName.replace(/\s+/g, '-').replace(/[^a-z0-9-]/gi, '').toLowerCase();
             const filename = `${slug}-${strategyId}.png`;
 
-            let cardDataUrl = '';
-            await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-            // Capture the card element directly. The `style` overrides are
-            // applied to the internal clone only — the live DOM is untouched.
-            cardDataUrl = await toPng(cardRef.current, {
+            // Wait for any re-renders
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            // Capture the card element
+            const cardDataUrl = await toPng(cardRef.current, {
                 cacheBust: true,
-                pixelRatio: 2,
+                pixelRatio: 3, // Higher quality
                 backgroundColor: 'transparent',
                 style: {
-                    transform: 'none',
+                    transform: 'none', // Reset transform for capture
                     boxShadow: 'none',
+                    margin: '0',
                 },
+                fontEmbedCSS: '', // Disable font embedding to prevent CORS SecurityError
+                // Skip external stylesheets that cause CORS issues
                 filter: (node) => {
+                    // Exclude link tags for stylesheets
                     if (node.tagName === 'LINK' && (node as HTMLLinkElement).rel === 'stylesheet') {
-                        const href = (node as HTMLLinkElement).href;
-                        if (href.startsWith(window.location.origin) || href.startsWith('/') || !href.startsWith('http')) {
-                            return true;
-                        }
                         return false;
                     }
                     return true;
                 }
             });
+
+            // ... (rest of the download logic remains the same, just ensuring the trigger works)
+
 
             const drawYsbMark = (ctx: CanvasRenderingContext2D, x: number, y: number, size: number, stroke: string) => {
                 const unit = size / 24;
@@ -294,7 +297,8 @@ export function DeployPage() {
 
     // Check if leveraged
     const isLeveraged = leverageLoops > 1 && stack.credit && stack.credit.id !== 'skip-credit';
-    const leverageInfo = getLeveragedApy();
+    // Get leverage info
+    // const leverageInfo = getLeveragedApy(); // Unused in new card
 
     // Use the store's getTotalApy() which correctly handles income-replaces-engine
     // logic, leverage calculations, and optimizer separation
@@ -549,159 +553,33 @@ export function DeployPage() {
 
                     <div className="card-stage" ref={stageRef}>
                         <div
-                            className={`yield-card theme-${cardOptions.theme}`}
                             ref={cardRef}
                             style={cardStyle}
                         >
-                            {cardOptions.theme === 'glass' && (
-                                <div className="liquid-backdrop">
-                                    <div className="card-liquid-layer liquid-caustic"></div>
-                                    <div className="card-liquid-layer liquid-sheen"></div>
-                                    <div className="card-liquid-layer liquid-grain"></div>
-                                </div>
-                            )}
-                            <div className="card-content" style={{ padding: '24px' }}>
-                                <div className="card-pattern"></div>
-
-                                {/* Card Header */}
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid var(--card-divider)', paddingBottom: '16px', marginBottom: '24px', position: 'relative', zIndex: 10 }}>
-                                    <div>
-                                        <div className="label-mono text-dim" style={{ fontSize: '9px', marginBottom: '4px' }}>STRATEGY NAME</div>
-                                        <div
-                                            className="font-display"
-                                            style={{ fontWeight: 700, fontSize: '20px', lineHeight: 1, cursor: 'text', outline: 'none' }}
-                                            contentEditable
-                                            suppressContentEditableWarning
-                                            onBlur={(e) => setStrategyName(e.currentTarget.textContent || 'CUSTOM YIELD')}
-                                        >
-                                            {strategyName}
-                                        </div>
-                                    </div>
-                                    {cardOptions.showRisk && (
-                                        <div style={{ background: 'var(--card-pill-bg)', color: 'var(--card-pill-text)', padding: '4px 8px' }}>
-                                            <span className="label-mono" style={{ fontSize: '10px' }}>RISK: {totalRisk?.toFixed(1) || '0.0'}</span>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Stack Items */}
-                                <div className="card-stack-section">
-                                    {activeLayers.length === 0 ? (
-                                        <div style={{ textAlign: 'center', opacity: 0.4, padding: '20px' }}>
-                                            <div className="font-mono" style={{ fontSize: '10px', marginBottom: '4px' }}>EMPTY STACK</div>
-                                            <div className="font-mono text-dim" style={{ fontSize: '9px' }}>Go to Design to add protocols</div>
-                                        </div>
-                                    ) : (
-                                        activeLayers.map((layer, idx) => {
-                                            const meta = getProtocolMeta(layer.protocol.id);
-                                            return (
-                                                <div key={idx}>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }} className="group">
-                                                        {cardOptions.showLogos ? (
-                                                            <div style={{
-                                                                width: '32px', height: '32px',
-                                                                background: 'var(--card-logo-bg)', borderRadius: '50%',
-                                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                                border: '1px solid var(--card-logo-border)'
-                                                            }}>
-                                                                <img
-                                                                    src={meta.logo}
-                                                                    alt=""
-                                                                    crossOrigin="anonymous"
-                                                                    style={{ width: '20px', height: '20px', objectFit: 'contain' }}
-                                                                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                                                                />
-                                                            </div>
-                                                        ) : (
-                                                            <div
-                                                                style={{
-                                                                    width: '32px', height: '32px', border: '1px solid var(--card-border)',
-                                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                                    background: layer.inverse ? 'var(--card-token-inverse-bg)' : 'var(--card-token-bg)',
-                                                                    color: layer.inverse ? 'var(--card-token-inverse-text)' : 'var(--card-token-text)',
-                                                                    fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '12px'
-                                                                }}
-                                                            >
-                                                                {layer.id}
-                                                            </div>
-                                                        )}
-                                                        <div style={{ flex: 1, borderBottom: '1px dotted var(--card-dotted)', paddingBottom: '4px', marginBottom: '4px' }}>
-                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                                                                <span className="font-mono" style={{ fontSize: '12px', fontWeight: 700 }}>{layer.name}</span>
-                                                                <span className="font-mono text-dim" style={{ fontSize: '10px' }}>{layer.type}</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    {idx < activeLayers.length - 1 && (
-                                                        <div style={{ paddingLeft: '16px', paddingTop: '4px', paddingBottom: '4px' }}>
-                                                            <div style={{ width: '1px', height: '16px', background: 'var(--card-connector)', opacity: 0.25 }}></div>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            );
-                                        })
-                                    )}
-                                </div>
-
-                                {/* Stats */}
-                                <div className="card-stats-section">
-                                    <div className="label-mono text-dim" style={{ fontSize: '9px', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        {isLeveraged ? 'LEVERAGED ANNUAL YIELD' : 'NET ANNUALIZED YIELD'}
-                                        {hasLiveData && (
-                                            <span style={{ fontSize: '7px', background: '#22c55e', color: 'white', padding: '1px 4px', fontWeight: 700 }}>LIVE</span>
-                                        )}
-                                    </div>
-                                    <div className="font-display" style={{ fontSize: '64px', lineHeight: 0.85, letterSpacing: '-0.02em', color: totalApy < 0 ? '#ef4444' : 'var(--card-text)' }}>
-                                        {totalApy?.toFixed(1) || '0.0'}%
-                                    </div>
-                                    {totalApy < 0 && isLeveraged && (
-                                        <div className="font-mono" style={{ fontSize: '9px', color: '#ef4444', marginTop: '6px' }}>
-                                            BORROW COSTS EXCEED YIELD AT THIS LEVERAGE
-                                        </div>
-                                    )}
-                                    <div style={{ display: 'flex', gap: '8px', marginTop: '8px', flexWrap: 'wrap' }}>
-                                        <span style={{ padding: '2px 6px', border: '1px solid var(--card-chip-border)', color: 'var(--card-chip-text)', fontSize: '9px', textTransform: 'uppercase' }} className="font-mono">Delta Neutral</span>
-                                        {isLeveraged ? (
-                                            <span style={{ padding: '2px 6px', border: '1px solid #f59e0b', fontSize: '9px', textTransform: 'uppercase', color: '#f59e0b', fontWeight: 700 }} className="font-mono">
-                                                {leverageLoops}x Leverage
-                                            </span>
-                                        ) : (
-                                            <span style={{ padding: '2px 6px', border: '1px solid var(--card-chip-border)', color: 'var(--card-chip-text)', fontSize: '9px', textTransform: 'uppercase' }} className="font-mono">Loopable</span>
-                                        )}
-                                        {hasLiveData && (
-                                            <span style={{ padding: '2px 6px', border: '1px solid #22c55e', fontSize: '9px', textTransform: 'uppercase', color: '#22c55e' }} className="font-mono">DeFiLlama Data</span>
-                                        )}
-                                    </div>
-                                    {isLeveraged && (
-                                        <div style={{ marginTop: '8px', fontSize: '9px', color: 'var(--card-dim)' }} className="font-mono">
-                                            {leverageInfo.totalExposure.toFixed(2)}x exposure • Risk ×{leverageInfo.riskMultiplier.toFixed(1)}
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Footer */}
-                                <div className="card-footer-section">
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '66%' }}>
-                                        <div className="label-mono text-dim" style={{ fontSize: '8px' }}>ON-CHAIN VERIFICATION</div>
-                                        <div className="barcode" style={{ opacity: 0.8, height: '16px' }}>
-                                            <div style={{ width: '2px' }} className="bc-bar"></div>
-                                            <div style={{ width: '4px', marginLeft: '2px' }} className="bc-bar"></div>
-                                            <div style={{ width: '1px', marginLeft: '4px' }} className="bc-bar"></div>
-                                            <div style={{ width: '6px', marginLeft: '2px' }} className="bc-bar"></div>
-                                            <div style={{ width: '2px', marginLeft: '4px' }} className="bc-bar"></div>
-                                            <div style={{ width: '3px', marginLeft: '2px' }} className="bc-bar"></div>
-                                            <div style={{ width: '8px', marginLeft: '4px' }} className="bc-bar"></div>
-                                            <div style={{ width: '1px', marginLeft: '2px' }} className="bc-bar"></div>
-                                            <div style={{ width: '4px', marginLeft: '4px' }} className="bc-bar"></div>
-                                        </div>
-                                        <div className="font-mono" style={{ fontSize: '9px', letterSpacing: '0.1em', marginTop: '4px' }}>ID: {strategyId}</div>
-                                    </div>
-                                    <div className="card-hologram"></div>
-                                </div>
-                            </div>
-
-                            <div style={{ position: 'absolute', inset: 0, border: '3px solid var(--card-frame)', pointerEvents: 'none', zIndex: 20 }}></div>
+                            <StrategyCard
+                                strategy={{
+                                    id: strategyId,
+                                    name: strategyName,
+                                    type: isLeveraged ? 'Lev Loop' : 'Delta Neutral',
+                                    description: 'Custom Strategy generated via Yield Stack Builder',
+                                    stack: {
+                                        base: stack.base,
+                                        engine: stack.engine,
+                                        income: stack.income,
+                                        credit: stack.credit,
+                                        optimize: stack.optimize,
+                                    },
+                                    leverageLoops: leverageLoops,
+                                    totalApy: totalApy,
+                                    totalRisk: totalRisk,
+                                    tags: ['Custom', isLeveraged ? 'Leveraged' : 'Earn'],
+                                    position: { x: 0, y: 0 },
+                                    color: '#000000'
+                                }}
+                                theme={cardOptions.theme}
+                                showLogos={cardOptions.showLogos}
+                                onSelect={() => { }}
+                            />
                         </div>
                     </div>
 
@@ -734,57 +612,17 @@ export function DeployPage() {
                                 </div>
                                 <div style={{ position: 'absolute', inset: '4px', border: '1px solid rgba(0,0,0,0.1)' }}></div>
                             </div>
-                            <div className="font-mono text-dim" style={{ fontSize: '9px', textAlign: 'center' }}>PREVIEW_THUMB_01.PNG</div>
+                            <div className="font-mono text-dim" style={{ fontSize: '9px', textAlign: 'center' }}>Social Preview</div>
                         </div>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <button className="btn-primary" style={{ width: '100%', padding: '12px 16px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                            <button className="btn-primary" onClick={handleDownloadCard} style={{ width: '100%', padding: '12px 16px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                                 <span className="label-mono" style={{ color: 'white', fontSize: '10px' }}>DOWNLOAD CARD</span>
                             </button>
                             <div style={{ display: 'flex', gap: '8px' }}>
-                                <button className="btn-outline btn-flex-1" style={{ flexDirection: 'row' }}>
-                                    <span className="label-mono" style={{ fontSize: '10px' }}>TWITTER / X</span>
+                                <button className="btn-outline btn-flex-1" style={{ flexDirection: 'row' }} onClick={() => window.open('https://twitter.com/intent/tweet?text=Check%20out%20my%20yield%20stack%20on%20YSB!&url=https://ystack.xyz', '_blank')}>
+                                    <span className="label-mono" style={{ fontSize: '10px' }}>SHARE ON X</span>
                                 </button>
-                                <button className="btn-outline btn-icon-only">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <div className="p-section" style={{ flex: 1 }}>
-                        <div className="label-mono text-dim" style={{ marginBottom: '16px' }}>CARD CUSTOMIZATION</div>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                            <div>
-                                <div className="label-mono" style={{ fontSize: '9px', marginBottom: '8px' }}>THEME</div>
-                                <div style={{ display: 'flex', gap: '8px' }}>
-                                    <div style={{ width: '24px', height: '24px', background: 'white', border: '1px solid black', cursor: 'pointer' }}></div>
-                                    <div style={{ width: '24px', height: '24px', background: 'black', border: '1px solid black', cursor: 'pointer' }}></div>
-                                    <div style={{ width: '24px', height: '24px', background: '#e5e7eb', border: '1px solid #9ca3af', cursor: 'pointer' }}></div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <div className="label-mono" style={{ fontSize: '9px', marginBottom: '8px' }}>DETAILS</div>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                                        <input type="checkbox" className="checkbox-custom" defaultChecked style={{ width: '12px', height: '12px' }} />
-                                        <span className="font-mono" style={{ fontSize: '10px' }}>Show Risk Score</span>
-                                    </label>
-                                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                                        <input type="checkbox" className="checkbox-custom" defaultChecked style={{ width: '12px', height: '12px' }} />
-                                        <span className="font-mono" style={{ fontSize: '10px' }}>Show Protocol Logos</span>
-                                    </label>
-                                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                                        <input type="checkbox" className="checkbox-custom" style={{ width: '12px', height: '12px' }} />
-                                        <span className="font-mono" style={{ fontSize: '10px' }}>Show Wallet Address</span>
-                                    </label>
-                                </div>
                             </div>
                         </div>
                     </div>

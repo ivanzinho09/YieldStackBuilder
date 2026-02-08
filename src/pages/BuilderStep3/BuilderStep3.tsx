@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from 'react';
+import { MobileStackSummary } from '../../components/builder/MobileStackSummary';
 import { useNavigate } from 'react-router-dom';
 import { BuilderHeader } from '../../components/builder/BuilderHeader';
 import { StepIndicator } from '../../components/builder/StepIndicator';
@@ -159,6 +160,18 @@ export function BuilderStep3() {
                     onFinish={() => navigate('/builder/summary')}
                 />
             </div>
+
+            {/* Mobile Sticky Footer */}
+            <MobileStackSummary
+                stackSlots={slots}
+                totalApy={getTotalApy()}
+                currentStep={3}
+                canProceed={!!selectedProtocol}
+                onNext={handleNext}
+                onBack={() => navigate('/builder/step-2')}
+                onFinish={() => navigate('/builder/summary')}
+                nextLabel="Next Step"
+            />
         </div>
     );
 }

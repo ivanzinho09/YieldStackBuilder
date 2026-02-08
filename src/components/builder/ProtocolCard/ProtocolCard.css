@@ -219,14 +219,26 @@
 
     .card-name {
         font-size: 20px;
+        margin-bottom: 12px;
+    }
+
+    .card-description {
+        margin-bottom: 16px;
     }
 
     .card-stats {
         gap: 16px;
+        padding-top: 16px;
+        margin-top: 0;
     }
 
     .stat-value {
         font-size: 16px;
+    }
+
+    /* Hide Risk Row on mobile to save space, or make it very compact */
+    .card-footer {
+        display: none;
     }
 }
 

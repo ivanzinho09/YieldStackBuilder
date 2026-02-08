@@ -31,8 +31,7 @@ const footerColumns: FooterColumn[] = [
     {
         title: 'Connect',
         links: [
-            { label: 'Twitter / X', href: '#' },
-            { label: 'Discord', href: '#' },
+            { label: 'Twitter / X', href: 'https://x.com/IvanSN_' },
         ],
     },
 ];

@@ -6,9 +6,10 @@ interface StrategyCardProps {
     strategy: Strategy;
     onSelect: (event: React.PointerEvent<HTMLDivElement>) => void;
     theme: 'light' | 'dark' | 'glass';
+    showLogos?: boolean;
 }
 
-export function StrategyCard({ strategy, onSelect, theme }: StrategyCardProps) {
+export function StrategyCard({ strategy, onSelect, theme, showLogos = true }: StrategyCardProps) {
     const { stack } = strategy;
 
     // Build active layers for display
@@ -59,19 +60,42 @@ export function StrategyCard({ strategy, onSelect, theme }: StrategyCardProps) {
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                     <div style={{
                                         width: '32px', height: '32px',
-                                        background: 'var(--card-logo-bg)', borderRadius: '50%',
+                                        background: showLogos ? 'var(--card-logo-bg)' : (
+                                            layer.inverse
+                                                ? 'transparent'
+                                                : (theme === 'dark' ? '#FFFFFF' : '#000000')
+                                        ),
+                                        color: showLogos ? 'inherit' : (
+                                            layer.inverse
+                                                ? (theme === 'dark' ? '#FFFFFF' : '#000000')
+                                                : (theme === 'dark' ? '#000000' : '#FFFFFF')
+                                        ),
+                                        borderRadius: showLogos ? '50%' : '0px',
                                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        border: '1px solid var(--card-logo-border)',
+                                        border: showLogos ? '1px solid var(--card-logo-border)' : (
+                                            layer.inverse
+                                                ? (theme === 'dark' ? '1.5px solid #FFFFFF' : '1.5px solid #000000')
+                                                : 'none'
+                                        ),
                                     }}>
-                                        <img
-                                            src={meta.logo}
-                                            alt=""
-                                            crossOrigin="anonymous"
-                                            loading="lazy"
-                                            decoding="async"
-                                            style={{ width: '20px', height: '20px', objectFit: 'contain' }}
-                                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                                        />
+                                        {showLogos ? (
+                                            <img
+                                                src={meta.logo}
+                                                alt=""
+                                                crossOrigin="anonymous"
+                                                loading="lazy"
+                                                decoding="async"
+                                                style={{ width: '20px', height: '20px', objectFit: 'contain' }}
+                                                onError={(e) => {
+                                                    e.currentTarget.onerror = null; // Prevent infinite loop
+                                                    e.currentTarget.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%236b7280"><circle cx="12" cy="12" r="10"/></svg>';
+                                                }}
+                                            />
+                                        ) : (
+                                            <span className="font-mono" style={{ fontSize: '13px', fontWeight: 700 }}>
+                                                {layer.id}
+                                            </span>
+                                        )}
                                     </div>
                                     <div style={{ flex: 1, borderBottom: '1px dotted var(--card-dotted)', paddingBottom: '4px', marginBottom: '4px' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>

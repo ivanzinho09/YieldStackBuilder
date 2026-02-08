@@ -164,7 +164,7 @@
 
 .wizard-intent-panel {
     border-top: 1px solid rgba(255, 255, 255, 0.2);
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.04));
+    background: var(--ink);
     padding: 18px 22px 22px;
 }
 
