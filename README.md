@@ -115,9 +115,10 @@ src/
 ## Roadmap
 
 - [ ] Wallet connection (RainbowKit/wagmi)
-- [ ] Live protocol data via APIs
+- [x] Live protocol data via APIs
 - [ ] Strategy deployment transactions
-- [ ] Strategy sharing and templates
+- [x] Templates
+- [ ] Strategy sharing
 - [ ] Historical APY tracking
 - [ ] Portfolio analytics
 
