@@ -3,6 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useBuilderStore } from '../../stores/builderStore';
 import { useApyStore, getEffectiveApy } from '../../stores/apyStore';
 import { getRiskLevel } from '../../data/protocols';
+
+const DEFAULT_LTV = 0.75;
 import { getProtocolMeta } from '../../data/protocolMeta';
 import { ApyInfoIcon } from '../../components/ui/ApyTooltip/ApyTooltip';
 import './BuilderSummary.css';
@@ -139,6 +141,7 @@ export function BuilderSummary() {
                             const displayApy = liveApy ? liveApy.current : (layer.protocol?.baseApy ?? 0);
                             const isLive = liveApy?.isLive ?? false;
                             const meta = layer.protocol ? getProtocolMeta(layer.protocol.id) : null;
+                            const isCreditCost = layer.label === 'CREDIT' && displayApy < 0;
 
                             return (
                                 <div
@@ -160,13 +163,21 @@ export function BuilderSummary() {
                                     <span className="row-step">{layer.step.toString().padStart(2, '0')} {layer.label}</span>
                                     <div className="row-strategy">
                                         <span className="strategy-name">{layer.protocol?.name || 'Not selected'}</span>
-                                        <span className="strategy-action">/ {layer.protocol ? getProtocolAction(layer.protocol.id) : ''}</span>
+                                        <span className="strategy-action">
+                                            / {isCreditCost
+                                                ? `Borrow${isLeveraged ? ` (${leverageLoops}x loop)` : ''}`
+                                                : (layer.protocol ? getProtocolAction(layer.protocol.id) : '')
+                                            }
+                                        </span>
                                     </div>
                                     <div className="row-value">
                                         {layer.protocol?.riskScore.toFixed(1) || '0.0'}/10
                                     </div>
-                                    <div className={`row-value ${displayApy < 0 ? 'negative' : ''}`}>
-                                        {displayApy.toFixed(2)}%
+                                    <div className={`row-value ${isCreditCost ? 'borrow-cost' : displayApy < 0 ? 'negative' : ''}`}>
+                                        {isCreditCost
+                                            ? `${Math.abs(displayApy).toFixed(2)}% cost`
+                                            : `${displayApy.toFixed(2)}%`
+                                        }
                                         {isLive && <span className="live-badge-inline">LIVE</span>}
                                     </div>
                                 </div>
@@ -177,15 +188,15 @@ export function BuilderSummary() {
                     {/* Leverage Breakdown Section */}
                     {isLeveraged && (
                         <div className="leverage-breakdown">
-                            <span className="breakdown-title">LEVERAGE ANALYSIS ({leverageLoops}x)</span>
+                            <span className="breakdown-title">LEVERAGE ANALYSIS ({leverageLoops}x LOOPS)</span>
                             <div className="breakdown-grid">
                                 <div className="breakdown-item">
                                     <span className="breakdown-label">Effective Exposure</span>
                                     <span className="breakdown-value">{leverageInfo.totalExposure.toFixed(2)}x</span>
                                 </div>
                                 <div className="breakdown-item">
-                                    <span className="breakdown-label">Borrow Cost</span>
-                                    <span className="breakdown-value negative">-{Math.abs(stack.credit?.baseApy ?? 0).toFixed(2)}%</span>
+                                    <span className="breakdown-label">Borrow Rate ({stack.credit?.name})</span>
+                                    <span className="breakdown-value borrow-cost-val">{Math.abs(stack.credit?.baseApy ?? 0).toFixed(2)}% cost</span>
                                 </div>
                                 <div className="breakdown-item">
                                     <span className="breakdown-label">Risk Amplification</span>
@@ -196,10 +207,35 @@ export function BuilderSummary() {
                                     <span className="breakdown-value">{leverageInfo.effectiveApy.toFixed(2)}%</span>
                                 </div>
                             </div>
+
+                            <div className="leverage-loop-visual-summary">
+                                <span className="loop-visual-title">LOOPING MECHANISM</span>
+                                <div className="loop-visual-steps">
+                                    {Array.from({ length: leverageLoops }, (_, i) => {
+                                        const depositPct = Math.pow(DEFAULT_LTV, i) * 100;
+                                        const isLast = i === leverageLoops - 1;
+                                        return (
+                                            <div key={i} className="loop-visual-step">
+                                                <span className="loop-visual-num">{i + 1}</span>
+                                                <div className="loop-visual-bar" style={{ width: `${Math.max(depositPct, 8)}%` }}>
+                                                    {depositPct.toFixed(0)}%
+                                                </div>
+                                                {!isLast && <span className="loop-visual-arrow">→ borrow → re-deposit →</span>}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
                             <p className="leverage-explanation">
-                                Leverage loops borrow against your position to increase exposure.
-                                Your {leverageLoops}x strategy borrows {(leverageInfo.totalExposure - 1).toFixed(2)}x your capital,
-                                amplifying both yield and risk by {leverageInfo.riskMultiplier.toFixed(1)}x.
+                                Each leverage loop: deposit collateral → borrow at {(DEFAULT_LTV * 100).toFixed(0)}% LTV
+                                via {stack.credit?.name} → re-deposit.
+                                After {leverageLoops} loops, total exposure = {leverageInfo.totalExposure.toFixed(2)}x.
+                                You earn yield on the full {leverageInfo.totalExposure.toFixed(2)}x exposure
+                                but pay {Math.abs(stack.credit?.baseApy ?? 0).toFixed(1)}% borrow cost
+                                on {(leverageInfo.totalExposure - 1).toFixed(2)}x borrowed capital.
+                                Net result: {leverageInfo.effectiveApy.toFixed(2)}% APY
+                                {stack.optimize ? ` + ${stack.optimize.baseApy}% optimizer` : ''}.
                             </p>
                         </div>
                     )}
